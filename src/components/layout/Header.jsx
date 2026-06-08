@@ -1,12 +1,70 @@
-import { Bell, ChevronDown, Home, Plus, Search, Truck } from "lucide-react"
+"use client"
+
+import Link from "next/link"
+import { usePathname } from "next/navigation"
+import {
+  Bell,
+  ChevronDown,
+  ChevronRight,
+  Plus,
+  Search,
+  Truck,
+} from "lucide-react"
+
+const breadcrumbRules = [
+  { path: "/dashboard", crumbs: [{ label: "대시보드" }] },
+  {
+    path: "/products",
+    crumbs: [{ label: "기준정보", href: "/products" }, { label: "품목 관리" }],
+  },
+  {
+    path: "/purchase-requests",
+    crumbs: [
+      { label: "구매 및 입고", href: "/purchase-requests" },
+      { label: "구매 요청" },
+    ],
+  },
+  {
+    path: "/approvals",
+    crumbs: [
+      { label: "구매 및 입고", href: "/approvals" },
+      { label: "승인 관리" },
+    ],
+  },
+]
+
+function getBreadcrumbs(pathname) {
+  return (
+    breadcrumbRules.find(
+      ({ path }) => pathname === path || pathname.startsWith(`${path}/`),
+    )?.crumbs ?? [{ label: "대시보드" }]
+  )
+}
 
 export default function Header() {
+  const pathname = usePathname()
+  const breadcrumbs = getBreadcrumbs(pathname)
+
   return (
     <header className="sticky top-0 z-20 flex h-14 items-center justify-between border-b border-slate-200 bg-white px-4 lg:px-6">
-      <div className="flex items-center gap-2 text-[12px] text-slate-400">
-        <Home size={14} />
-        <span>›</span>
-        <span className="font-semibold text-slate-700">대시보드</span>
+      <div className="flex items-center gap-1 text-[11px] text-slate-400">
+        {breadcrumbs.map((breadcrumb, index) => (
+          <div
+            key={`${breadcrumb.label}-${index}`}
+            className="flex items-center gap-1"
+          >
+            {index > 0 && <ChevronRight size={12} />}
+            {breadcrumb.href && index < breadcrumbs.length - 1 ? (
+              <Link href={breadcrumb.href} className="hover:text-blue-600">
+                {breadcrumb.label}
+              </Link>
+            ) : (
+              <span className="font-semibold text-slate-700">
+                {breadcrumb.label}
+              </span>
+            )}
+          </div>
+        ))}
       </div>
 
       <div className="flex items-center gap-2">
