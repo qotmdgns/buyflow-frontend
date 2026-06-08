@@ -1,0 +1,75 @@
+export const mockPurchaseRequestProducts = [
+  {
+    id: 1,
+    code: "ITEM-2031",
+    name: "알루미늄 프로파일 40x40",
+    category: "원자재",
+    spec: "40mm × 40mm",
+    unit: "EA",
+    currentStock: 28,
+    unitPrice: 350000,
+  },
+  {
+    id: 2,
+    code: "ITEM-8012",
+    name: "정밀 베어링 A형",
+    category: "기계부품",
+    spec: "15mm, 강철",
+    unit: "EA",
+    currentStock: 12,
+    unitPrice: 350000,
+  },
+  {
+    id: 3,
+    code: "ITEM-9421",
+    name: "고강도 스틸 와이어",
+    category: "소모품",
+    spec: "50m, 5mm",
+    unit: "ROLL",
+    currentStock: 45,
+    unitPrice: 140000,
+  },
+  {
+    id: 4,
+    code: "ITEM-5104",
+    name: "산업용 육각 볼트 세트",
+    category: "기계부품",
+    spec: "M8 × 30mm, 100개",
+    unit: "BOX",
+    currentStock: 64,
+    unitPrice: 58000,
+  },
+  {
+    id: 5,
+    code: "ITEM-6350",
+    name: "내열 실리콘 패킹",
+    category: "소모품",
+    spec: "Ø 60mm, 적색",
+    unit: "EA",
+    currentStock: 19,
+    unitPrice: 27000,
+  },
+  {
+    id: 6,
+    code: "ITEM-7742",
+    name: "스테인리스 평철",
+    category: "원자재",
+    spec: "3T × 30mm × 2m",
+    unit: "EA",
+    currentStock: 33,
+    unitPrice: 82000,
+  },
+]
+
+export const initialPurchaseRequestItems = [
+  { ...mockPurchaseRequestProducts[0], quantity: 1 },
+  { ...mockPurchaseRequestProducts[1], quantity: 2 },
+  { ...mockPurchaseRequestProducts[2], quantity: 10 },
+]
+
+export const purchaseRequestCategoryOptions = [
+  "전체 카테고리",
+  "원자재",
+  "기계부품",
+  "소모품",
+]
