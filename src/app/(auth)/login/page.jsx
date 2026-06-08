@@ -82,7 +82,7 @@ export default function LoginPage() {
             <InputField
               id="loginId"
               label="아이디"
-              placeholder="사원번호 또는 아이디를 입력하세요"
+              placeholder="아이디를 입력하세요"
             >
               <rect x="4.5" y="6.8" width="15" height="10.4" rx="1.5" />
               <path d="m5.3 7.7 6.7 5 6.7-5" />
