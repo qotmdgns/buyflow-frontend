@@ -18,6 +18,14 @@ const breadcrumbRules = [
     crumbs: [{ label: "기준정보", href: "/products" }, { label: "품목 관리" }],
   },
   {
+    path: "/purchase-requests/new",
+    crumbs: [
+      { label: "구매 및 입고", href: "/purchase-requests" },
+      { label: "구매 요청", href: "/purchase-requests" },
+      { label: "구매 요청 등록" },
+    ],
+  },
+  {
     path: "/purchase-requests",
     crumbs: [
       { label: "구매 및 입고", href: "/purchase-requests" },
@@ -94,13 +102,13 @@ export default function Header() {
           <span className="absolute right-2 top-1.5 h-1.5 w-1.5 rounded-full bg-rose-500" />
         </button>
 
-        <button
-          type="button"
+        <Link
+          href="/purchase-requests/new"
           className="hidden h-9 items-center gap-1 rounded-md border border-blue-200 px-3 text-[11px] font-semibold text-blue-600 hover:bg-blue-50 sm:flex"
         >
           <Plus size={14} />
           신규 구매 요청
-        </button>
+        </Link>
 
         <button
           type="button"
