@@ -1,11 +1,11 @@
 import { RefreshCcw, Search } from "lucide-react"
 
 const INPUT_CLASS_NAME =
-  "h-9 w-full rounded-md border border-slate-200 px-3 text-[11px] text-slate-600 outline-none transition placeholder:text-slate-300 focus:border-blue-400 focus:ring-2 focus:ring-blue-100"
+  "h-10 w-full rounded-md border border-slate-200 px-3 text-[14px] text-slate-700 outline-none transition placeholder:text-slate-300 focus:border-blue-400 focus:ring-2 focus:ring-blue-100"
 
 function FieldLabel({ children }) {
   return (
-    <span className="mb-1.5 block text-[10px] font-semibold text-slate-600">
+    <span className="mb-1 block text-[13px] font-semibold text-slate-600">
       {children}
     </span>
   )
@@ -37,14 +37,14 @@ export default function SupplierSearchForm({
   return (
     <form
       onSubmit={onSearch}
-      className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm"
+      className="rounded-lg border border-slate-200 bg-white p-3 shadow-sm"
     >
-      <div className="flex items-center gap-1 border-b border-slate-100 pb-3 text-[11px] font-semibold text-slate-700">
-        <Search size={13} className="text-slate-500" />
+      <div className="flex items-center gap-1.5 border-b border-slate-100 pb-2 text-[14px] font-semibold text-slate-700">
+        <Search size={15} className="text-slate-500" />
         검색 필터
       </div>
 
-      <div className="mt-4 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+      <div className="mt-3 grid gap-x-3 gap-y-2.5 md:grid-cols-2 xl:grid-cols-4">
         <label>
           <FieldLabel>공급업체 코드</FieldLabel>
 
@@ -89,21 +89,21 @@ export default function SupplierSearchForm({
         </label>
       </div>
 
-      <div className="mt-4 flex justify-end gap-2 border-t border-slate-100 pt-3">
+      <div className="mt-3 flex justify-end gap-2 border-t border-slate-100 pt-3">
         <button
           type="button"
           onClick={onReset}
-          className="flex h-9 items-center gap-1 rounded-md border border-slate-200 px-3 text-[11px] font-semibold text-slate-500 transition hover:bg-slate-50"
+          className="flex h-10 items-center gap-1.5 rounded-md border border-slate-200 px-4 text-[13px] font-semibold text-slate-600 transition hover:bg-slate-50"
         >
-          <RefreshCcw size={13} />
+          <RefreshCcw size={15} />
           초기화
         </button>
 
         <button
           type="submit"
-          className="flex h-9 items-center gap-1 rounded-md bg-blue-600 px-4 text-[11px] font-semibold text-white transition hover:bg-blue-700"
+          className="flex h-10 items-center gap-1.5 rounded-md bg-blue-600 px-5 text-[13px] font-semibold text-white transition hover:bg-blue-700"
         >
-          <Search size={13} />
+          <Search size={15} />
           검색
         </button>
       </div>

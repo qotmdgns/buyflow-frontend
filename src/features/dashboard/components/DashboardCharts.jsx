@@ -26,12 +26,12 @@ function useMounted() {
 
 function ChartCard({ title, description, children, action }) {
   return (
-    <section className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
-      <div className="mb-4 flex items-start justify-between">
+    <section className="rounded-lg border border-slate-200 bg-white p-3 shadow-sm">
+      <div className="mb-3 flex items-start justify-between">
         <div>
-          <h2 className="text-[13px] font-bold text-slate-800">{title}</h2>
+          <h2 className="text-[15px] font-bold text-slate-800">{title}</h2>
 
-          <p className="mt-0.5 text-[10px] text-slate-400">{description}</p>
+          <p className="mt-0.5 text-[12px] text-slate-400">{description}</p>
         </div>
 
         {action || <MoreVertical size={15} className="text-slate-400" />}
@@ -50,12 +50,12 @@ export function MonthlyInboundChart({ data }) {
       title="월별 입고 현황"
       description="최근 6개월간 총 입고 처리 수량 (단위: 건)"
       action={
-        <select className="rounded-md border border-slate-200 bg-white px-2 py-1 text-[10px] text-slate-500 outline-none">
+        <select className="rounded-md border border-slate-200 bg-white px-2 py-1 text-[13px] text-slate-500 outline-none">
           <option>최근 6개월</option>
         </select>
       }
     >
-      <div className="h-[245px]">
+      <div className="h-[230px]">
         {mounted ? (
           <ResponsiveContainer width="100%" height="100%">
             <BarChart
@@ -78,7 +78,7 @@ export function MonthlyInboundChart({ data }) {
                 axisLine={false}
                 tickLine={false}
                 tick={{
-                  fontSize: 10,
+                  fontSize: 12,
                   fill: "#64748b",
                 }}
               />
@@ -87,7 +87,7 @@ export function MonthlyInboundChart({ data }) {
                 axisLine={false}
                 tickLine={false}
                 tick={{
-                  fontSize: 10,
+                  fontSize: 12,
                   fill: "#64748b",
                 }}
               />
@@ -120,7 +120,7 @@ export function InventoryStatusChart({ data }) {
 
   return (
     <ChartCard title="재고 상태 비율" description="현재 보유 품목별 재고 상태">
-      <div className="h-[190px]">
+      <div className="h-[180px]">
         {mounted ? (
           <ResponsiveContainer width="100%" height="100%">
             <PieChart>
@@ -155,10 +155,10 @@ export function InventoryStatusChart({ data }) {
               }}
             />
 
-            <p className="text-[9px] text-slate-400">{item.name}</p>
+            <p className="text-[12px] text-slate-400">{item.name}</p>
 
             <p
-              className="mt-1 text-[11px] font-bold"
+              className="mt-1 text-[14px] font-bold"
               style={{
                 color: item.fill,
               }}

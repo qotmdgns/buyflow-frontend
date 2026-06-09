@@ -5,7 +5,7 @@ function StatusBadge({ status }) {
 
   return (
     <span
-      className={`inline-flex rounded-full px-2 py-1 text-[9px] font-medium ${
+      className={`inline-flex rounded-full px-2.5 py-1 text-[12px] font-medium ${
         isActive ? "bg-blue-50 text-blue-600" : "bg-slate-100 text-slate-500"
       }`}
     >
@@ -19,7 +19,7 @@ function TableMessage({ children, isError = false }) {
     <tr>
       <td
         colSpan={10}
-        className={`h-64 text-center text-[11px] ${
+        className={`h-52 text-center text-[14px] ${
           isError ? "text-rose-500" : "text-slate-400"
         }`}
       >
@@ -31,47 +31,47 @@ function TableMessage({ children, isError = false }) {
 
 function SupplierRow({ supplier, onDetail, onEdit }) {
   return (
-    <tr className="border-t border-slate-100 text-slate-600 hover:bg-slate-50/60">
-      <td className="whitespace-nowrap px-3 py-3 font-medium text-blue-600">
+    <tr className="border-t border-slate-100 text-slate-600 transition hover:bg-slate-50/70">
+      <td className="whitespace-nowrap px-3 py-2.5 font-semibold text-blue-600">
         {supplier.code}
       </td>
 
-      <td className="min-w-[160px] px-3 py-3 font-semibold text-slate-700">
+      <td className="min-w-[145px] px-3 py-2.5 font-semibold text-slate-700">
         {supplier.name}
       </td>
 
-      <td className="whitespace-nowrap px-3 py-3 text-slate-500">
+      <td className="whitespace-nowrap px-3 py-2.5 text-slate-600">
         {supplier.businessNumber}
       </td>
 
-      <td className="whitespace-nowrap px-3 py-3">{supplier.manager}</td>
+      <td className="whitespace-nowrap px-3 py-2.5">{supplier.manager}</td>
 
-      <td className="whitespace-nowrap px-3 py-3 text-slate-500">
+      <td className="whitespace-nowrap px-3 py-2.5 text-slate-600">
         {supplier.phone}
       </td>
 
-      <td className="whitespace-nowrap px-3 py-3 text-slate-500">
+      <td className="whitespace-nowrap px-3 py-2.5 text-slate-600">
         {supplier.email}
       </td>
 
-      <td className="min-w-[220px] px-3 py-3 text-slate-500">
+      <td className="min-w-[180px] px-3 py-2.5 text-slate-600">
         {supplier.address}
       </td>
 
-      <td className="whitespace-nowrap px-3 py-3">
+      <td className="whitespace-nowrap px-3 py-2.5">
         <StatusBadge status={supplier.tradeStatus} />
       </td>
 
-      <td className="whitespace-nowrap px-3 py-3 text-slate-500">
+      <td className="whitespace-nowrap px-3 py-2.5 text-slate-600">
         {supplier.registeredAt}
       </td>
 
-      <td className="whitespace-nowrap px-3 py-3">
-        <div className="flex items-center gap-2">
+      <td className="whitespace-nowrap px-3 py-2.5">
+        <div className="flex items-center gap-2.5">
           <button
             type="button"
             onClick={() => onDetail(supplier)}
-            className="text-[10px] font-medium text-slate-500 hover:text-blue-600 hover:underline"
+            className="text-[13px] font-semibold text-blue-600 hover:underline"
           >
             상세
           </button>
@@ -79,7 +79,7 @@ function SupplierRow({ supplier, onDetail, onEdit }) {
           <button
             type="button"
             onClick={() => onEdit(supplier)}
-            className="text-[10px] font-medium text-slate-500 hover:text-blue-600 hover:underline"
+            className="text-[13px] font-semibold text-slate-500 hover:text-blue-600 hover:underline"
           >
             수정
           </button>
@@ -123,13 +123,13 @@ export default function SupplierTable({
 
   return (
     <div className="overflow-x-auto">
-      <table className="w-full min-w-[1280px] text-left text-[10px]">
-        <thead className="bg-slate-50 text-slate-500">
+      <table className="w-full min-w-[1180px] text-left text-[13px]">
+        <thead className="bg-slate-50 text-slate-600">
           <tr>
             {SUPPLIER_TABLE_HEADERS.map((heading) => (
               <th
                 key={heading}
-                className="whitespace-nowrap px-3 py-3 font-medium"
+                className="whitespace-nowrap px-3 py-3 font-semibold"
               >
                 {heading}
               </th>

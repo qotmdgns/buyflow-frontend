@@ -62,8 +62,8 @@ export default function Header() {
   const breadcrumbs = getBreadcrumbs(pathname)
 
   return (
-    <header className="sticky top-0 z-20 flex h-14 items-center justify-between border-b border-slate-200 bg-white px-4 lg:px-6">
-      <div className="flex items-center gap-1 text-[11px] text-slate-400">
+    <header className="sticky top-0 z-20 flex h-14 items-center justify-between border-b border-slate-200 bg-white px-3 lg:px-4">
+      <div className="flex items-center gap-1 text-[13px] text-slate-400">
         {breadcrumbs.map((breadcrumb, index) => (
           <div
             key={`${breadcrumb.label}-${index}`}
@@ -86,7 +86,7 @@ export default function Header() {
       <div className="flex items-center gap-2">
         <button
           type="button"
-          className="hidden h-9 items-center gap-8 rounded-md bg-slate-50 px-3 text-[11px] text-slate-500 md:flex"
+          className="hidden h-9 items-center gap-3 rounded-md bg-slate-50 px-3 text-[13px] text-slate-500 md:flex"
         >
           전체 창고
           <ChevronDown size={14} />
@@ -98,13 +98,13 @@ export default function Header() {
           <input
             type="search"
             placeholder="검색어 입력..."
-            className="w-full bg-transparent text-[11px] outline-none placeholder:text-slate-400"
+            className="w-full bg-transparent text-[13px] outline-none placeholder:text-slate-400"
           />
         </label>
 
         <Link
           href="/purchase-requests/new"
-          className="hidden h-9 items-center gap-1 rounded-md border border-blue-200 px-3 text-[11px] font-semibold text-blue-600 hover:bg-blue-50 sm:flex"
+          className="hidden h-9 items-center gap-1 rounded-md border border-blue-200 px-3 text-[13px] font-semibold text-blue-600 hover:bg-blue-50 sm:flex"
         >
           <Plus size={14} />
           신규 구매 요청
@@ -112,7 +112,7 @@ export default function Header() {
 
         <button
           type="button"
-          className="flex h-9 items-center gap-1 rounded-md bg-blue-600 px-3 text-[11px] font-semibold text-white hover:bg-blue-700"
+          className="flex h-9 items-center gap-1 rounded-md bg-blue-600 px-3 text-[13px] font-semibold text-white hover:bg-blue-700"
         >
           <Truck size={14} />
           입고 등록

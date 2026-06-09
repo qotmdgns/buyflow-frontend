@@ -30,9 +30,11 @@ export default function SupplierManagement() {
   }
 
   return (
-    <div className="mx-auto max-w-[1500px]">
-      <header className="mb-5">
-        <h1 className="text-[18px] font-bold text-slate-900">공급업체 관리</h1>
+    <div className="w-full">
+      <header className="mb-3">
+        <h1 className="text-[22px] font-bold tracking-tight text-slate-900">
+          공급업체 관리
+        </h1>
       </header>
 
       <SupplierSearchForm
@@ -43,13 +45,13 @@ export default function SupplierManagement() {
         onReset={resetFilters}
       />
 
-      <section className="mt-5 overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm">
+      <section className="mt-3 overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm">
         <div className="flex items-center gap-2 border-b border-slate-100 px-4 py-3">
-          <h2 className="text-[12px] font-bold text-slate-800">
+          <h2 className="text-[15px] font-bold text-slate-800">
             공급업체 목록
           </h2>
 
-          <span className="text-[10px] text-slate-400">
+          <span className="text-[13px] text-slate-500">
             총 {pagination.totalElements}건
           </span>
         </div>

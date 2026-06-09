@@ -7,7 +7,7 @@ export const DEFAULT_SUPPLIER_FILTERS = {
 
 export const DEFAULT_SUPPLIER_PAGINATION = {
   page: 1,
-  size: 10,
+  size: 15,
   totalElements: 0,
   totalPages: 1,
 }

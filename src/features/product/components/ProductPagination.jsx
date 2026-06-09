@@ -7,7 +7,7 @@ import {
 } from "lucide-react"
 import { createPageNumbers } from "@/features/product/utils/productManagementUtils"
 
-const PAGE_SIZES = [10, 20, 50]
+const PAGE_SIZES = [10, 15, 20, 50]
 
 function PageIconButton({ children, label, disabled, onClick }) {
   return (
@@ -16,7 +16,7 @@ function PageIconButton({ children, label, disabled, onClick }) {
       onClick={onClick}
       disabled={disabled}
       aria-label={label}
-      className="flex h-7 w-7 items-center justify-center rounded-md border border-slate-200 bg-white text-slate-400 disabled:opacity-40"
+      className="flex h-8 w-8 items-center justify-center rounded-md border border-slate-200 bg-white text-slate-400 disabled:opacity-40"
     >
       {children}
     </button>
@@ -41,11 +41,11 @@ export default function ProductPagination({
   const lastRow = Math.min(page * pageSize, totalElements)
 
   return (
-    <div className="flex flex-wrap items-center justify-between gap-3 border-t border-slate-100 px-4 py-3 text-[10px] text-slate-400">
+    <div className="flex flex-wrap items-center justify-between gap-3 border-t border-slate-100 px-4 py-3 text-[13px] text-slate-400">
       <select
         value={pageSize}
         onChange={(event) => onChangePageSize(Number(event.target.value))}
-        className="h-8 rounded-md border border-slate-200 bg-white px-2 text-[10px] text-slate-500 outline-none"
+        className="h-8 rounded-md border border-slate-200 bg-white px-2 text-[13px] text-slate-500 outline-none"
       >
         {PAGE_SIZES.map((size) => (
           <option key={size} value={size}>
@@ -55,7 +55,7 @@ export default function ProductPagination({
       </select>
 
       <p>
-        Showing {firstRow} to {lastRow} of {totalElements} entries
+        총 {totalElements}건 중 {firstRow} - {lastRow}
       </p>
 
       <div className="flex items-center gap-1">
@@ -64,7 +64,7 @@ export default function ProductPagination({
           disabled={page === 1}
           onClick={() => onMovePage(1)}
         >
-          <ChevronsLeft size={12} />
+          <ChevronsLeft size={15} />
         </PageIconButton>
 
         <PageIconButton
@@ -72,7 +72,7 @@ export default function ProductPagination({
           disabled={page === 1}
           onClick={() => onMovePage(page - 1)}
         >
-          <ChevronLeft size={12} />
+          <ChevronLeft size={15} />
         </PageIconButton>
 
         {pageNumbers.map((pageNumber) => {
@@ -89,7 +89,7 @@ export default function ProductPagination({
               key={pageNumber}
               type="button"
               onClick={() => onMovePage(pageNumber)}
-              className={`flex h-7 min-w-7 items-center justify-center rounded-md px-2 text-[10px] font-semibold ${
+              className={`flex h-8 min-w-8 items-center justify-center rounded-md px-2 text-[13px] font-semibold ${
                 page === pageNumber
                   ? "bg-blue-600 text-white"
                   : "border border-transparent bg-white text-slate-500 hover:border-slate-200"
@@ -105,7 +105,7 @@ export default function ProductPagination({
           disabled={page === totalPages}
           onClick={() => onMovePage(page + 1)}
         >
-          <ChevronRight size={12} />
+          <ChevronRight size={15} />
         </PageIconButton>
 
         <PageIconButton
@@ -113,7 +113,7 @@ export default function ProductPagination({
           disabled={page === totalPages}
           onClick={() => onMovePage(totalPages)}
         >
-          <ChevronsRight size={12} />
+          <ChevronsRight size={15} />
         </PageIconButton>
       </div>
     </div>

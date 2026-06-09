@@ -26,7 +26,7 @@ export const DEFAULT_PURCHASE_REQUEST_FILTER_OPTIONS = {
 
 export const DEFAULT_PURCHASE_REQUEST_PAGINATION = {
   page: 1,
-  size: 10,
+  size: 15,
   totalElements: 0,
   totalPages: 1,
 }
