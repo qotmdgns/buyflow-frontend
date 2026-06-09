@@ -2,17 +2,18 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import {
-  Bell,
-  ChevronDown,
-  ChevronRight,
-  Plus,
-  Search,
-  Truck,
-} from "lucide-react"
+import { ChevronDown, ChevronRight, Plus, Search, Truck } from "lucide-react"
 
 const breadcrumbRules = [
   { path: "/dashboard", crumbs: [{ label: "대시보드" }] },
+  {
+    path: "/products/new",
+    crumbs: [
+      { label: "기준정보", href: "/products" },
+      { label: "품목 관리", href: "/products" },
+      { label: "품목 등록" },
+    ],
+  },
   {
     path: "/products",
     crumbs: [{ label: "기준정보", href: "/products" }, { label: "품목 관리" }],

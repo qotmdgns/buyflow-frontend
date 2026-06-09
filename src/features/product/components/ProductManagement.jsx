@@ -1,5 +1,6 @@
 "use client"
 
+import Link from "next/link"
 import { Download, Plus } from "lucide-react"
 import ProductPagination from "@/features/product/components/ProductPagination"
 import ProductSearchForm from "@/features/product/components/ProductSearchForm"
@@ -73,16 +74,13 @@ export default function ProductManagement() {
               CSV 다운로드
             </button>
 
-            <button
-              type="button"
-              onClick={() =>
-                window.alert("품목 등록 화면은 다음 단계에서 연결합니다.")
-              }
+            <Link
+              href="/products/new"
               className="flex h-9 items-center gap-1 rounded-md bg-blue-600 px-3 text-[11px] font-semibold text-white transition hover:bg-blue-700"
             >
               <Plus size={14} />
               신규 품목 등록
-            </button>
+            </Link>
           </div>
         </div>
 
