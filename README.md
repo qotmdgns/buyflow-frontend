@@ -231,14 +231,14 @@ flowchart LR
 
 | 구분        | 화면                  | URL                              | 개발 상태         |
 | ----------- | --------------------- | -------------------------------- | ----------------- |
-| 인증        | 로그인                | `/login`                         | 개발 예정         |
-| 대시보드    | 현황 요약             | `/dashboard`                     | UI 시안 구성 완료 |
-| 품목 관리   | 품목 목록 및 검색     | `/products`                      | 개발 예정         |
-| 공급업체    | 공급업체 목록 및 상세 | `/suppliers`                     | 개발 예정         |
+| 인증        | 로그인                | `/login`                         | front 개발 완료     |
+| 대시보드    | 현황 요약             | `/dashboard`                     | front 개발 완료      |
+| 품목 관리   | 품목 목록 및 검색     | `/products`                      | front 개발 완료      |
+| 공급업체    | 공급업체 목록 및 상세 | `/suppliers`                     | front 개발 완료         |
 | 창고 관리   | 창고 목록 및 상세     | `/warehouses`                    | 개발 예정         |
-| 구매 요청   | 구매 요청 목록        | `/purchase-requests`             | 개발 예정         |
-| 구매 요청   | 구매 요청 등록        | `/purchase-requests/new`         | 개발 예정         |
-| 구매 요청   | 구매 요청 상세        | `/purchase-requests/{requestId}` | 개발 예정         |
+| 구매 요청   | 구매 요청 목록        | `/purchase-requests`             | front 개발 완료         |
+| 구매 요청   | 구매 요청 등록        | `/purchase-requests/new`         | front 개발 완료         |
+| 구매 요청   | 구매 요청 상세        | `/purchase-requests/{requestId}` | front 개발 완료         |
 | 승인 관리   | 승인 대기 목록        | `/approvals`                     | 개발 예정         |
 | 발주 관리   | 발주 목록 및 상세     | `/purchase-orders`               | 개발 예정         |
 | 입고 관리   | 입고 목록 및 등록     | `/inbounds`                      | 개발 예정         |
