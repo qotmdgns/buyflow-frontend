@@ -1,0 +1,74 @@
+"use client"
+
+import SupplierPagination from "@/features/supplier/components/SupplierPagination"
+import SupplierSearchForm from "@/features/supplier/components/SupplierSearchForm"
+import SupplierTable from "@/features/supplier/components/SupplierTable"
+import useSupplierManagement from "@/features/supplier/hooks/useSupplierManagement"
+
+export default function SupplierManagement() {
+  const {
+    draftFilters,
+    filterOptions,
+    suppliers,
+    pagination,
+    pageSize,
+    loading,
+    error,
+    updateFilter,
+    searchSuppliers,
+    resetFilters,
+    movePage,
+    changePageSize,
+  } = useSupplierManagement()
+
+  function openSupplierDetail(supplier) {
+    window.alert(`${supplier.name} 상세 화면은 추후 연결합니다.`)
+  }
+
+  function openSupplierEdit(supplier) {
+    window.alert(`${supplier.name} 수정 화면은 추후 연결합니다.`)
+  }
+
+  return (
+    <div className="mx-auto max-w-[1500px]">
+      <header className="mb-5">
+        <h1 className="text-[18px] font-bold text-slate-900">공급업체 관리</h1>
+      </header>
+
+      <SupplierSearchForm
+        filters={draftFilters}
+        filterOptions={filterOptions}
+        onChange={updateFilter}
+        onSearch={searchSuppliers}
+        onReset={resetFilters}
+      />
+
+      <section className="mt-5 overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm">
+        <div className="flex items-center gap-2 border-b border-slate-100 px-4 py-3">
+          <h2 className="text-[12px] font-bold text-slate-800">
+            공급업체 목록
+          </h2>
+
+          <span className="text-[10px] text-slate-400">
+            총 {pagination.totalElements}건
+          </span>
+        </div>
+
+        <SupplierTable
+          suppliers={suppliers}
+          loading={loading}
+          error={error}
+          onDetail={openSupplierDetail}
+          onEdit={openSupplierEdit}
+        />
+
+        <SupplierPagination
+          pagination={pagination}
+          pageSize={pageSize}
+          onChangePageSize={changePageSize}
+          onMovePage={movePage}
+        />
+      </section>
+    </div>
+  )
+}

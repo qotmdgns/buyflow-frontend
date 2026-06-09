@@ -19,6 +19,13 @@ const breadcrumbRules = [
     crumbs: [{ label: "기준정보", href: "/products" }, { label: "품목 관리" }],
   },
   {
+    path: "/suppliers",
+    crumbs: [
+      { label: "기준정보", href: "/products" },
+      { label: "공급업체 관리" },
+    ],
+  },
+  {
     path: "/purchase-requests/new",
     crumbs: [
       { label: "구매 및 입고", href: "/purchase-requests" },
