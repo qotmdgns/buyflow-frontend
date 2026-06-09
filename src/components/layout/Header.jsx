@@ -94,14 +94,6 @@ export default function Header() {
           />
         </label>
 
-        <button
-          type="button"
-          className="relative flex h-9 w-9 items-center justify-center rounded-md text-slate-500 hover:bg-slate-50"
-        >
-          <Bell size={16} />
-          <span className="absolute right-2 top-1.5 h-1.5 w-1.5 rounded-full bg-rose-500" />
-        </button>
-
         <Link
           href="/purchase-requests/new"
           className="hidden h-9 items-center gap-1 rounded-md border border-blue-200 px-3 text-[11px] font-semibold text-blue-600 hover:bg-blue-50 sm:flex"
