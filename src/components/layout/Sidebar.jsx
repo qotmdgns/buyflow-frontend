@@ -29,7 +29,7 @@ const menuGroups = [
     items: [
       { label: "품목 관리", href: "/products", icon: Package },
       { label: "공급업체 관리", href: "/suppliers", icon: Building2 },
-      { label: "창고 관리", href: "#", icon: Warehouse },
+      { label: "창고 관리", href: "/warehouses", icon: Warehouse },
     ],
   },
   {
