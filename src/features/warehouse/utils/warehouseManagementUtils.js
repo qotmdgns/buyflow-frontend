@@ -16,6 +16,26 @@ export const DEFAULT_WAREHOUSE_FILTER_OPTIONS = {
   activeStatuses: ["전체", "사용 중", "사용 중지"],
 }
 
+export const WAREHOUSE_TYPE_OPTIONS = [
+  "일반 창고",
+  "냉장 창고",
+  "냉동 창고",
+  "위험물 창고",
+  "보세 창고",
+]
+
+export const EMPTY_WAREHOUSE_FORM = {
+  code: "",
+  name: "",
+  type: "일반 창고",
+  activeStatus: "사용 중",
+  baseAddress: "",
+  detailAddress: "",
+  manager: "",
+  phone: "",
+  memo: "",
+}
+
 export const WAREHOUSE_TABLE_HEADERS = [
   "창고 코드",
   "창고명",
@@ -27,22 +47,51 @@ export const WAREHOUSE_TABLE_HEADERS = [
   "관리",
 ]
 
-export function createPageNumbers(currentPage, totalPages, visibleCount = 4) {
-  if (totalPages <= visibleCount) {
+export function buildWarehouseAddress(baseAddress, detailAddress) {
+  return [baseAddress?.trim(), detailAddress?.trim()].filter(Boolean).join(" ")
+}
+
+export function validateWarehouseForm(form) {
+  const errors = {}
+
+  if (!form.code.trim()) {
+    errors.code = "창고 코드를 입력하세요."
+  } else if (!/^WH-[A-Z0-9-]+$/i.test(form.code.trim())) {
+    errors.code = "창고 코드는 WH- 형식으로 입력하세요. 예: WH-001"
+  }
+
+  if (!form.name.trim()) {
+    errors.name = "창고명을 입력하세요."
+  }
+
+  if (!form.baseAddress.trim()) {
+    errors.baseAddress = "기본 주소를 입력하세요."
+  }
+
+  if (
+    form.phone.trim() &&
+    !/^0\d{1,2}-\d{3,4}-\d{4}$/.test(form.phone.trim())
+  ) {
+    errors.phone = "연락처 형식을 확인하세요. 예: 010-1234-5678"
+  }
+
+  return errors
+}
+
+export function createPageNumbers(currentPage, totalPages) {
+  if (totalPages <= 6) {
     return Array.from({ length: totalPages }, (_, index) => index + 1)
   }
 
-  let startPage = Math.max(1, currentPage - 1)
-  let endPage = Math.min(totalPages, startPage + visibleCount - 1)
-
-  if (endPage - startPage + 1 < visibleCount) {
-    startPage = Math.max(1, endPage - visibleCount + 1)
+  if (currentPage <= 4) {
+    return [1, 2, 3, "ellipsis-right", totalPages]
   }
 
-  return Array.from(
-    { length: endPage - startPage + 1 },
-    (_, index) => startPage + index,
-  )
+  if (currentPage >= totalPages - 3) {
+    return [1, "ellipsis-left", totalPages - 2, totalPages - 1, totalPages]
+  }
+
+  return [1, "ellipsis-left", currentPage, "ellipsis-right", totalPages]
 }
 
 function escapeCsvCell(value) {
@@ -64,6 +113,7 @@ export function downloadWarehouseCsv(warehouses) {
   const header = [
     "창고 코드",
     "창고명",
+    "창고 유형",
     "위치(주소)",
     "사용 여부",
     "담당자",
@@ -74,6 +124,7 @@ export function downloadWarehouseCsv(warehouses) {
   const rows = warehouses.map((warehouse) => [
     warehouse.code,
     warehouse.name,
+    warehouse.type,
     warehouse.address,
     warehouse.activeStatus,
     warehouse.manager,

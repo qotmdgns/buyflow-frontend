@@ -2,8 +2,12 @@
 
 import { useEffect, useState } from "react"
 import {
+  createWarehouse,
+  deleteWarehouse,
+  fetchWarehouseById,
   fetchWarehouseFilterOptions,
   fetchWarehouses,
+  updateWarehouse,
 } from "@/features/warehouse/api/warehouseApi"
 import {
   DEFAULT_WAREHOUSE_FILTER_OPTIONS,
@@ -16,6 +20,7 @@ export default function useWarehouseManagement() {
   const [appliedFilters, setAppliedFilters] = useState(
     DEFAULT_WAREHOUSE_FILTERS,
   )
+
   const [warehouses, setWarehouses] = useState([])
   const [pagination, setPagination] = useState(DEFAULT_WAREHOUSE_PAGINATION)
   const [pageSize, setPageSize] = useState(10)
@@ -26,6 +31,11 @@ export default function useWarehouseManagement() {
 
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState("")
+  const [refreshKey, setRefreshKey] = useState(0)
+
+  const [formMode, setFormMode] = useState(null)
+  const [editingWarehouse, setEditingWarehouse] = useState(null)
+  const [detailWarehouse, setDetailWarehouse] = useState(null)
 
   useEffect(() => {
     let ignore = false
@@ -81,7 +91,11 @@ export default function useWarehouseManagement() {
     return () => {
       ignore = true
     }
-  }, [appliedFilters, pagination.page, pageSize])
+  }, [appliedFilters, pagination.page, pageSize, refreshKey])
+
+  function refreshWarehouses() {
+    setRefreshKey((currentKey) => currentKey + 1)
+  }
 
   function updateFilter(name, value) {
     setDraftFilters((currentFilters) => ({
@@ -130,6 +144,71 @@ export default function useWarehouseManagement() {
     }))
   }
 
+  function openWarehouseCreate() {
+    setEditingWarehouse(null)
+    setFormMode("create")
+  }
+
+  function openWarehouseEdit(warehouse) {
+    setDetailWarehouse(null)
+    setEditingWarehouse(warehouse)
+    setFormMode("edit")
+  }
+
+  function closeWarehouseForm() {
+    setEditingWarehouse(null)
+    setFormMode(null)
+  }
+
+  async function saveWarehouse(form) {
+    if (formMode === "edit" && editingWarehouse) {
+      await updateWarehouse(editingWarehouse.id, form)
+    } else {
+      await createWarehouse(form)
+
+      setPagination((currentPagination) => ({
+        ...currentPagination,
+        page: 1,
+      }))
+    }
+
+    closeWarehouseForm()
+    refreshWarehouses()
+  }
+
+  async function openWarehouseDetail(warehouse) {
+    try {
+      const detail = await fetchWarehouseById(warehouse.id)
+      setDetailWarehouse(detail)
+    } catch (requestError) {
+      window.alert(
+        requestError.message || "창고 상세 정보를 불러오지 못했습니다.",
+      )
+    }
+  }
+
+  function closeWarehouseDetail() {
+    setDetailWarehouse(null)
+  }
+
+  async function removeWarehouse(warehouse) {
+    const confirmed = window.confirm(
+      `${warehouse.name} 창고를 삭제하시겠습니까?`,
+    )
+
+    if (!confirmed) {
+      return
+    }
+
+    try {
+      await deleteWarehouse(warehouse.id)
+      setDetailWarehouse(null)
+      refreshWarehouses()
+    } catch (requestError) {
+      window.alert(requestError.message || "창고 정보를 삭제하지 못했습니다.")
+    }
+  }
+
   return {
     draftFilters,
     filterOptions,
@@ -138,10 +217,20 @@ export default function useWarehouseManagement() {
     pageSize,
     loading,
     error,
+    formMode,
+    editingWarehouse,
+    detailWarehouse,
     updateFilter,
     searchWarehouses,
     resetFilters,
     movePage,
     changePageSize,
+    openWarehouseCreate,
+    openWarehouseEdit,
+    closeWarehouseForm,
+    saveWarehouse,
+    openWarehouseDetail,
+    closeWarehouseDetail,
+    removeWarehouse,
   }
 }

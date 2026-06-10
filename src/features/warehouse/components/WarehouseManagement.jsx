@@ -1,6 +1,8 @@
 "use client"
 
-import { Download } from "lucide-react"
+import { Download, Plus } from "lucide-react"
+import WarehouseDetailModal from "@/features/warehouse/components/WarehouseDetailModal"
+import WarehouseFormModal from "@/features/warehouse/components/WarehouseFormModal"
 import WarehousePagination from "@/features/warehouse/components/WarehousePagination"
 import WarehouseSearchForm from "@/features/warehouse/components/WarehouseSearchForm"
 import WarehouseTable from "@/features/warehouse/components/WarehouseTable"
@@ -16,23 +18,25 @@ export default function WarehouseManagement() {
     pageSize,
     loading,
     error,
+    formMode,
+    editingWarehouse,
+    detailWarehouse,
     updateFilter,
     searchWarehouses,
     resetFilters,
     movePage,
     changePageSize,
+    openWarehouseCreate,
+    openWarehouseEdit,
+    closeWarehouseForm,
+    saveWarehouse,
+    openWarehouseDetail,
+    closeWarehouseDetail,
+    removeWarehouse,
   } = useWarehouseManagement()
 
   function openLocationManagement() {
     window.alert("보관 위치 관리 화면은 다음 단계에서 연결합니다.")
-  }
-
-  function openWarehouseDetail(warehouse) {
-    window.alert(`${warehouse.name} 상세 화면은 추후 연결합니다.`)
-  }
-
-  function openWarehouseEdit(warehouse) {
-    window.alert(`${warehouse.name} 수정 화면은 추후 연결합니다.`)
   }
 
   return (
@@ -72,7 +76,7 @@ export default function WarehouseManagement() {
         onReset={resetFilters}
       />
 
-      <section className="mt-5 overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm">
+      <section className="mt-3 overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm">
         <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 px-4 py-3">
           <div className="flex items-center gap-2">
             <h2 className="text-[15px] font-bold text-slate-800">창고 목록</h2>
@@ -82,14 +86,25 @@ export default function WarehouseManagement() {
             </span>
           </div>
 
-          <button
-            type="button"
-            onClick={() => downloadWarehouseCsv(warehouses)}
-            className="flex h-9 items-center gap-1.5 rounded-md border border-slate-200 bg-white px-3 text-[13px] font-semibold text-slate-600 transition hover:bg-slate-50"
-          >
-            <Download size={14} />
-            엑셀 내보내기
-          </button>
+          <div className="flex flex-wrap items-center gap-2">
+            <button
+              type="button"
+              onClick={() => downloadWarehouseCsv(warehouses)}
+              className="flex h-9 items-center gap-1.5 rounded-md border border-slate-200 bg-white px-3 text-[13px] font-semibold text-slate-600 transition hover:bg-slate-50"
+            >
+              <Download size={14} />
+              엑셀 내보내기
+            </button>
+
+            <button
+              type="button"
+              onClick={openWarehouseCreate}
+              className="flex h-9 items-center gap-1.5 rounded-md bg-blue-600 px-3 text-[13px] font-semibold text-white transition hover:bg-blue-700"
+            >
+              <Plus size={14} />
+              신규 창고 등록
+            </button>
+          </div>
         </div>
 
         <WarehouseTable
@@ -107,6 +122,24 @@ export default function WarehouseManagement() {
           onMovePage={movePage}
         />
       </section>
+
+      {formMode && (
+        <WarehouseFormModal
+          key={`${formMode}-${editingWarehouse?.id ?? "new"}`}
+          mode={formMode}
+          initialValue={editingWarehouse}
+          onClose={closeWarehouseForm}
+          onSubmit={saveWarehouse}
+        />
+      )}
+
+      <WarehouseDetailModal
+        open={Boolean(detailWarehouse)}
+        warehouse={detailWarehouse}
+        onClose={closeWarehouseDetail}
+        onEdit={openWarehouseEdit}
+        onDelete={removeWarehouse}
+      />
     </div>
   )
 }
