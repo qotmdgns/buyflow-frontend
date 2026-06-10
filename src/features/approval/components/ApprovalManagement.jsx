@@ -441,7 +441,7 @@ export default function ApprovalManagement({ approvalId }) {
 
         <div className="flex flex-wrap gap-2">
           <Link
-            href="/purchase-requests"
+            href="/approvals"
             className="flex h-9 items-center gap-1 rounded-md border border-slate-200 bg-white px-3 text-[13px] font-semibold text-slate-500 transition hover:bg-slate-50"
           >
             <ArrowLeft size={13} />
