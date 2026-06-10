@@ -35,6 +35,48 @@ export default function ProductManagement() {
     window.alert(`${product.name} 수정 화면은 추후 연결합니다.`)
   }
 
+  async function createProduct() {
+    const productNo = prompt("품목코드")
+
+    if (!productNo) return
+
+    const productName = prompt("품목명")
+
+    if (!productName) return
+
+    try {
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/products`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            productId: Date.now(),
+            productNo,
+            productName,
+            companyName: "직접등록",
+            unitPrice: 0,
+            unit: "개",
+            categoryName: "기타 상품",
+            spec: "",
+          }),
+        },
+      )
+
+      if (!response.ok) {
+        throw new Error()
+      }
+
+      alert("저장 완료")
+      window.location.reload()
+    } catch (error) {
+      alert("저장 실패")
+      console.error(error)
+    }
+  }
+
   return (
     <div className="mx-auto max-w-[1500px]">
       <header className="mb-5">
@@ -75,9 +117,7 @@ export default function ProductManagement() {
 
             <button
               type="button"
-              onClick={() =>
-                window.alert("품목 등록 화면은 다음 단계에서 연결합니다.")
-              }
+              onClick={createProduct}
               className="flex h-9 items-center gap-1 rounded-md bg-blue-600 px-3 text-[11px] font-semibold text-white transition hover:bg-blue-700"
             >
               <Plus size={14} />
