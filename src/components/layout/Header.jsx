@@ -2,20 +2,28 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import {
-  Bell,
-  ChevronDown,
-  ChevronRight,
-  Plus,
-  Search,
-  Truck,
-} from "lucide-react"
+import { ChevronDown, ChevronRight, Plus, Search, Truck } from "lucide-react"
 
 const breadcrumbRules = [
   { path: "/dashboard", crumbs: [{ label: "대시보드" }] },
   {
+    path: "/products/new",
+    crumbs: [
+      { label: "기준정보", href: "/products" },
+      { label: "품목 관리", href: "/products" },
+      { label: "품목 등록" },
+    ],
+  },
+  {
     path: "/products",
     crumbs: [{ label: "기준정보", href: "/products" }, { label: "품목 관리" }],
+  },
+  {
+    path: "/suppliers",
+    crumbs: [
+      { label: "기준정보", href: "/products" },
+      { label: "공급업체 관리" },
+    ],
   },
   {
     path: "/purchase-requests/new",
@@ -93,14 +101,6 @@ export default function Header() {
             className="w-full bg-transparent text-[11px] outline-none placeholder:text-slate-400"
           />
         </label>
-
-        <button
-          type="button"
-          className="relative flex h-9 w-9 items-center justify-center rounded-md text-slate-500 hover:bg-slate-50"
-        >
-          <Bell size={16} />
-          <span className="absolute right-2 top-1.5 h-1.5 w-1.5 rounded-full bg-rose-500" />
-        </button>
 
         <Link
           href="/purchase-requests/new"

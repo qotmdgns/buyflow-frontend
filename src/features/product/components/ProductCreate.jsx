@@ -1,0 +1,79 @@
+"use client"
+
+import { Save } from "lucide-react"
+import { useRouter } from "next/navigation"
+import ProductBasicForm from "@/features/product/components/ProductBasicForm"
+import ProductWarehouseSettingSection from "@/features/product/components/ProductWarehouseSettingSection"
+import useProductCreate from "@/features/product/hooks/useProductCreate"
+
+export default function ProductCreate() {
+  const router = useRouter()
+
+  const {
+    form,
+    warehouseSettings,
+    imageFile,
+    imagePreviewUrl,
+    isSaving,
+    updateForm,
+    changeImage,
+    removeImage,
+    addWarehouseSetting,
+    updateWarehouseSetting,
+    removeWarehouseSetting,
+    saveProduct,
+  } = useProductCreate()
+
+  async function handleSave() {
+    const isSaved = await saveProduct()
+
+    if (isSaved) {
+      router.push("/products")
+    }
+  }
+
+  return (
+    <div className="mx-auto max-w-[1500px]">
+      <header className="mb-5">
+        <h1 className="text-[18px] font-bold text-slate-900">품목 등록</h1>
+      </header>
+
+      <ProductBasicForm
+        form={form}
+        imageFile={imageFile}
+        imagePreviewUrl={imagePreviewUrl}
+        onChange={updateForm}
+        onImageChange={changeImage}
+        onImageRemove={removeImage}
+      />
+
+      <ProductWarehouseSettingSection
+        settings={warehouseSettings}
+        onAdd={addWarehouseSetting}
+        onChange={updateWarehouseSetting}
+        onRemove={removeWarehouseSetting}
+      />
+
+      <footer className="mt-4 flex justify-end gap-2 border-t border-slate-200 pt-4">
+        <button
+          type="button"
+          onClick={() => router.push("/products")}
+          className="h-9 rounded-md border border-slate-200 bg-white px-5 text-[11px] font-semibold text-slate-500 transition hover:bg-slate-50"
+        >
+          취소
+        </button>
+
+        <button
+          type="button"
+          onClick={handleSave}
+          disabled={isSaving}
+          className="flex h-9 items-center gap-1 rounded-md bg-blue-600 px-5 text-[11px] font-semibold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-blue-300"
+        >
+          <Save size={13} />
+
+          {isSaving ? "저장 중..." : "저장"}
+        </button>
+      </footer>
+    </div>
+  )
+}
