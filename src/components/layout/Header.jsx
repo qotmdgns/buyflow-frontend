@@ -38,6 +38,16 @@ const breadcrumbRules = [
     ],
   },
   {
+    matches: (pathname) =>
+      /^\/purchase-requests\/[^/]+$/.test(pathname) &&
+      pathname !== "/purchase-requests/new",
+    crumbs: [
+      { label: "구매 및 입고", href: "/purchase-requests" },
+      { label: "구매 요청", href: "/purchase-requests" },
+      { label: "구매 요청 상세" },
+    ],
+  },
+  {
     path: "/purchase-requests",
     crumbs: [
       { label: "구매 및 입고", href: "/purchase-requests" },
@@ -55,9 +65,13 @@ const breadcrumbRules = [
 
 function getBreadcrumbs(pathname) {
   return (
-    breadcrumbRules.find(
-      ({ path }) => pathname === path || pathname.startsWith(`${path}/`),
-    )?.crumbs ?? [{ label: "대시보드" }]
+    breadcrumbRules.find((rule) => {
+      if (rule.matches) {
+        return rule.matches(pathname)
+      }
+
+      return pathname === rule.path || pathname.startsWith(`${rule.path}/`)
+    })?.crumbs ?? [{ label: "대시보드" }]
   )
 }
 
