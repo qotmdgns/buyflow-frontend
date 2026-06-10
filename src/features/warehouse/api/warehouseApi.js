@@ -46,15 +46,14 @@ function getMockWarehouses(params) {
   const {
     page = 1,
     size = 10,
-    warehouseCode = "",
+    type = "전체",
     warehouseName = "",
     manager = "",
     activeStatus = "전체",
   } = params
 
   const filteredWarehouses = warehouseDatabase.filter((warehouse) => {
-    const matchesWarehouseCode =
-      !warehouseCode || includesKeyword(warehouse.code, warehouseCode)
+    const matchesWarehouseType = type === "전체" || warehouse.type === type
 
     const matchesWarehouseName =
       !warehouseName || includesKeyword(warehouse.name, warehouseName)
@@ -66,7 +65,7 @@ function getMockWarehouses(params) {
       activeStatus === "전체" || warehouse.activeStatus === activeStatus
 
     return (
-      matchesWarehouseCode &&
+      matchesWarehouseType &&
       matchesWarehouseName &&
       matchesManager &&
       matchesActiveStatus

@@ -32,8 +32,8 @@ function TableMessage({ children, isError = false }) {
 function WarehouseRow({ warehouse, onDetail, onEdit }) {
   return (
     <tr className="border-t border-slate-100 text-slate-600 transition hover:bg-slate-50/70">
-      <td className="whitespace-nowrap px-3 py-2.5 font-semibold text-blue-600">
-        {warehouse.code}
+      <td className="whitespace-nowrap px-3 py-2.5 font-semibold text-slate-700">
+        {warehouse.type}
       </td>
 
       <td className="min-w-[150px] px-3 py-2.5 font-semibold text-slate-700">

@@ -46,13 +46,12 @@ export default function WarehouseSearchForm({
 
       <div className="mt-3 grid gap-x-3 gap-y-2.5 md:grid-cols-2 xl:grid-cols-4">
         <label>
-          <FieldLabel>창고 코드</FieldLabel>
+          <FieldLabel>창고 유형</FieldLabel>
 
-          <input
-            value={filters.warehouseCode}
-            onChange={(event) => onChange("warehouseCode", event.target.value)}
-            placeholder="예: WH-001"
-            className={INPUT_CLASS_NAME}
+          <SelectField
+            value={filters.type}
+            options={filterOptions.warehouseTypes}
+            onChange={(event) => onChange("type", event.target.value)}
           />
         </label>
 

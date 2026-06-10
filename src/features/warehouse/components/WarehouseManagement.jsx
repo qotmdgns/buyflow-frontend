@@ -35,10 +35,6 @@ export default function WarehouseManagement() {
     removeWarehouse,
   } = useWarehouseManagement()
 
-  function openLocationManagement() {
-    window.alert("보관 위치 관리 화면은 다음 단계에서 연결합니다.")
-  }
-
   return (
     <div className="w-full">
       <header className="mb-3">
@@ -47,25 +43,8 @@ export default function WarehouseManagement() {
         </h1>
 
         <p className="mt-1 text-[13px] text-slate-400">
-          스마트 물류를 위한 창고 및 세부 보관 위치 정보를 관리합니다.
+          스마트 물류를 위한 창고 정보를 관리합니다.
         </p>
-
-        <div className="mt-3 flex items-center gap-1 border-b border-slate-200">
-          <button
-            type="button"
-            className="border-b-2 border-blue-600 px-3 py-2 text-[13px] font-semibold text-slate-800"
-          >
-            창고 목록
-          </button>
-
-          <button
-            type="button"
-            onClick={openLocationManagement}
-            className="border-b-2 border-transparent px-3 py-2 text-[13px] font-medium text-slate-500 transition hover:text-blue-600"
-          >
-            보관 위치 관리
-          </button>
-        </div>
       </header>
 
       <WarehouseSearchForm

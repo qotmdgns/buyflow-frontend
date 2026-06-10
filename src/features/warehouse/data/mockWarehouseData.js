@@ -1,3 +1,5 @@
+import { WAREHOUSE_TYPE_OPTIONS } from "@/features/warehouse/utils/warehouseManagementUtils"
+
 function createAddress(baseAddress, detailAddress = "") {
   return [baseAddress, detailAddress].filter(Boolean).join(" ")
 }
@@ -116,6 +118,7 @@ const seedWarehouses = [
 ]
 
 export const warehouseFilterOptions = {
+  warehouseTypes: ["전체", ...WAREHOUSE_TYPE_OPTIONS],
   activeStatuses: ["전체", "사용 중", "사용 중지"],
 }
 
