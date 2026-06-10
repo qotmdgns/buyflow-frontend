@@ -1,5 +1,13 @@
+export const WAREHOUSE_TYPE_OPTIONS = [
+  "일반 창고",
+  "냉장 창고",
+  "냉동 창고",
+  "위험물 창고",
+  "보세 창고",
+]
+
 export const DEFAULT_WAREHOUSE_FILTERS = {
-  warehouseCode: "",
+  type: "전체",
   warehouseName: "",
   manager: "",
   activeStatus: "전체",
@@ -13,16 +21,9 @@ export const DEFAULT_WAREHOUSE_PAGINATION = {
 }
 
 export const DEFAULT_WAREHOUSE_FILTER_OPTIONS = {
+  warehouseTypes: ["전체", ...WAREHOUSE_TYPE_OPTIONS],
   activeStatuses: ["전체", "사용 중", "사용 중지"],
 }
-
-export const WAREHOUSE_TYPE_OPTIONS = [
-  "일반 창고",
-  "냉장 창고",
-  "냉동 창고",
-  "위험물 창고",
-  "보세 창고",
-]
 
 export const EMPTY_WAREHOUSE_FORM = {
   code: "",
@@ -37,7 +38,7 @@ export const EMPTY_WAREHOUSE_FORM = {
 }
 
 export const WAREHOUSE_TABLE_HEADERS = [
-  "창고 코드",
+  "창고 유형",
   "창고명",
   "위치(주소)",
   "사용 여부",
@@ -111,9 +112,8 @@ export function downloadWarehouseCsv(warehouses) {
   }
 
   const header = [
-    "창고 코드",
-    "창고명",
     "창고 유형",
+    "창고명",
     "위치(주소)",
     "사용 여부",
     "담당자",
@@ -122,16 +122,14 @@ export function downloadWarehouseCsv(warehouses) {
   ]
 
   const rows = warehouses.map((warehouse) => [
-    warehouse.code,
-    warehouse.name,
     warehouse.type,
+    warehouse.name,
     warehouse.address,
     warehouse.activeStatus,
     warehouse.manager,
     warehouse.phone,
     warehouse.registeredAt,
   ])
-
   const csv = [header, ...rows]
     .map((row) => row.map(escapeCsvCell).join(","))
     .join("\n")

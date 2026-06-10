@@ -38,6 +38,16 @@ const breadcrumbRules = [
     ],
   },
   {
+    matches: (pathname) =>
+      /^\/purchase-requests\/[^/]+$/.test(pathname) &&
+      pathname !== "/purchase-requests/new",
+    crumbs: [
+      { label: "구매 및 입고", href: "/purchase-requests" },
+      { label: "구매 요청", href: "/purchase-requests" },
+      { label: "구매 요청 상세" },
+    ],
+  },
+  {
     path: "/purchase-requests",
     crumbs: [
       { label: "구매 및 입고", href: "/purchase-requests" },
@@ -55,9 +65,13 @@ const breadcrumbRules = [
 
 function getBreadcrumbs(pathname) {
   return (
-    breadcrumbRules.find(
-      ({ path }) => pathname === path || pathname.startsWith(`${path}/`),
-    )?.crumbs ?? [{ label: "대시보드" }]
+    breadcrumbRules.find((rule) => {
+      if (rule.matches) {
+        return rule.matches(pathname)
+      }
+
+      return pathname === rule.path || pathname.startsWith(`${rule.path}/`)
+    })?.crumbs ?? [{ label: "대시보드" }]
   )
 }
 
@@ -85,42 +99,6 @@ export default function Header() {
             )}
           </div>
         ))}
-      </div>
-
-      <div className="flex items-center gap-2">
-        <button
-          type="button"
-          className="hidden h-9 items-center gap-3 rounded-md bg-slate-50 px-3 text-[13px] text-slate-500 md:flex"
-        >
-          전체 창고
-          <ChevronDown size={14} />
-        </button>
-
-        <label className="hidden h-9 w-56 items-center gap-2 rounded-md bg-slate-50 px-3 md:flex">
-          <Search size={14} className="text-slate-400" />
-
-          <input
-            type="search"
-            placeholder="검색어 입력..."
-            className="w-full bg-transparent text-[13px] outline-none placeholder:text-slate-400"
-          />
-        </label>
-
-        <Link
-          href="/purchase-requests/new"
-          className="hidden h-9 items-center gap-1 rounded-md border border-blue-200 px-3 text-[13px] font-semibold text-blue-600 hover:bg-blue-50 sm:flex"
-        >
-          <Plus size={14} />
-          신규 구매 요청
-        </Link>
-
-        <button
-          type="button"
-          className="flex h-9 items-center gap-1 rounded-md bg-blue-600 px-3 text-[13px] font-semibold text-white hover:bg-blue-700"
-        >
-          <Truck size={14} />
-          입고 등록
-        </button>
       </div>
     </header>
   )
