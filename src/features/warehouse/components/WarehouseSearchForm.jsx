@@ -27,7 +27,7 @@ function SelectField({ value, options, onChange }) {
   )
 }
 
-export default function SupplierSearchForm({
+export default function WarehouseSearchForm({
   filters,
   filterOptions,
   onChange,
@@ -46,23 +46,23 @@ export default function SupplierSearchForm({
 
       <div className="mt-3 grid gap-x-3 gap-y-2.5 md:grid-cols-2 xl:grid-cols-4">
         <label>
-          <FieldLabel>공급업체 코드</FieldLabel>
+          <FieldLabel>창고 코드</FieldLabel>
 
           <input
-            value={filters.supplierCode}
-            onChange={(event) => onChange("supplierCode", event.target.value)}
-            placeholder="예: SUP-001"
+            value={filters.warehouseCode}
+            onChange={(event) => onChange("warehouseCode", event.target.value)}
+            placeholder="예: WH-001"
             className={INPUT_CLASS_NAME}
           />
         </label>
 
         <label>
-          <FieldLabel>공급업체명</FieldLabel>
+          <FieldLabel>창고명</FieldLabel>
 
           <input
-            value={filters.supplierName}
-            onChange={(event) => onChange("supplierName", event.target.value)}
-            placeholder="업체명 입력"
+            value={filters.warehouseName}
+            onChange={(event) => onChange("warehouseName", event.target.value)}
+            placeholder="창고명 입력"
             className={INPUT_CLASS_NAME}
           />
         </label>
@@ -73,18 +73,18 @@ export default function SupplierSearchForm({
           <input
             value={filters.manager}
             onChange={(event) => onChange("manager", event.target.value)}
-            placeholder="담당자 성명"
+            placeholder="성명 입력"
             className={INPUT_CLASS_NAME}
           />
         </label>
 
         <label>
-          <FieldLabel>거래 상태</FieldLabel>
+          <FieldLabel>사용 여부</FieldLabel>
 
           <SelectField
-            value={filters.tradeStatus}
-            options={filterOptions.tradeStatuses}
-            onChange={(event) => onChange("tradeStatus", event.target.value)}
+            value={filters.activeStatus}
+            options={filterOptions.activeStatuses}
+            onChange={(event) => onChange("activeStatus", event.target.value)}
           />
         </label>
       </div>

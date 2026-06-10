@@ -6,11 +6,11 @@ import {
 } from "@/features/product/data/productCreateOptions"
 
 const INPUT_CLASS_NAME =
-  "h-9 w-full rounded-md border border-slate-200 bg-white px-3 text-[11px] text-slate-600 outline-none transition placeholder:text-slate-300 focus:border-blue-400 focus:ring-2 focus:ring-blue-100"
+  "h-10 w-full rounded-md border border-slate-200 bg-white px-3 text-[14px] text-slate-600 outline-none transition placeholder:text-slate-300 focus:border-blue-400 focus:ring-2 focus:ring-blue-100"
 
 function FieldLabel({ children, required = false }) {
   return (
-    <span className="mb-1.5 block text-[10px] font-semibold text-slate-700">
+    <span className="mb-1 block text-[13px] font-semibold text-slate-700">
       {children}
 
       {required && <strong className="ml-0.5 text-rose-500">*</strong>}
@@ -49,7 +49,7 @@ function ProductImageField({ imageFile, imagePreviewUrl, onChange, onRemove }) {
     <div>
       <FieldLabel>품목 이미지</FieldLabel>
 
-      <label className="flex min-h-[255px] cursor-pointer flex-col items-center justify-center rounded-lg border border-dashed border-slate-200 bg-slate-50/40 px-4 text-center transition hover:border-blue-300 hover:bg-blue-50/40">
+      <label className="flex min-h-[235px] cursor-pointer flex-col items-center justify-center rounded-lg border border-dashed border-slate-200 bg-slate-50/40 px-4 text-center transition hover:border-blue-300 hover:bg-blue-50/40">
         <input
           type="file"
           accept="image/png,image/jpeg"
@@ -118,13 +118,13 @@ export default function ProductBasicForm({
   onImageRemove,
 }) {
   return (
-    <section className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
-      <h2 className="border-l-[3px] border-blue-500 pl-2 text-[13px] font-bold text-slate-800">
+    <section className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
+      <h2 className="border-l-[3px] border-blue-500 pl-2 text-[15px] font-bold text-slate-800">
         품목 기본정보
       </h2>
 
-      <div className="mt-5 grid gap-5 xl:grid-cols-[1fr_255px]">
-        <div className="grid gap-x-5 gap-y-4 md:grid-cols-2">
+      <div className="mt-3 grid gap-3 xl:grid-cols-[1fr_255px]">
+        <div className="grid gap-x-3 gap-y-3 md:grid-cols-2">
           <TextField
             label="품목 코드"
             required
@@ -195,7 +195,7 @@ export default function ProductBasicForm({
           <fieldset>
             <FieldLabel>사용 여부</FieldLabel>
 
-            <div className="flex h-9 items-center gap-4 text-[11px] text-slate-600">
+            <div className="flex h-9 items-center gap-4 text-[14px] text-slate-600">
               <label className="flex items-center gap-1.5">
                 <input
                   type="radio"
@@ -228,7 +228,7 @@ export default function ProductBasicForm({
               onChange={(event) => onChange("description", event.target.value)}
               placeholder="상세 규격이나 보관 주의사항 등을 입력하세요"
               rows={4}
-              className="w-full resize-none rounded-md border border-slate-200 bg-white px-3 py-2 text-[11px] text-slate-600 outline-none transition placeholder:text-slate-300 focus:border-blue-400 focus:ring-2 focus:ring-blue-100"
+              className="w-full resize-none rounded-md border border-slate-200 bg-white px-3 py-2 text-[14px] text-slate-600 outline-none transition placeholder:text-slate-300 focus:border-blue-400 focus:ring-2 focus:ring-blue-100"
             />
           </label>
         </div>

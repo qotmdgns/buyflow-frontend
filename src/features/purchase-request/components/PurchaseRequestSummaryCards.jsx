@@ -20,7 +20,7 @@ export default function PurchaseRequestSummaryCards({
   onSelect,
 }) {
   return (
-    <section className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
+    <section className="mt-3 grid gap-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
       {summaryItems.map((item) => {
         const isActive = activeStatus === item.status
 
@@ -30,15 +30,15 @@ export default function PurchaseRequestSummaryCards({
             type="button"
             onClick={() => onSelect(item.status)}
             aria-pressed={isActive}
-            className={`rounded-md border-2 bg-white px-4 py-3 text-left shadow-sm transition hover:-translate-y-0.5 hover:shadow ${
+            className={`rounded-md border-2 bg-white px-3 py-3 text-left shadow-sm transition hover:-translate-y-0.5 hover:shadow ${
               toneStyles[item.tone]
             } ${isActive ? "ring-2 ring-slate-200 ring-offset-1" : ""}`}
           >
-            <span className="block text-[10px] font-semibold">
+            <span className="block text-[13px] font-semibold">
               {item.label}
             </span>
 
-            <strong className="mt-1 block text-[20px] leading-none">
+            <strong className="mt-1 block text-[22px] leading-none">
               {String(summary[item.key] ?? 0).padStart(2, "0")}
             </strong>
           </button>

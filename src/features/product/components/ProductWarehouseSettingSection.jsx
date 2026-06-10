@@ -2,7 +2,7 @@ import { CircleAlert, Plus, Trash2 } from "lucide-react"
 import { warehouseOptions } from "@/features/product/data/productCreateOptions"
 
 const INPUT_CLASS_NAME =
-  "h-8 w-full rounded-md border border-slate-200 bg-white px-3 text-[10px] text-slate-600 outline-none transition focus:border-blue-400 focus:ring-2 focus:ring-blue-100"
+  "h-9 w-full rounded-md border border-slate-200 bg-white px-3 text-[13px] text-slate-600 outline-none transition focus:border-blue-400 focus:ring-2 focus:ring-blue-100"
 
 export default function ProductWarehouseSettingSection({
   settings,
@@ -13,22 +13,22 @@ export default function ProductWarehouseSettingSection({
   return (
     <section className="mt-4 rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
       <div className="flex items-center justify-between gap-3">
-        <h2 className="border-l-[3px] border-blue-500 pl-2 text-[13px] font-bold text-slate-800">
+        <h2 className="border-l-[3px] border-blue-500 pl-2 text-[15px] font-bold text-slate-800">
           창고별 안전재고 설정
         </h2>
 
         <button
           type="button"
           onClick={onAdd}
-          className="flex h-8 items-center gap-1 rounded-md border border-slate-200 bg-white px-3 text-[10px] font-semibold text-slate-600 transition hover:bg-slate-50"
+          className="flex h-9 items-center gap-1.5 rounded-md border border-slate-200 bg-white px-3 text-[13px] font-semibold text-slate-600 transition hover:bg-slate-50"
         >
           <Plus size={13} />
           창고별 기준 추가
         </button>
       </div>
 
-      <div className="mt-4 overflow-x-auto rounded-md border border-slate-200">
-        <table className="w-full min-w-[760px] text-left text-[10px]">
+      <div className="mt-3 overflow-x-auto rounded-md border border-slate-200">
+        <table className="w-full min-w-[760px] text-left text-[13px]">
           <thead className="bg-slate-50 text-slate-500">
             <tr>
               <th className="px-3 py-2.5 font-medium">창고명</th>
@@ -137,7 +137,7 @@ export default function ProductWarehouseSettingSection({
         </table>
       </div>
 
-      <div className="mt-3 flex items-center gap-2 rounded-md border border-blue-100 bg-blue-50/60 px-3 py-2 text-[10px] text-slate-500">
+      <div className="mt-3 flex items-center gap-2 rounded-md border border-blue-100 bg-blue-50/60 px-3 py-2 text-[12px] text-slate-500">
         <CircleAlert size={13} className="shrink-0 text-blue-500" />
         창고별로 설정한 안전재고는 기본 안전재고 설정값보다 우선하여 적용됩니다.
         재주문 기준 수량 도달 시 시스템 알림이 발생합니다.

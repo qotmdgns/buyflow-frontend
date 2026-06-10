@@ -29,7 +29,7 @@ const menuGroups = [
     items: [
       { label: "품목 관리", href: "/products", icon: Package },
       { label: "공급업체 관리", href: "/suppliers", icon: Building2 },
-      { label: "창고 관리", href: "#", icon: Warehouse },
+      { label: "창고 관리", href: "/warehouses", icon: Warehouse },
     ],
   },
   {
@@ -81,10 +81,10 @@ export default function Sidebar() {
         {menuGroups.map((group, groupIndex) => (
           <div
             key={`${group.label}-${groupIndex}`}
-            className={groupIndex ? "mt-4" : ""}
+            className={groupIndex ? "mt-3" : ""}
           >
             {group.label && (
-              <p className="px-4 pb-2 text-[10px] font-bold text-slate-400">
+              <p className="px-4 pb-1 text-[12px] font-bold text-slate-400">
                 {group.label}
               </p>
             )}
@@ -99,7 +99,7 @@ export default function Sidebar() {
                   <Link
                     key={label}
                     href={href}
-                    className={`flex h-10 items-center gap-3 border-r-2 px-4 text-[12px] transition ${
+                    className={`flex h-9 items-center gap-2.5 border-r-2 px-4 text-[13px] transition ${
                       active
                         ? "border-blue-600 bg-blue-50 font-semibold text-blue-600"
                         : "border-transparent text-slate-500 hover:bg-slate-50 hover:text-slate-800"
@@ -122,11 +122,11 @@ export default function Sidebar() {
           </span>
 
           <div className="min-w-0 flex-1">
-            <p className="truncate text-[12px] font-semibold text-slate-700">
+            <p className="truncate text-[13px] font-semibold text-slate-700">
               김철수 대리
             </p>
 
-            <p className="text-[10px] text-emerald-500">● 물류운영팀</p>
+            <p className="text-[12px] text-emerald-500">● 물류운영팀</p>
           </div>
 
           <LogOut size={14} className="text-slate-400" />

@@ -17,7 +17,7 @@ export default function useProductManagement() {
 
   const [products, setProducts] = useState([])
   const [pagination, setPagination] = useState(DEFAULT_PAGINATION)
-  const [pageSize, setPageSize] = useState(10)
+  const [pageSize, setPageSize] = useState(15)
 
   const [filterOptions, setFilterOptions] = useState(DEFAULT_FILTER_OPTIONS)
 

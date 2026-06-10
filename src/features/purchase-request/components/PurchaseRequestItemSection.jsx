@@ -3,7 +3,7 @@ import { formatWon } from "@/features/purchase-request/utils/purchaseRequestUtil
 
 function EmptyItems() {
   return (
-    <div className="flex min-h-36 items-center justify-center border-t border-slate-100 text-[11px] text-slate-400">
+    <div className="flex min-h-36 items-center justify-center border-t border-slate-100 text-[14px] text-slate-400">
       품목 추가 버튼을 눌러 구매 요청 품목을 선택해 주세요.
     </div>
   )
@@ -17,12 +17,12 @@ export default function PurchaseRequestItemSection({
   onRemoveItem,
 }) {
   return (
-    <section className="mt-4 overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm">
-      <div className="flex items-center justify-between border-b border-slate-100 px-4 py-3">
+    <section className="mt-3 overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm">
+      <div className="flex items-center justify-between border-b border-slate-100 px-3 py-2.5">
         <div className="flex items-center gap-2">
           <span className="h-4 w-1 rounded-full bg-blue-600" />
 
-          <h2 className="text-[13px] font-bold text-slate-800">
+          <h2 className="text-[15px] font-bold text-slate-800">
             구매 요청 품목
           </h2>
         </div>
@@ -30,7 +30,7 @@ export default function PurchaseRequestItemSection({
         <button
           type="button"
           onClick={onOpenItemModal}
-          className="flex h-8 items-center gap-1 rounded-md bg-blue-600 px-3 text-[11px] font-semibold text-white transition hover:bg-blue-700"
+          className="flex h-9 items-center gap-1.5 rounded-md bg-blue-600 px-3 text-[13px] font-semibold text-white transition hover:bg-blue-700"
         >
           <Plus size={13} />
           품목 추가
@@ -41,7 +41,7 @@ export default function PurchaseRequestItemSection({
         <EmptyItems />
       ) : (
         <div className="overflow-x-auto">
-          <table className="w-full min-w-[950px] text-left text-[10px]">
+          <table className="w-full min-w-[1050px] text-left text-[13px]">
             <thead className="bg-slate-50 text-slate-500">
               <tr>
                 {[
@@ -57,7 +57,7 @@ export default function PurchaseRequestItemSection({
                 ].map((heading) => (
                   <th
                     key={heading || "actions"}
-                    className="whitespace-nowrap px-4 py-3 font-medium"
+                    className="whitespace-nowrap px-3 py-2.5 font-medium"
                   >
                     {heading}
                   </th>
@@ -71,25 +71,25 @@ export default function PurchaseRequestItemSection({
                   key={item.id}
                   className="border-t border-slate-100 text-slate-600 hover:bg-slate-50/60"
                 >
-                  <td className="whitespace-nowrap px-4 py-3 font-medium text-blue-600">
+                  <td className="whitespace-nowrap px-3 py-2.5 font-medium text-blue-600">
                     {item.code}
                   </td>
 
-                  <td className="min-w-48 px-4 py-3 font-medium text-slate-700">
+                  <td className="min-w-48 px-3 py-2.5 font-medium text-slate-700">
                     {item.name}
                   </td>
 
-                  <td className="whitespace-nowrap px-4 py-3">
+                  <td className="whitespace-nowrap px-3 py-2.5">
                     {item.category}
                   </td>
 
-                  <td className="whitespace-nowrap px-4 py-3 text-slate-500">
+                  <td className="whitespace-nowrap px-3 py-2.5 text-slate-500">
                     {item.spec}
                   </td>
 
-                  <td className="whitespace-nowrap px-4 py-3">{item.unit}</td>
+                  <td className="whitespace-nowrap px-3 py-2.5">{item.unit}</td>
 
-                  <td className="px-4 py-3">
+                  <td className="px-3 py-2.5">
                     <input
                       type="number"
                       min="1"
@@ -97,19 +97,19 @@ export default function PurchaseRequestItemSection({
                       onChange={(event) =>
                         onChangeQuantity(item.id, event.target.value)
                       }
-                      className="h-8 w-20 rounded-md border border-slate-200 px-2 text-right text-[11px] outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100"
+                      className="h-9 w-20 rounded-md border border-slate-200 px-2 text-right text-[13px] outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100"
                     />
                   </td>
 
-                  <td className="whitespace-nowrap px-4 py-3 text-right">
+                  <td className="whitespace-nowrap px-3 py-2.5 text-right">
                     {formatWon(item.unitPrice)}
                   </td>
 
-                  <td className="whitespace-nowrap px-4 py-3 text-right font-semibold text-slate-700">
+                  <td className="whitespace-nowrap px-3 py-2.5 text-right font-semibold text-slate-700">
                     {formatWon(item.unitPrice * item.quantity)}
                   </td>
 
-                  <td className="px-4 py-3 text-right">
+                  <td className="px-3 py-2.5 text-right">
                     <button
                       type="button"
                       onClick={() => onRemoveItem(item.id)}
@@ -126,15 +126,15 @@ export default function PurchaseRequestItemSection({
         </div>
       )}
 
-      <div className="flex flex-wrap items-center justify-between gap-3 border-t border-slate-100 px-4 py-4">
-        <p className="text-[11px] text-slate-500">
+      <div className="flex flex-wrap items-center justify-between gap-3 border-t border-slate-100 px-4 py-3">
+        <p className="text-[13px] text-slate-500">
           총 품목 수
           <strong className="ml-1 text-blue-600">{items.length}건</strong>
         </p>
 
-        <p className="text-[12px] font-semibold text-slate-700">
+        <p className="text-[14px] font-semibold text-slate-700">
           총 요청 금액
-          <strong className="ml-2 text-[20px] text-blue-600">
+          <strong className="ml-2 text-[22px] text-blue-600">
             {formatWon(totalAmount)}
           </strong>
         </p>

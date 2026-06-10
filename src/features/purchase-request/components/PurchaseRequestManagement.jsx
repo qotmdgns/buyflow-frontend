@@ -44,11 +44,11 @@ export default function PurchaseRequestManagement() {
   }
 
   return (
-    <div className="mx-auto max-w-[1500px]">
-      <header className="mb-5">
-        <h1 className="text-[18px] font-bold text-slate-900">구매 요청 목록</h1>
+    <div className="w-full">
+      <header className="mb-3">
+        <h1 className="text-[22px] font-bold text-slate-900">구매 요청 목록</h1>
 
-        <p className="mt-1 text-[11px] text-slate-400">
+        <p className="mt-1 text-[13px] text-slate-400">
           등록된 구매 요청을 조회하고 진행 상태를 확인할 수 있습니다.
         </p>
       </header>
@@ -67,9 +67,9 @@ export default function PurchaseRequestManagement() {
         onSelect={selectSummaryStatus}
       />
 
-      <section className="mt-5">
+      <section className="mt-3">
         <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
-          <p className="text-[12px] font-semibold text-slate-700">
+          <p className="text-[14px] font-semibold text-slate-700">
             검색 결과
             <span className="ml-1 text-slate-400">
               (총 {pagination.totalElements}건)
@@ -80,7 +80,7 @@ export default function PurchaseRequestManagement() {
             <button
               type="button"
               onClick={handleDownload}
-              className="flex h-9 items-center gap-1 rounded-md border border-slate-200 bg-white px-3 text-[11px] font-semibold text-slate-500 transition hover:bg-slate-50"
+              className="flex h-10 items-center gap-1.5 rounded-md border border-slate-200 bg-white px-3 text-[13px] font-semibold text-slate-500 transition hover:bg-slate-50"
             >
               <Download size={13} />
               엑셀 다운로드
@@ -88,7 +88,7 @@ export default function PurchaseRequestManagement() {
 
             <Link
               href="/purchase-requests/new"
-              className="flex h-9 items-center gap-1 rounded-md bg-blue-600 px-3 text-[11px] font-semibold text-white transition hover:bg-blue-700"
+              className="flex h-10 items-center gap-1.5 rounded-md bg-blue-600 px-3 text-[13px] font-semibold text-white transition hover:bg-blue-700"
             >
               <Plus size={14} />
               신규 구매 요청

@@ -18,7 +18,7 @@ function PriorityBadge({ priority }) {
 
   return (
     <span
-      className={`inline-flex rounded-full border px-2 py-0.5 text-[9px] font-semibold ${
+      className={`inline-flex rounded-full border px-2.5 py-1 text-[12px] font-semibold ${
         isUrgent
           ? "border-rose-200 bg-rose-50 text-rose-500"
           : "border-slate-200 bg-white text-slate-500"
@@ -32,7 +32,7 @@ function PriorityBadge({ priority }) {
 function StatusBadge({ status }) {
   return (
     <span
-      className={`inline-flex rounded-full border px-2 py-0.5 text-[9px] font-semibold ${
+      className={`inline-flex rounded-full border px-2.5 py-1 text-[12px] font-semibold ${
         statusStyles[status] ?? "border-slate-200 bg-slate-50 text-slate-500"
       }`}
     >
@@ -46,7 +46,7 @@ function TableMessage({ children, isError = false }) {
     <tr>
       <td
         colSpan={12}
-        className={`h-64 text-center text-[11px] ${
+        className={`h-52 text-center text-[14px] ${
           isError ? "text-rose-500" : "text-slate-400"
         }`}
       >
@@ -67,10 +67,10 @@ export default function PurchaseRequestTable({
 }) {
   return (
     <div className="overflow-x-auto">
-      <table className="w-full min-w-[1280px] text-left text-[10px]">
+      <table className="w-full min-w-[1400px] text-left text-[13px]">
         <thead className="bg-slate-50 text-slate-500">
           <tr>
-            <th className="w-10 px-4 py-3">
+            <th className="w-10 px-3 py-2.5">
               <input
                 type="checkbox"
                 checked={allCurrentRowsSelected}
@@ -83,7 +83,7 @@ export default function PurchaseRequestTable({
             {PURCHASE_REQUEST_TABLE_HEADERS.map((heading) => (
               <th
                 key={heading}
-                className="whitespace-nowrap px-3 py-3 font-medium"
+                className="whitespace-nowrap px-3 py-2.5 font-medium"
               >
                 {heading}
               </th>
@@ -111,7 +111,7 @@ export default function PurchaseRequestTable({
                 key={request.id}
                 className="border-t border-slate-100 text-slate-600 hover:bg-slate-50/60"
               >
-                <td className="px-4 py-3">
+                <td className="px-4 py-2.5">
                   <input
                     type="checkbox"
                     checked={selectedIds.has(request.id)}
@@ -121,7 +121,7 @@ export default function PurchaseRequestTable({
                   />
                 </td>
 
-                <td className="whitespace-nowrap px-3 py-3 font-semibold text-blue-600">
+                <td className="whitespace-nowrap px-3 py-2.5 font-semibold text-blue-600">
                   <Link
                     href={`/purchase-requests/${request.id}`}
                     className="hover:underline"
@@ -130,43 +130,43 @@ export default function PurchaseRequestTable({
                   </Link>
                 </td>
 
-                <td className="min-w-[210px] px-3 py-3 font-medium text-slate-700">
+                <td className="min-w-[210px] px-3 py-2.5 font-medium text-slate-700">
                   {request.title}
                 </td>
 
-                <td className="whitespace-nowrap px-3 py-3">
+                <td className="whitespace-nowrap px-3 py-2.5">
                   {request.requester}
                 </td>
 
-                <td className="whitespace-nowrap px-3 py-3 text-slate-500">
+                <td className="whitespace-nowrap px-3 py-2.5 text-slate-500">
                   {request.department}
                 </td>
 
-                <td className="whitespace-nowrap px-3 py-3">
+                <td className="whitespace-nowrap px-3 py-2.5">
                   {request.requestedAt}
                 </td>
 
-                <td className="whitespace-nowrap px-3 py-3">
+                <td className="whitespace-nowrap px-3 py-2.5">
                   {request.desiredInboundAt}
                 </td>
 
-                <td className="whitespace-nowrap px-3 py-3 text-right">
+                <td className="whitespace-nowrap px-3 py-2.5 text-right">
                   {request.itemCount}건
                 </td>
 
-                <td className="whitespace-nowrap px-3 py-3 text-right font-semibold text-slate-700">
+                <td className="whitespace-nowrap px-3 py-2.5 text-right font-semibold text-slate-700">
                   {formatWon(request.totalAmount)}
                 </td>
 
-                <td className="whitespace-nowrap px-3 py-3">
+                <td className="whitespace-nowrap px-3 py-2.5">
                   <PriorityBadge priority={request.priority} />
                 </td>
 
-                <td className="whitespace-nowrap px-3 py-3">
+                <td className="whitespace-nowrap px-3 py-2.5">
                   <StatusBadge status={request.status} />
                 </td>
 
-                <td className="px-3 py-3 text-slate-400">
+                <td className="px-3 py-2.5 text-slate-400">
                   <button
                     type="button"
                     onClick={() =>

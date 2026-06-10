@@ -33,9 +33,9 @@ export default function ProductCreate() {
   }
 
   return (
-    <div className="mx-auto max-w-[1500px]">
-      <header className="mb-5">
-        <h1 className="text-[18px] font-bold text-slate-900">품목 등록</h1>
+    <div className="w-full">
+      <header className="mb-3">
+        <h1 className="text-[22px] font-bold text-slate-900">품목 등록</h1>
       </header>
 
       <ProductBasicForm
@@ -54,11 +54,11 @@ export default function ProductCreate() {
         onRemove={removeWarehouseSetting}
       />
 
-      <footer className="mt-4 flex justify-end gap-2 border-t border-slate-200 pt-4">
+      <footer className="mt-3 flex justify-end gap-2 border-t border-slate-200 pt-3">
         <button
           type="button"
           onClick={() => router.push("/products")}
-          className="h-9 rounded-md border border-slate-200 bg-white px-5 text-[11px] font-semibold text-slate-500 transition hover:bg-slate-50"
+          className="h-10 rounded-md border border-slate-200 bg-white px-5 text-[13px] font-semibold text-slate-500 transition hover:bg-slate-50"
         >
           취소
         </button>
@@ -67,7 +67,7 @@ export default function ProductCreate() {
           type="button"
           onClick={handleSave}
           disabled={isSaving}
-          className="flex h-9 items-center gap-1 rounded-md bg-blue-600 px-5 text-[11px] font-semibold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-blue-300"
+          className="flex h-10 items-center gap-1.5 rounded-md bg-blue-600 px-5 text-[13px] font-semibold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-blue-300"
         >
           <Save size={13} />
 
