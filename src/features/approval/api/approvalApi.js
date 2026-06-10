@@ -163,3 +163,167 @@ export async function requestApprovalCancellation(approvalId) {
 
   return parseResponse(response, "요청 취소 처리에 실패했습니다.")
 }
+
+function includesKeyword(value, keyword) {
+  return String(value ?? "")
+    .toLowerCase()
+    .includes(keyword.trim().toLowerCase())
+}
+
+function isWithinRange(value, from, to) {
+  if (from && value < from) return false
+  if (to && value > to) return false
+
+  return true
+}
+
+function calculateApprovalTotalAmount(items = []) {
+  return items.reduce(
+    (total, item) => total + Number(item.expectedAmount ?? 0),
+    0,
+  )
+}
+
+function toApprovalListItem(approval) {
+  return {
+    approvalId: approval.approvalId,
+    requestId: approval.requestId,
+    requestNumber: approval.requestNumber,
+    title: approval.title,
+    requester: approval.requester?.name ?? "",
+    department: approval.requestDepartment?.name ?? "",
+    requestedAt: approval.requestedAt,
+    desiredInboundAt: approval.desiredInboundAt,
+    totalAmount: calculateApprovalTotalAmount(approval.items),
+    priority: approval.priorityLabel,
+    requestStatus: approval.requestStatus,
+    requestStatusLabel: approval.requestStatusLabel,
+    approvalStep: approval.currentStep?.stepLabel ?? "-",
+    approver: approval.currentStep?.approver
+      ? `${approval.currentStep.approver.name} ${approval.currentStep.approver.position}`
+      : "-",
+  }
+}
+
+function filterMockApprovals(params = {}) {
+  const {
+    requestNumber = "",
+    title = "",
+    requester = "",
+    department = "",
+    status = "전체",
+    requestedFrom = "",
+    requestedTo = "",
+  } = params
+
+  return Array.from(mockStore.values())
+    .map(toApprovalListItem)
+    .filter((approval) => {
+      const matchesRequestNumber =
+        !requestNumber || includesKeyword(approval.requestNumber, requestNumber)
+
+      const matchesTitle = !title || includesKeyword(approval.title, title)
+
+      const matchesRequester =
+        !requester || includesKeyword(approval.requester, requester)
+
+      const matchesDepartment =
+        !department || includesKeyword(approval.department, department)
+
+      const matchesStatus =
+        status === "전체" || approval.requestStatus === status
+
+      const matchesRequestedAt = isWithinRange(
+        approval.requestedAt,
+        requestedFrom,
+        requestedTo,
+      )
+
+      return (
+        matchesRequestNumber &&
+        matchesTitle &&
+        matchesRequester &&
+        matchesDepartment &&
+        matchesStatus &&
+        matchesRequestedAt
+      )
+    })
+    .sort((a, b) => b.approvalId - a.approvalId)
+}
+
+function getMockApprovals(params = {}) {
+  const page = Number(params.page ?? 1)
+  const size = Number(params.size ?? 10)
+
+  const filteredApprovals = filterMockApprovals(params)
+
+  const totalElements = filteredApprovals.length
+  const totalPages = Math.max(1, Math.ceil(totalElements / size))
+  const safePage = Math.min(Math.max(page, 1), totalPages)
+  const offset = (safePage - 1) * size
+
+  return {
+    items: filteredApprovals.slice(offset, offset + size),
+    pagination: {
+      page: safePage,
+      size,
+      totalElements,
+      totalPages,
+    },
+  }
+}
+
+function createApprovalListQueryString(params = {}) {
+  const query = new URLSearchParams()
+
+  Object.entries(params).forEach(([key, value]) => {
+    if (value === "" || value === "전체") {
+      return
+    }
+
+    // 프론트엔드는 1페이지부터 시작하고,
+    // Spring Pageable은 0페이지부터 시작합니다.
+    query.set(
+      key,
+      key === "page" ? String(Math.max(Number(value) - 1, 0)) : String(value),
+    )
+  })
+
+  return query.toString()
+}
+
+function normalizeApprovalListResponse(data) {
+  if (Array.isArray(data.items) && data.pagination) {
+    return data
+  }
+
+  return {
+    items: data.content ?? [],
+    pagination: {
+      page: (data.number ?? 0) + 1,
+      size: data.size ?? 10,
+      totalElements: data.totalElements ?? 0,
+      totalPages: Math.max(data.totalPages ?? 1, 1),
+    },
+  }
+}
+
+export async function fetchApprovals(params = {}) {
+  if (USE_MOCK) {
+    await wait(150)
+
+    return getMockApprovals(params)
+  }
+
+  const query = createApprovalListQueryString(params)
+
+  const response = await fetch(`${API_BASE_URL}/api/approvals?${query}`, {
+    cache: "no-store",
+  })
+
+  if (!response.ok) {
+    throw new Error("승인 관리 목록을 불러오지 못했습니다.")
+  }
+
+  return normalizeApprovalListResponse(await response.json())
+}

@@ -1,6 +1,9 @@
-import { redirect } from "next/navigation"
+import ApprovalListManagement from "@/features/approval/components/ApprovalListManagement"
+
+export const metadata = {
+  title: "승인 관리 목록 | BuyFlow ERP",
+}
 
 export default function ApprovalsPage() {
-  // 승인 목록 화면을 만들기 전까지 샘플 승인 상세 화면으로 연결합니다.
-  redirect("/approvals/1")
+  return <ApprovalListManagement />
 }

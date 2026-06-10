@@ -30,8 +30,34 @@ function TableMessage({ children, isError = false }) {
 }
 
 function WarehouseRow({ warehouse, onDetail, onEdit }) {
+  function openDetail() {
+    onDetail(warehouse)
+  }
+
+  function handleRowKeyDown(event) {
+    if (event.key === "Enter" || event.key === " ") {
+      event.preventDefault()
+      openDetail()
+    }
+  }
+
+  function handleEditClick(event) {
+    // 수정 버튼의 클릭 이벤트가 행까지 전달되는 것을 막습니다.
+    // 이 처리가 없으면 상세 Modal과 수정 Modal이 연속으로 열릴 수 있습니다.
+    event.stopPropagation()
+
+    onEdit(warehouse)
+  }
+
   return (
-    <tr className="border-t border-slate-100 text-slate-600 transition hover:bg-slate-50/70">
+    <tr
+      role="button"
+      tabIndex={0}
+      aria-label={`${warehouse.name} 창고 상세 정보 보기`}
+      onClick={openDetail}
+      onKeyDown={handleRowKeyDown}
+      className="cursor-pointer border-t border-slate-100 text-slate-600 transition hover:bg-blue-50/40 focus:bg-blue-50/40 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-200"
+    >
       <td className="whitespace-nowrap px-3 py-2.5 font-semibold text-slate-700">
         {warehouse.type}
       </td>
@@ -59,23 +85,13 @@ function WarehouseRow({ warehouse, onDetail, onEdit }) {
       </td>
 
       <td className="whitespace-nowrap px-3 py-2.5">
-        <div className="flex items-center gap-2.5">
-          <button
-            type="button"
-            onClick={() => onDetail(warehouse)}
-            className="text-[13px] font-semibold text-blue-600 hover:underline"
-          >
-            상세
-          </button>
-
-          <button
-            type="button"
-            onClick={() => onEdit(warehouse)}
-            className="text-[13px] font-semibold text-slate-500 hover:text-blue-600 hover:underline"
-          >
-            수정
-          </button>
-        </div>
+        <button
+          type="button"
+          onClick={handleEditClick}
+          className="text-[13px] font-semibold text-slate-500 hover:text-blue-600 hover:underline"
+        >
+          수정
+        </button>
       </td>
     </tr>
   )

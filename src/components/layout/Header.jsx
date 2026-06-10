@@ -55,6 +55,21 @@ const breadcrumbRules = [
     ],
   },
   {
+    matches: (pathname) => /^\/approvals\/[^/]+$/.test(pathname),
+    crumbs: [
+      { label: "구매 및 입고", href: "/approvals" },
+      { label: "승인 관리", href: "/approvals" },
+      { label: "승인 상세" },
+    ],
+  },
+  {
+    path: "/approvals",
+    crumbs: [
+      { label: "구매 및 입고", href: "/approvals" },
+      { label: "승인 관리" },
+    ],
+  },
+  {
     path: "/approvals",
     crumbs: [
       { label: "구매 및 입고", href: "/approvals" },
