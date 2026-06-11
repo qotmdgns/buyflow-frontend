@@ -18,7 +18,7 @@ function TableMessage({ children, isError = false }) {
   return (
     <tr>
       <td
-        colSpan={8}
+        colSpan={7}
         className={`h-52 text-center text-[14px] ${
           isError ? "text-rose-500" : "text-slate-400"
         }`}
@@ -29,7 +29,7 @@ function TableMessage({ children, isError = false }) {
   )
 }
 
-function WarehouseRow({ warehouse, onDetail, onEdit }) {
+function WarehouseRow({ warehouse, onDetail }) {
   function openDetail() {
     onDetail(warehouse)
   }
@@ -39,14 +39,6 @@ function WarehouseRow({ warehouse, onDetail, onEdit }) {
       event.preventDefault()
       openDetail()
     }
-  }
-
-  function handleEditClick(event) {
-    // 수정 버튼의 클릭 이벤트가 행까지 전달되는 것을 막습니다.
-    // 이 처리가 없으면 상세 Modal과 수정 Modal이 연속으로 열릴 수 있습니다.
-    event.stopPropagation()
-
-    onEdit(warehouse)
   }
 
   return (
@@ -83,16 +75,6 @@ function WarehouseRow({ warehouse, onDetail, onEdit }) {
       <td className="whitespace-nowrap px-3 py-2.5 text-slate-600">
         {warehouse.registeredAt}
       </td>
-
-      <td className="whitespace-nowrap px-3 py-2.5">
-        <button
-          type="button"
-          onClick={handleEditClick}
-          className="text-[13px] font-semibold text-slate-500 hover:text-blue-600 hover:underline"
-        >
-          수정
-        </button>
-      </td>
     </tr>
   )
 }
@@ -102,7 +84,6 @@ export default function WarehouseTable({
   loading,
   error,
   onDetail,
-  onEdit,
 }) {
   function renderTableBody() {
     if (loading) {
@@ -122,14 +103,13 @@ export default function WarehouseTable({
         key={warehouse.id}
         warehouse={warehouse}
         onDetail={onDetail}
-        onEdit={onEdit}
       />
     ))
   }
 
   return (
     <div className="overflow-x-auto">
-      <table className="w-full min-w-[1050px] text-left text-[13px]">
+      <table className="w-full min-w-[950px] text-left text-[13px]">
         <thead className="bg-slate-50 text-slate-600">
           <tr>
             {WAREHOUSE_TABLE_HEADERS.map((heading) => (

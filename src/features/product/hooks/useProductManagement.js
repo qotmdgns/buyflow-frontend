@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react"
 import {
+  fetchProductById,
   fetchProductFilterOptions,
   fetchProducts,
 } from "@/features/product/api/productApi"
@@ -24,6 +25,9 @@ export default function useProductManagement() {
   const [selectedIds, setSelectedIds] = useState(new Set())
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState("")
+
+  // 선택한 품목의 상세 Modal 데이터
+  const [detailProduct, setDetailProduct] = useState(null)
 
   useEffect(() => {
     let ignore = false
@@ -59,7 +63,9 @@ export default function useProductManagement() {
           size: pageSize,
         })
 
-        if (ignore) return
+        if (ignore) {
+          return
+        }
 
         setProducts(data.items)
         setPagination(data.pagination)
@@ -156,6 +162,21 @@ export default function useProductManagement() {
     })
   }
 
+  async function openProductDetail(product) {
+    try {
+      const detail = await fetchProductById(product.id)
+      setDetailProduct(detail)
+    } catch (requestError) {
+      window.alert(
+        requestError.message || "품목 상세 정보를 불러오지 못했습니다.",
+      )
+    }
+  }
+
+  function closeProductDetail() {
+    setDetailProduct(null)
+  }
+
   return {
     draftFilters,
     filterOptions,
@@ -166,6 +187,7 @@ export default function useProductManagement() {
     allCurrentRowsSelected,
     loading,
     error,
+    detailProduct,
     updateFilter,
     searchProducts,
     resetFilters,
@@ -173,5 +195,7 @@ export default function useProductManagement() {
     changePageSize,
     toggleAllRows,
     toggleRow,
+    openProductDetail,
+    closeProductDetail,
   }
 }

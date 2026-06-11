@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react"
 import {
+  fetchSupplierById,
   fetchSupplierFilterOptions,
   fetchSuppliers,
 } from "@/features/supplier/api/supplierApi"
@@ -13,12 +14,10 @@ import {
 
 export default function useSupplierManagement() {
   const [draftFilters, setDraftFilters] = useState(DEFAULT_SUPPLIER_FILTERS)
-
   const [appliedFilters, setAppliedFilters] = useState(DEFAULT_SUPPLIER_FILTERS)
 
   const [suppliers, setSuppliers] = useState([])
   const [pagination, setPagination] = useState(DEFAULT_SUPPLIER_PAGINATION)
-
   const [pageSize, setPageSize] = useState(15)
 
   const [filterOptions, setFilterOptions] = useState(
@@ -27,6 +26,7 @@ export default function useSupplierManagement() {
 
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState("")
+  const [detailSupplier, setDetailSupplier] = useState(null)
 
   useEffect(() => {
     let ignore = false
@@ -133,6 +133,21 @@ export default function useSupplierManagement() {
     }))
   }
 
+  async function openSupplierDetail(supplier) {
+    try {
+      const detail = await fetchSupplierById(supplier.id)
+      setDetailSupplier(detail)
+    } catch (requestError) {
+      window.alert(
+        requestError.message || "공급업체 상세 정보를 불러오지 못했습니다.",
+      )
+    }
+  }
+
+  function closeSupplierDetail() {
+    setDetailSupplier(null)
+  }
+
   return {
     draftFilters,
     filterOptions,
@@ -141,10 +156,13 @@ export default function useSupplierManagement() {
     pageSize,
     loading,
     error,
+    detailSupplier,
     updateFilter,
     searchSuppliers,
     resetFilters,
     movePage,
     changePageSize,
+    openSupplierDetail,
+    closeSupplierDetail,
   }
 }

@@ -45,7 +45,6 @@ export const WAREHOUSE_TABLE_HEADERS = [
   "담당자",
   "연락처",
   "등록일",
-  "관리",
 ]
 
 export function buildWarehouseAddress(baseAddress, detailAddress) {

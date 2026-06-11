@@ -2,6 +2,7 @@
 
 import Link from "next/link"
 import { Download, Plus } from "lucide-react"
+import ProductDetailModal from "@/features/product/components/ProductDetailModal"
 import ProductPagination from "@/features/product/components/ProductPagination"
 import ProductSearchForm from "@/features/product/components/ProductSearchForm"
 import ProductTable from "@/features/product/components/ProductTable"
@@ -19,6 +20,7 @@ export default function ProductManagement() {
     allCurrentRowsSelected,
     loading,
     error,
+    detailProduct,
     updateFilter,
     searchProducts,
     resetFilters,
@@ -26,13 +28,12 @@ export default function ProductManagement() {
     changePageSize,
     toggleAllRows,
     toggleRow,
+    openProductDetail,
+    closeProductDetail,
   } = useProductManagement()
 
-  function openProductDetail(product) {
-    window.alert(`${product.name} 상세 화면은 추후 연결합니다.`)
-  }
-
   function openProductEdit(product) {
+    closeProductDetail()
     window.alert(`${product.name} 수정 화면은 추후 연결합니다.`)
   }
 
@@ -105,6 +106,13 @@ export default function ProductManagement() {
           />
         </div>
       </section>
+
+      <ProductDetailModal
+        open={Boolean(detailProduct)}
+        product={detailProduct}
+        onClose={closeProductDetail}
+        onEdit={openProductEdit}
+      />
     </div>
   )
 }

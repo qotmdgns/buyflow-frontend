@@ -1,5 +1,6 @@
 "use client"
 
+import SupplierDetailModal from "@/features/supplier/components/SupplierDetailModal"
 import SupplierPagination from "@/features/supplier/components/SupplierPagination"
 import SupplierSearchForm from "@/features/supplier/components/SupplierSearchForm"
 import SupplierTable from "@/features/supplier/components/SupplierTable"
@@ -14,18 +15,19 @@ export default function SupplierManagement() {
     pageSize,
     loading,
     error,
+    detailSupplier,
     updateFilter,
     searchSuppliers,
     resetFilters,
     movePage,
     changePageSize,
+    openSupplierDetail,
+    closeSupplierDetail,
   } = useSupplierManagement()
 
-  function openSupplierDetail(supplier) {
-    window.alert(`${supplier.name} 상세 화면은 추후 연결합니다.`)
-  }
-
   function openSupplierEdit(supplier) {
+    closeSupplierDetail()
+
     window.alert(`${supplier.name} 수정 화면은 추후 연결합니다.`)
   }
 
@@ -61,7 +63,6 @@ export default function SupplierManagement() {
           loading={loading}
           error={error}
           onDetail={openSupplierDetail}
-          onEdit={openSupplierEdit}
         />
 
         <SupplierPagination
@@ -71,6 +72,13 @@ export default function SupplierManagement() {
           onMovePage={movePage}
         />
       </section>
+
+      <SupplierDetailModal
+        open={Boolean(detailSupplier)}
+        supplier={detailSupplier}
+        onClose={closeSupplierDetail}
+        onEdit={openSupplierEdit}
+      />
     </div>
   )
 }

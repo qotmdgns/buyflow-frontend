@@ -91,7 +91,6 @@ export default function WarehouseManagement() {
           loading={loading}
           error={error}
           onDetail={openWarehouseDetail}
-          onEdit={openWarehouseEdit}
         />
 
         <WarehousePagination

@@ -192,5 +192,24 @@ export const mockProducts = Array.from({ length: 128 }, (_, index) => {
     code: `ITM-2024-${String(index + 1).padStart(3, "0")}`,
     ...seed,
     name: repeat ? `${seed.name} ${repeat + 1}` : seed.name,
+
+    // 상세 Modal에서 사용하는 추가 데이터
+    manufacturer: seed.name.split(" ")[0],
+    barcode: `880${String(index + 1).padStart(10, "0")}`,
+    description: `${seed.name} 품목의 기준정보입니다.`,
+
+    // 추후 Oracle DB 연동 시에는 품목별 창고 재고 테이블에서 조회
+    warehouseSettings: [
+      {
+        warehouseId: "WH-001",
+        warehouseName: "인천 메인 물류센터",
+        locationCode: `A-${String((index % 12) + 1).padStart(2, "0")}-${String(
+          (index % 20) + 1,
+        ).padStart(2, "0")}`,
+        currentStock: seed.currentStock,
+        safetyStock: seed.safetyStock,
+        reorderPoint: Math.max(Math.floor(seed.safetyStock * 0.7), 0),
+      },
+    ],
   }
 })
