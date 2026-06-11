@@ -139,3 +139,94 @@ export function downloadInboundCsv(inbounds) {
   document.body.removeChild(link)
   URL.revokeObjectURL(url)
 }
+
+export const EMPTY_INBOUND_FORM = {
+  inboundNumber: "",
+  targetInboundId: "",
+  orderNumber: "",
+  supplierName: "",
+  warehouseName: "",
+  receivedAt: "",
+  receiverName: "김철수",
+  memo: "",
+}
+
+export function getTodayString() {
+  const date = new Date()
+  const year = date.getFullYear()
+  const month = String(date.getMonth() + 1).padStart(2, "0")
+  const day = String(date.getDate()).padStart(2, "0")
+
+  return `${year}-${month}-${day}`
+}
+
+export function createInboundForm() {
+  return {
+    ...EMPTY_INBOUND_FORM,
+    receivedAt: getTodayString(),
+  }
+}
+
+export function createInboundReceiptItem(item) {
+  return {
+    ...item,
+    currentReceivedQuantity: 0,
+  }
+}
+
+export function calculateInboundReceiptSummary(items = []) {
+  return items.reduce(
+    (summary, item) => {
+      const currentReceivedQuantity = Number(item.currentReceivedQuantity ?? 0)
+
+      return {
+        currentReceivedQuantity:
+          summary.currentReceivedQuantity + currentReceivedQuantity,
+
+        afterRemainingQuantity:
+          summary.afterRemainingQuantity +
+          Number(item.remainingQuantity ?? 0) -
+          currentReceivedQuantity,
+      }
+    },
+    {
+      currentReceivedQuantity: 0,
+      afterRemainingQuantity: 0,
+    },
+  )
+}
+
+export function validateInboundReceiptForm(form, items = []) {
+  const errors = {}
+
+  if (!form.targetInboundId) {
+    errors.targetInboundId = "입고 처리할 발주를 선택하세요."
+  }
+
+  if (!form.receivedAt) {
+    errors.receivedAt = "실제 입고일을 입력하세요."
+  }
+
+  if (!String(form.receiverName ?? "").trim()) {
+    errors.receiverName = "입고 담당자를 입력하세요."
+  }
+
+  if (!items.length) {
+    errors.items = "입고 처리할 품목이 없습니다."
+  } else if (
+    items.every((item) => Number(item.currentReceivedQuantity ?? 0) === 0)
+  ) {
+    errors.items = "금회 입고 수량을 1개 이상 입력하세요."
+  } else if (
+    items.some(
+      (item) =>
+        Number(item.currentReceivedQuantity ?? 0) < 0 ||
+        Number(item.currentReceivedQuantity ?? 0) >
+          Number(item.remainingQuantity ?? 0),
+    )
+  ) {
+    errors.items = "금회 입고 수량은 미입고 수량을 초과할 수 없습니다."
+  }
+
+  return errors
+}

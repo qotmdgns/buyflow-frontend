@@ -1,6 +1,7 @@
 "use client"
 
 import Link from "next/link"
+import { useRouter } from "next/navigation"
 import { useMemo } from "react"
 
 import {
@@ -120,6 +121,8 @@ function PageIconButton({ children, label, disabled, onClick }) {
 }
 
 export default function InboundManagement() {
+  const router = useRouter()
+
   const {
     draftFilters,
     activeTab,
@@ -155,6 +158,36 @@ export default function InboundManagement() {
     pagination.page * pagination.size,
     pagination.totalElements,
   )
+
+  function moveToDetail(inboundId) {
+    router.push(`/inbounds/${inboundId}`)
+  }
+
+  function handleRowClick(event, inboundId) {
+    const interactiveElement = event.target.closest?.(
+      "a, button, input, label, select, textarea",
+    )
+
+    // 체크박스, 링크, 버튼 등 별도 기능이 있는 영역을 눌렀다면
+    // 행 클릭 이동을 실행하지 않습니다.
+    if (interactiveElement) {
+      return
+    }
+
+    moveToDetail(inboundId)
+  }
+
+  function handleRowKeyDown(event, inboundId) {
+    // 행 내부의 체크박스나 링크에서 발생한 이벤트는 제외합니다.
+    if (event.target !== event.currentTarget) {
+      return
+    }
+
+    if (event.key === "Enter" || event.key === " ") {
+      event.preventDefault()
+      moveToDetail(inboundId)
+    }
+  }
 
   async function handleDownload() {
     try {
@@ -477,7 +510,12 @@ export default function InboundManagement() {
                 inbounds.map((inbound) => (
                   <tr
                     key={inbound.id}
-                    className={`border-t border-slate-100 text-slate-600 transition hover:bg-blue-50/40 ${
+                    role="link"
+                    tabIndex={0}
+                    aria-label={`${inbound.orderNumber} 입고 상세 화면으로 이동`}
+                    onClick={(event) => handleRowClick(event, inbound.id)}
+                    onKeyDown={(event) => handleRowKeyDown(event, inbound.id)}
+                    className={`cursor-pointer border-t border-slate-100 text-slate-600 transition hover:bg-blue-50/40 focus:bg-blue-50/40 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-200 ${
                       inbound.status === "DELAYED" ? "bg-rose-50/60" : ""
                     }`}
                   >
@@ -486,13 +524,19 @@ export default function InboundManagement() {
                         type="checkbox"
                         checked={selectedIds.has(inbound.id)}
                         onChange={() => toggleRow(inbound.id)}
+                        onClick={(event) => event.stopPropagation()}
                         className="h-3.5 w-3.5 accent-blue-600"
                         aria-label={`${inbound.orderNumber} 선택`}
                       />
                     </td>
 
-                    <td className="whitespace-nowrap px-3 py-3 font-semibold text-slate-700">
-                      {inbound.orderNumber}
+                    <td className="whitespace-nowrap px-3 py-3 font-semibold">
+                      <Link
+                        href={`/inbounds/${inbound.id}`}
+                        className="text-blue-600 hover:underline"
+                      >
+                        {inbound.orderNumber}
+                      </Link>
                     </td>
 
                     <td className="whitespace-nowrap px-3 py-3">
