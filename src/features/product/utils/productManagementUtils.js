@@ -9,7 +9,7 @@ export const DEFAULT_FILTERS = {
 
 export const DEFAULT_PAGINATION = {
   page: 1,
-  size: 10,
+  size: 15,
   totalElements: 0,
   totalPages: 1,
 }

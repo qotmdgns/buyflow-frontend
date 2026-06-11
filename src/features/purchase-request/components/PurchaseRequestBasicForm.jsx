@@ -1,11 +1,11 @@
 import { CalendarDays, FileUp } from "lucide-react"
 
 const INPUT_CLASS_NAME =
-  "h-9 w-full rounded-md border border-slate-200 bg-white px-3 text-[11px] text-slate-600 outline-none transition placeholder:text-slate-300 focus:border-blue-400 focus:ring-2 focus:ring-blue-100 disabled:bg-slate-50 disabled:text-slate-500"
+  "h-10 w-full rounded-md border border-slate-200 bg-white px-3 text-[14px] text-slate-600 outline-none transition placeholder:text-slate-300 focus:border-blue-400 focus:ring-2 focus:ring-blue-100 disabled:bg-slate-50 disabled:text-slate-500"
 
 function FieldLabel({ children, required = false }) {
   return (
-    <span className="mb-1.5 block text-[10px] font-semibold text-slate-600">
+    <span className="mb-1 block text-[13px] font-semibold text-slate-600">
       {children}
       {required && <span className="ml-0.5 text-rose-500">*</span>}
     </span>
@@ -46,15 +46,15 @@ export default function PurchaseRequestBasicForm({
 }) {
   return (
     <section className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
-      <div className="mb-4 flex items-center gap-2">
+      <div className="mb-3 flex items-center gap-2">
         <span className="h-4 w-1 rounded-full bg-blue-600" />
 
-        <h2 className="text-[13px] font-bold text-slate-800">
+        <h2 className="text-[15px] font-bold text-slate-800">
           구매 요청 기본정보
         </h2>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2">
+      <div className="grid gap-3 md:grid-cols-2">
         <TextField
           label="요청 번호"
           required
@@ -86,7 +86,7 @@ export default function PurchaseRequestBasicForm({
           </select>
         </label>
 
-        <div className="grid gap-4 sm:grid-cols-2">
+        <div className="grid gap-3 sm:grid-cols-2">
           <DateField
             label="요청일"
             required
@@ -102,7 +102,7 @@ export default function PurchaseRequestBasicForm({
         </div>
       </div>
 
-      <div className="mt-4">
+      <div className="mt-3">
         <TextField
           label="요청 제목"
           required
@@ -137,7 +137,7 @@ export default function PurchaseRequestBasicForm({
         <label>
           <FieldLabel>첨부파일</FieldLabel>
 
-          <span className="flex h-9 cursor-pointer items-center gap-2 rounded-md border border-dashed border-slate-200 px-3 text-[10px] text-slate-400 hover:border-blue-300 hover:bg-blue-50/40">
+          <span className="flex h-10 cursor-pointer items-center gap-2 rounded-md border border-dashed border-slate-200 px-3 text-[13px] text-slate-400 hover:border-blue-300 hover:bg-blue-50/40">
             <FileUp size={13} />
 
             <span className="truncate">
@@ -162,7 +162,7 @@ export default function PurchaseRequestBasicForm({
           value={form.reason}
           onChange={(event) => onChange("reason", event.target.value)}
           placeholder="구매가 필요한 구체적인 사유를 입력해주세요. (예: 노후 부품 교체 및 예비 부품 확보)"
-          className="min-h-24 w-full resize-y rounded-md border border-slate-200 px-3 py-2.5 text-[11px] text-slate-600 outline-none transition placeholder:text-slate-300 focus:border-blue-400 focus:ring-2 focus:ring-blue-100"
+          className="min-h-24 w-full resize-y rounded-md border border-slate-200 px-3 py-2.5 text-[14px] text-slate-600 outline-none transition placeholder:text-slate-300 focus:border-blue-400 focus:ring-2 focus:ring-blue-100"
         />
       </label>
     </section>

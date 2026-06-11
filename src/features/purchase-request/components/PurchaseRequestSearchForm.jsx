@@ -1,11 +1,11 @@
 import { RefreshCcw, Search } from "lucide-react"
 
 const INPUT_CLASS_NAME =
-  "h-9 w-full rounded-md border border-slate-200 px-3 text-[11px] text-slate-600 outline-none transition placeholder:text-slate-300 focus:border-blue-400 focus:ring-2 focus:ring-blue-100"
+  "h-10 w-full rounded-md border border-slate-200 px-3 text-[14px] text-slate-600 outline-none transition placeholder:text-slate-300 focus:border-blue-400 focus:ring-2 focus:ring-blue-100"
 
 function FieldLabel({ children }) {
   return (
-    <span className="mb-1.5 block text-[10px] font-semibold text-slate-600">
+    <span className="mb-1 block text-[13px] font-semibold text-slate-600">
       {children}
     </span>
   )
@@ -37,7 +37,7 @@ function DateRangeField({ from, to, onFromChange, onToChange }) {
         className={`${INPUT_CLASS_NAME} px-2`}
       />
 
-      <span className="text-center text-[10px] text-slate-300">-</span>
+      <span className="text-center text-[13px] text-slate-300">-</span>
 
       <input
         type="date"
@@ -59,9 +59,9 @@ export default function PurchaseRequestSearchForm({
   return (
     <form
       onSubmit={onSearch}
-      className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm"
+      className="rounded-lg border border-slate-200 bg-white p-3 shadow-sm"
     >
-      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+      <div className="grid gap-x-3 gap-y-2.5 md:grid-cols-2 xl:grid-cols-4">
         <label>
           <FieldLabel>요청 번호</FieldLabel>
 
@@ -148,11 +148,11 @@ export default function PurchaseRequestSearchForm({
         </label>
       </div>
 
-      <div className="mt-4 flex justify-end gap-2 border-t border-slate-100 pt-3">
+      <div className="mt-3 flex justify-end gap-2 border-t border-slate-100 pt-3">
         <button
           type="button"
           onClick={onReset}
-          className="flex h-9 items-center gap-1 rounded-md border border-slate-200 px-3 text-[11px] font-semibold text-slate-500 transition hover:bg-slate-50"
+          className="flex h-10 items-center gap-1.5 rounded-md border border-slate-200 px-4 text-[13px] font-semibold text-slate-500 transition hover:bg-slate-50"
         >
           <RefreshCcw size={13} />
           초기화
@@ -160,7 +160,7 @@ export default function PurchaseRequestSearchForm({
 
         <button
           type="submit"
-          className="flex h-9 items-center gap-1 rounded-md bg-blue-600 px-4 text-[11px] font-semibold text-white transition hover:bg-blue-700"
+          className="flex h-10 items-center gap-1.5 rounded-md bg-blue-600 px-4 text-[13px] font-semibold text-white transition hover:bg-blue-700"
         >
           <Search size={13} />
           검색

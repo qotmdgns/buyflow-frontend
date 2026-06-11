@@ -42,25 +42,25 @@ export default function PurchaseRequestCreate() {
       "작성 중인 내용이 저장되지 않을 수 있습니다, 취소하시겠습니까?",
     )
 
-    if (shouldLevae) {
+    if (shouldLeave) {
       router.push("/purchase-requests")
     }
   }
 
   return (
-    <div className="mx-auto max-w-[1500px]">
-      <header className="mb-4 flex flex-wrap items-start justify-between gap-3">
+    <div className="w-full">
+      <header className="mb-3 flex flex-wrap items-start justify-between gap-3">
         <div>
-          <h1 className="text-[18px] font-bold text-slate-900">
+          <h1 className="text-[22px] font-bold tracking-tight text-slate-900">
             구매 요청 등록
           </h1>
 
-          <p className="mt-1 text-[11px] text-slate-400">
+          <p className="mt-1 text-[13px] text-slate-400">
             새로운 물품 구매를 위한 요청서를 작성합니다.
           </p>
         </div>
 
-        <span className="rounded-full bg-blue-50 px-2.5 py-1 text-[10px] font-semibold text-blue-600">
+        <span className="rounded-full bg-blue-50 px-2.5 py-1 text-[12px] font-semibold text-blue-600">
           작성중
         </span>
       </header>
@@ -80,16 +80,16 @@ export default function PurchaseRequestCreate() {
         onRemoveItem={removeItem}
       />
 
-      <div className="mt-4 flex items-center gap-2 rounded-md border border-slate-200 bg-white px-4 py-3 text-[10px] text-slate-500">
+      <div className="mt-3 flex items-center gap-2 rounded-md border border-slate-200 bg-white px-4 py-3 text-[12px] text-slate-500">
         <CircleAlert size={13} className="shrink-0 text-slate-400" />
         승인 요청 후에는 승인 완료 또는 반려 전까지 내용을 수정할 수 없습니다.
       </div>
 
-      <footer className="mt-4 flex justify-end gap-2">
+      <footer className="mt-3 flex justify-end gap-2">
         <button
           type="button"
-          onClick={() => router.push("/purchase-requests")}
-          className="h-9 rounded-md border border-slate-200 bg-white px-4 text-[11px] font-semibold text-slate-500 transition hover:bg-slate-50"
+          onClick={handleCancel}
+          className="h-10 rounded-md border border-slate-200 bg-white px-4 text-[13px] font-semibold text-slate-500 transition hover:bg-slate-50"
         >
           취소
         </button>
@@ -97,7 +97,7 @@ export default function PurchaseRequestCreate() {
         <button
           type="button"
           onClick={saveDraft}
-          className="h-9 rounded-md border border-blue-200 bg-white px-4 text-[11px] font-semibold text-blue-600 transition hover:bg-blue-50"
+          className="h-10 rounded-md border border-blue-200 bg-white px-4 text-[13px] font-semibold text-blue-600 transition hover:bg-blue-50"
         >
           임시 저장
         </button>
@@ -106,7 +106,7 @@ export default function PurchaseRequestCreate() {
           type="button"
           onClick={submitApproval}
           disabled={isSubmitting}
-          className="h-9 rounded-md bg-blue-600 px-4 text-[11px] font-semibold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-blue-300"
+          className="h-10 rounded-md bg-blue-600 px-4 text-[13px] font-semibold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-blue-300"
         >
           {isSubmitting ? "처리 중..." : "승인 요청"}
         </button>

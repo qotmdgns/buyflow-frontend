@@ -1,6 +1,8 @@
 "use client"
 
+import Link from "next/link"
 import { Download, Plus } from "lucide-react"
+import ProductDetailModal from "@/features/product/components/ProductDetailModal"
 import ProductPagination from "@/features/product/components/ProductPagination"
 import ProductSearchForm from "@/features/product/components/ProductSearchForm"
 import ProductTable from "@/features/product/components/ProductTable"
@@ -18,6 +20,7 @@ export default function ProductManagement() {
     allCurrentRowsSelected,
     loading,
     error,
+    detailProduct,
     updateFilter,
     searchProducts,
     resetFilters,
@@ -25,13 +28,12 @@ export default function ProductManagement() {
     changePageSize,
     toggleAllRows,
     toggleRow,
+    openProductDetail,
+    closeProductDetail,
   } = useProductManagement()
 
-  function openProductDetail(product) {
-    window.alert(`${product.name} 상세 화면은 추후 연결합니다.`)
-  }
-
   function openProductEdit(product) {
+    closeProductDetail()
     window.alert(`${product.name} 수정 화면은 추후 연결합니다.`)
   }
 
@@ -78,11 +80,11 @@ export default function ProductManagement() {
   }
 
   return (
-    <div className="mx-auto max-w-[1500px]">
-      <header className="mb-5">
-        <h1 className="text-[18px] font-bold text-slate-900">품목 관리</h1>
+    <div className="w-full">
+      <header className="mb-3">
+        <h1 className="text-[22px] font-bold text-slate-900">품목 관리</h1>
 
-        <p className="mt-1 text-[11px] text-slate-400">
+        <p className="mt-1 text-[13px] text-slate-400">
           물류 시스템에서 사용하는 품목 기준정보를 조회하고 관리합니다.
         </p>
       </header>
@@ -95,9 +97,9 @@ export default function ProductManagement() {
         onReset={resetFilters}
       />
 
-      <section className="mt-5">
+      <section className="mt-3">
         <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
-          <p className="text-[12px] font-semibold text-slate-700">
+          <p className="text-[14px] font-semibold text-slate-700">
             조회 결과
             <span className="ml-1 text-blue-600">
               {pagination.totalElements}
@@ -109,20 +111,19 @@ export default function ProductManagement() {
             <button
               type="button"
               onClick={() => downloadProductCsv(products)}
-              className="flex h-9 items-center gap-1 rounded-md border border-slate-200 bg-white px-3 text-[11px] font-semibold text-slate-500 transition hover:bg-slate-50"
+              className="flex h-10 items-center gap-1.5 rounded-md border border-slate-200 bg-white px-4 text-[13px] font-semibold text-slate-500 transition hover:bg-slate-50"
             >
               <Download size={13} />
               CSV 다운로드
             </button>
 
-            <button
-              type="button"
-              onClick={createProduct}
-              className="flex h-9 items-center gap-1 rounded-md bg-blue-600 px-3 text-[11px] font-semibold text-white transition hover:bg-blue-700"
+            <Link
+              href="/products/new"
+              className="flex h-10 items-center gap-1.5 rounded-md bg-blue-600 px-4 text-[13px] font-semibold text-white transition hover:bg-blue-700"
             >
               <Plus size={14} />
               신규 품목 등록
-            </button>
+            </Link>
           </div>
         </div>
 
@@ -147,6 +148,13 @@ export default function ProductManagement() {
           />
         </div>
       </section>
+
+      <ProductDetailModal
+        open={Boolean(detailProduct)}
+        product={detailProduct}
+        onClose={closeProductDetail}
+        onEdit={openProductEdit}
+      />
     </div>
   )
 }

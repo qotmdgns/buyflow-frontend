@@ -6,7 +6,7 @@ import {
 function StatusBadge({ isActive }) {
   return (
     <span
-      className={`inline-flex rounded-full px-2 py-1 text-[9px] font-medium ${
+      className={`inline-flex rounded-full px-2.5 py-1 text-[12px] font-semibold ${
         isActive
           ? "bg-emerald-50 text-emerald-600"
           : "bg-slate-100 text-slate-500"
@@ -22,7 +22,7 @@ function TableMessage({ children, isError = false }) {
     <tr>
       <td
         colSpan={11}
-        className={`h-64 text-center text-[11px] ${
+        className={`h-52 text-center text-[14px] ${
           isError ? "text-rose-500" : "text-slate-400"
         }`}
       >
@@ -35,59 +35,97 @@ function TableMessage({ children, isError = false }) {
 function ProductRow({ product, isSelected, onToggle, onDetail, onEdit }) {
   const isLowStock = product.currentStock < product.safetyStock
 
+  function openDetail() {
+    onDetail(product)
+  }
+
+  function handleRowKeyDown(event) {
+    if (event.key === "Enter" || event.key === " ") {
+      event.preventDefault()
+      openDetail()
+    }
+  }
+
+  function stopRowEvent(event) {
+    event.stopPropagation()
+  }
+
+  function handleDetailClick(event) {
+    event.stopPropagation()
+    onDetail(product)
+  }
+
+  function handleEditClick(event) {
+    event.stopPropagation()
+    onEdit(product)
+  }
+
   return (
-    <tr className="border-t border-slate-100 text-slate-600 hover:bg-slate-50/60">
-      <td className="px-4 py-3">
+    <tr
+      role="button"
+      tabIndex={0}
+      aria-label={`${product.name} 품목 상세 정보 보기`}
+      onClick={openDetail}
+      onKeyDown={handleRowKeyDown}
+      className="cursor-pointer border-t border-slate-100 text-slate-600 transition hover:bg-blue-50/40 focus:bg-blue-50/40 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-200"
+    >
+      <td className="px-4 py-2.5">
         <input
           type="checkbox"
           checked={isSelected}
+          onClick={stopRowEvent}
+          onKeyDown={stopRowEvent}
           onChange={() => onToggle(product.id)}
           className="h-3.5 w-3.5 accent-blue-600"
           aria-label={`${product.name} 선택`}
         />
       </td>
 
-      <td className="whitespace-nowrap px-3 py-3 font-medium text-blue-600">
+      <td className="whitespace-nowrap px-3 py-2.5 font-medium text-blue-600">
         {product.code}
       </td>
 
-      <td className="min-w-[180px] px-3 py-3 font-medium text-slate-700">
+      <td className="min-w-[180px] px-3 py-2.5 font-medium text-slate-700">
         {product.name}
       </td>
 
-      <td className="whitespace-nowrap px-3 py-3">{product.category}</td>
+      <td className="whitespace-nowrap px-3 py-2.5">{product.category}</td>
 
-      <td className="whitespace-nowrap px-3 py-3 text-slate-500">
+      <td className="whitespace-nowrap px-3 py-2.5 text-slate-500">
         {product.spec}
       </td>
 
-      <td className="whitespace-nowrap px-3 py-3">{product.unit}</td>
+      <td className="whitespace-nowrap px-3 py-2.5">{product.unit}</td>
 
-      <td className="whitespace-nowrap px-3 py-3 font-medium text-slate-700">
+      <td className="whitespace-nowrap px-3 py-2.5 font-medium text-slate-700">
         {formatWon(product.unitPrice)}
       </td>
 
       <td
-        className={`whitespace-nowrap px-3 py-3 font-semibold ${
+        className={`whitespace-nowrap px-3 py-2.5 font-semibold ${
           isLowStock ? "text-rose-500" : "text-slate-700"
         }`}
       >
         {product.safetyStock}
       </td>
 
-      <td className="whitespace-nowrap px-3 py-3">
+      <td className="whitespace-nowrap px-3 py-2.5">
         <StatusBadge isActive={product.isActive} />
       </td>
 
-      <td className="whitespace-nowrap px-3 py-3 text-slate-500">
+      <td className="whitespace-nowrap px-3 py-2.5 text-slate-500">
         {product.registeredAt}
       </td>
 
-      <td className="whitespace-nowrap px-3 py-3">
-        <div className="flex items-center gap-2">
+      <td className="whitespace-nowrap px-3 py-2.5">
+        <div
+          className="flex items-center gap-2"
+          onClick={stopRowEvent}
+          onKeyDown={stopRowEvent}
+        >
           <button
             type="button"
-            onClick={() => onDetail(product)}
+            onClick={handleDetailClick}
             className="text-[10px] font-medium text-blue-600 hover:underline"
           >
             상세
@@ -95,7 +133,7 @@ function ProductRow({ product, isSelected, onToggle, onDetail, onEdit }) {
 
           <button
             type="button"
-            onClick={() => onEdit(product)}
+            onClick={handleEditClick}
             className="text-[10px] font-medium text-slate-500 hover:text-blue-600 hover:underline"
           >
             수정
@@ -144,10 +182,10 @@ export default function ProductTable({
 
   return (
     <div className="overflow-x-auto">
-      <table className="w-full min-w-[1120px] text-left text-[10px]">
+      <table className="w-full min-w-[1240px] text-left text-[13px]">
         <thead className="bg-slate-50 text-slate-500">
           <tr>
-            <th className="w-12 px-4 py-3">
+            <th className="w-12 px-4 py-2.5">
               <input
                 type="checkbox"
                 checked={allCurrentRowsSelected}
@@ -160,7 +198,7 @@ export default function ProductTable({
             {PRODUCT_TABLE_HEADERS.map((heading) => (
               <th
                 key={heading}
-                className="whitespace-nowrap px-3 py-3 font-medium"
+                className="whitespace-nowrap px-3 py-2.5 font-semibold"
               >
                 {heading}
               </th>

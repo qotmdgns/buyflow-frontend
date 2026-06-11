@@ -2,6 +2,7 @@ import {
   mockPurchaseRequests,
   purchaseRequestFilterOptions,
 } from "@/features/purchase-request/data/mockPurchaseRequestListData"
+import { getMockPurchaseRequestDetail } from "@/features/purchase-request/data/mockPurchaseRequestDetailData"
 
 const USE_MOCK = process.env.NEXT_PUBLIC_USE_PURCHASE_REQUEST_MOCK !== "false"
 
@@ -202,4 +203,130 @@ export async function fetchPurchaseRequestSummary() {
   }
 
   return response.json()
+}
+
+const PURCHASE_REQUEST_STATUS_LABELS = {
+  DRAFT: "임시 저장",
+  PENDING: "승인 대기",
+  APPROVED: "승인 완료",
+  REJECTED: "반려",
+  ORDERED: "발주 완료",
+}
+
+const PURCHASE_REQUEST_PRIORITY_LABELS = {
+  NORMAL: "일반",
+  URGENT: "긴급",
+}
+
+function createApiUrl(path) {
+  const baseUrl = (process.env.NEXT_PUBLIC_API_BASE_URL ?? "").replace(
+    /\/$/,
+    "",
+  )
+  const normalizedPath = path.startsWith("/") ? path : `/${path}`
+
+  return `${baseUrl}${normalizedPath}`
+}
+
+function normalizeDownloadUrl(downloadUrl) {
+  if (!downloadUrl) {
+    return ""
+  }
+
+  if (/^https?:\/\//i.test(downloadUrl)) {
+    return downloadUrl
+  }
+
+  return createApiUrl(downloadUrl)
+}
+
+function normalizePurchaseRequestDetailResponse(data) {
+  const rawItems = data.items ?? data.requestItems ?? []
+
+  const items = rawItems.map((item, index) => {
+    const requestQuantity = Number(item.requestQuantity ?? item.quantity ?? 0)
+
+    const estimatedUnitPrice = Number(
+      item.estimatedUnitPrice ?? item.unitPrice ?? 0,
+    )
+
+    return {
+      id: item.id ?? item.requestItemId ?? index + 1,
+      itemCode: item.itemCode ?? item.code ?? "",
+      itemName: item.itemName ?? item.name ?? "",
+      category: item.category ?? item.categoryName ?? "",
+      specification: item.specification ?? item.spec ?? "",
+      requestQuantity,
+      unit: item.unit ?? "",
+      estimatedUnitPrice,
+      estimatedAmount: Number(
+        item.estimatedAmount ?? estimatedUnitPrice * requestQuantity,
+      ),
+    }
+  })
+
+  const attachments = (data.attachments ?? data.files ?? []).map(
+    (attachment, index) => ({
+      id: attachment.id ?? attachment.attachmentId ?? index + 1,
+      fileName: attachment.fileName ?? attachment.originalFileName ?? "",
+      downloadUrl: normalizeDownloadUrl(attachment.downloadUrl),
+    }),
+  )
+
+  const calculatedTotalAmount = items.reduce(
+    (total, item) => total + item.estimatedAmount,
+    0,
+  )
+
+  return {
+    id: data.id ?? data.requestId,
+    requestNumber: data.requestNumber ?? "",
+    title: data.title ?? data.requestTitle ?? "",
+    requester: data.requester ?? data.requesterName ?? "",
+    department: data.department ?? data.departmentName ?? "",
+    requestedAt: data.requestedAt ?? data.requestDate ?? "",
+    desiredInboundAt: data.desiredInboundAt ?? data.expectedDate ?? "",
+    priority:
+      PURCHASE_REQUEST_PRIORITY_LABELS[data.priority] ?? data.priority ?? "",
+    status: PURCHASE_REQUEST_STATUS_LABELS[data.status] ?? data.status ?? "",
+    reason: data.reason ?? data.requestReason ?? "",
+    totalAmount: Number(data.totalAmount ?? calculatedTotalAmount),
+    items,
+    attachments,
+  }
+}
+
+export async function fetchPurchaseRequestDetail(requestId) {
+  if (!requestId) {
+    throw new Error("구매 요청 ID가 없습니다.")
+  }
+
+  if (USE_MOCK) {
+    await wait(150)
+
+    const mockDetail = getMockPurchaseRequestDetail(requestId)
+
+    if (!mockDetail) {
+      throw new Error("존재하지 않는 구매 요청입니다.")
+    }
+
+    return normalizePurchaseRequestDetailResponse(mockDetail)
+  }
+
+  const response = await fetch(
+    createApiUrl(`/api/purchase-requests/${encodeURIComponent(requestId)}`),
+    {
+      cache: "no-store",
+    },
+  )
+
+  if (response.status === 404) {
+    throw new Error("존재하지 않는 구매 요청입니다.")
+  }
+
+  if (!response.ok) {
+    throw new Error("구매 요청 상세 정보를 불러오지 못했습니다.")
+  }
+
+  return normalizePurchaseRequestDetailResponse(await response.json())
 }

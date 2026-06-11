@@ -36,15 +36,15 @@ function SummaryCard({ item }) {
 
   return (
     <article
-      className={`min-h-[118px] rounded-lg border bg-white p-4 shadow-sm ${toneStyles[item.tone]}`}
+      className={`min-h-[110px] rounded-lg border bg-white p-3 shadow-sm ${toneStyles[item.tone]}`}
     >
       <div className="flex items-start justify-between">
         <div>
-          <p className="text-[11px] text-slate-500">{item.label}</p>
+          <p className="text-[13px] text-slate-500">{item.label}</p>
 
           <div className="mt-1 flex items-baseline gap-1">
             <strong
-              className={`text-[20px] ${
+              className={`text-[24px] ${
                 danger ? "text-rose-500" : "text-slate-900"
               }`}
             >
@@ -52,7 +52,7 @@ function SummaryCard({ item }) {
             </strong>
 
             {item.badge && (
-              <span className="text-[9px] font-semibold text-rose-500">
+              <span className="text-[12px] font-semibold text-rose-500">
                 {item.badge}
               </span>
             )}
@@ -68,11 +68,11 @@ function SummaryCard({ item }) {
         </span>
       </div>
 
-      <p className="mt-3 text-[10px] text-slate-400">{item.note}</p>
+      <p className="mt-2 text-[12px] text-slate-400">{item.note}</p>
 
       <button
         type="button"
-        className="mt-2 flex items-center gap-1 text-[9px] text-slate-500 hover:text-blue-600"
+        className="mt-2 flex items-center gap-1 text-[12px] text-slate-500 hover:text-blue-600"
       >
         상세보기
         <ArrowRight size={10} />
@@ -89,7 +89,7 @@ function StatusBadge({ status }) {
   }
 
   return (
-    <span className={`rounded-full px-2 py-1 text-[9px] ${styles[status]}`}>
+    <span className={`rounded-full px-2 py-1 text-[12px] ${styles[status]}`}>
       {status}
     </span>
   )
@@ -98,13 +98,13 @@ function StatusBadge({ status }) {
 function RecentRequests({ requests }) {
   return (
     <section className="rounded-lg border border-slate-200 bg-white shadow-sm">
-      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 p-4">
+      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 p-3">
         <div className="flex items-center gap-2">
-          <h2 className="text-[13px] font-bold">최근 구매 요청</h2>
+          <h2 className="text-[15px] font-bold">최근 구매 요청</h2>
 
           <Link
             href="/purchase-requests"
-            className="text-[10px] text-blue-600 hover:underline"
+            className="text-[13px] text-blue-600 hover:underline"
           >
             전체 보기
           </Link>
@@ -136,7 +136,7 @@ function RecentRequests({ requests }) {
             <tr>
               {["요청 번호", "요청자", "요청일", "요청 금액", "상태", ""].map(
                 (heading) => (
-                  <th key={heading} className="px-4 py-3 font-medium">
+                  <th key={heading} className="px-3 py-2.5 font-medium">
                     {heading}
                   </th>
                 ),
@@ -150,27 +150,27 @@ function RecentRequests({ requests }) {
                 key={request.id}
                 className="border-t border-slate-100 text-slate-600"
               >
-                <td className="px-4 py-3 font-medium text-blue-600">
+                <td className="px-3 py-2.5 font-medium text-blue-600">
                   {request.id}
                 </td>
 
-                <td className="px-4 py-3">
+                <td className="px-3 py-2.5">
                   {request.requester}
                   <br />
                   <span className="text-slate-400">{request.team}</span>
                 </td>
 
-                <td className="px-4 py-3">{request.date}</td>
+                <td className="px-3 py-2.5">{request.date}</td>
 
-                <td className="px-4 py-3 font-medium text-slate-700">
+                <td className="px-3 py-2.5 font-medium text-slate-700">
                   {request.amount}
                 </td>
 
-                <td className="px-4 py-3">
+                <td className="px-3 py-2.5">
                   <StatusBadge status={request.status} />
                 </td>
 
-                <td className="px-4 py-3">
+                <td className="px-3 py-2.5">
                   <MoreVertical size={13} />
                 </td>
               </tr>
@@ -179,7 +179,7 @@ function RecentRequests({ requests }) {
         </table>
       </div>
 
-      <div className="flex items-center justify-between border-t border-slate-100 p-4 text-[10px] text-slate-400">
+      <div className="flex items-center justify-between border-t border-slate-100 p-4 text-[13px] text-slate-400">
         <span>페이지 당 행 수: 5</span>
         <span>1-5 / 124</span>
       </div>
@@ -190,17 +190,17 @@ function RecentRequests({ requests }) {
 function LowStockItems({ items }) {
   return (
     <section className="rounded-lg border border-slate-200 bg-white shadow-sm">
-      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 p-4">
+      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 p-3">
         <div>
           <div className="flex items-center gap-2">
-            <h2 className="text-[13px] font-bold">안전재고 부족 품목</h2>
+            <h2 className="text-[15px] font-bold">안전재고 부족 품목</h2>
 
             <a href="#" className="text-[10px] text-blue-600 hover:underline">
               전체 보기
             </a>
           </div>
 
-          <span className="mt-1 inline-block rounded-full bg-rose-500 px-2 py-0.5 text-[9px] text-white">
+          <span className="mt-1 inline-block rounded-full bg-rose-500 px-2.5 py-1 text-[12px] text-white">
             관리 시급 5건
           </span>
         </div>
@@ -216,7 +216,7 @@ function LowStockItems({ items }) {
       </div>
 
       <div className="overflow-x-auto">
-        <table className="w-full min-w-[560px] text-left text-[10px]">
+        <table className="w-full min-w-[620px] text-left text-[13px]">
           <thead className="bg-slate-50 text-slate-500">
             <tr>
               {[
@@ -227,7 +227,7 @@ function LowStockItems({ items }) {
                 "안전재고",
                 "부족 수량",
               ].map((heading) => (
-                <th key={heading} className="px-3 py-3 font-medium">
+                <th key={heading} className="px-3 py-2.5 font-medium">
                   {heading}
                 </th>
               ))}
@@ -240,19 +240,19 @@ function LowStockItems({ items }) {
                 key={item.code}
                 className="border-t border-slate-100 text-slate-600"
               >
-                <td className="px-3 py-3 text-slate-400">{item.code}</td>
+                <td className="px-3 py-2.5 text-slate-400">{item.code}</td>
 
-                <td className="px-3 py-3 font-medium text-slate-700">
+                <td className="px-3 py-2.5 font-medium text-slate-700">
                   {item.name}
                 </td>
 
-                <td className="px-3 py-3">{item.warehouse}</td>
+                <td className="px-3 py-2.5">{item.warehouse}</td>
 
-                <td className="px-3 py-3">{item.current}</td>
+                <td className="px-3 py-2.5">{item.current}</td>
 
-                <td className="px-3 py-3">{item.safety}</td>
+                <td className="px-3 py-2.5">{item.safety}</td>
 
-                <td className="px-3 py-3 font-semibold text-rose-500">
+                <td className="px-3 py-2.5 font-semibold text-rose-500">
                   {item.shortage}개 부족
                 </td>
               </tr>
@@ -261,7 +261,7 @@ function LowStockItems({ items }) {
         </table>
       </div>
 
-      <div className="flex flex-wrap items-center justify-between gap-2 border-t border-slate-100 p-4 text-[10px] text-slate-400">
+      <div className="flex flex-wrap items-center justify-between gap-2 border-t border-slate-100 p-3 text-[13px] text-slate-400">
         <span>※ 현재 화면은 임시 데이터로 표시됩니다.</span>
 
         <div className="flex gap-2">
@@ -293,10 +293,10 @@ export default async function DashboardPage() {
 
   return (
     <>
-      <div className="mb-4 flex items-center justify-between">
-        <h1 className="text-[18px] font-bold text-slate-900">현황 요약</h1>
+      <div className="mb-3 flex items-center justify-between">
+        <h1 className="text-[22px] font-bold text-slate-900">현황 요약</h1>
 
-        <p className="text-[10px] text-slate-400">
+        <p className="text-[13px] text-slate-400">
           최종 업데이트: {data.lastUpdated}
         </p>
       </div>
@@ -307,19 +307,19 @@ export default async function DashboardPage() {
         ))}
       </div>
 
-      <div className="mt-4 grid gap-4 xl:grid-cols-[minmax(0,2fr)_minmax(280px,1fr)]">
+      <div className="mt-3 grid gap-3 xl:grid-cols-[minmax(0,2fr)_minmax(280px,1fr)]">
         <MonthlyInboundChart data={data.monthlyInbound} />
 
         <InventoryStatusChart data={data.inventoryStatus} />
       </div>
 
-      <div className="mt-4 grid gap-4 xl:grid-cols-[minmax(0,1fr)_minmax(0,1.05fr)]">
+      <div className="mt-3 grid gap-3 xl:grid-cols-[minmax(0,1fr)_minmax(0,1.05fr)]">
         <RecentRequests requests={data.recentRequests} />
 
         <LowStockItems items={data.lowStockItems} />
       </div>
 
-      <footer className="mt-12 flex flex-wrap items-center justify-between gap-2 border-t border-slate-200 py-4 text-[9px] text-slate-400">
+      <footer className="mt-6 flex flex-wrap items-center justify-between gap-2 border-t border-slate-200 py-3 text-[12px] text-slate-400">
         <span>© 2026 BuyFlow ERP Corp. All Rights Reserved.</span>
 
         <span>개인정보처리방침 · 서비스이용약관 · 고객지원센터</span>

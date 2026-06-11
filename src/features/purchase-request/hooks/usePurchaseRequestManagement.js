@@ -35,7 +35,7 @@ export default function usePurchaseRequestManagement() {
     DEFAULT_PURCHASE_REQUEST_PAGINATION,
   )
 
-  const [pageSize, setPageSize] = useState(10)
+  const [pageSize, setPageSize] = useState(15)
 
   const [filterOptions, setFilterOptions] = useState(
     DEFAULT_PURCHASE_REQUEST_FILTER_OPTIONS,

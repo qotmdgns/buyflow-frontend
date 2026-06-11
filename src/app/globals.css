@@ -31,3 +31,106 @@ button,
 input {
   font: inherit;
 }
+
+/* =========================================================
+   BuyFlow ERP Dashboard Density Settings
+   대시보드 기능 화면의 가독성과 공간 활용도를 일괄 조정합니다.
+   로그인 화면에는 적용되지 않습니다.
+========================================================= */
+
+/* 지나치게 작은 글자를 읽기 편한 크기로 보정 */
+.erp-dashboard .text-\[9px\],
+.erp-dashboard .text-\[10px\] {
+  font-size: 12px;
+  line-height: 1rem;
+}
+
+.erp-dashboard .text-\[11px\] {
+  font-size: 13px;
+  line-height: 1.125rem;
+}
+
+.erp-dashboard .text-\[12px\] {
+  font-size: 14px;
+  line-height: 1.25rem;
+}
+
+.erp-dashboard .text-\[13px\] {
+  font-size: 15px;
+  line-height: 1.375rem;
+}
+
+.erp-dashboard .text-\[18px\] {
+  font-size: 22px;
+  line-height: 1.75rem;
+}
+
+/* 각 기능 페이지가 브라우저 너비를 충분히 사용하도록 제한 해제 */
+.erp-dashboard main .max-w-\[1500px\] {
+  max-width: none;
+}
+
+/* 페이지 제목 아래쪽 여백 축소 */
+.erp-dashboard main .mb-5 {
+  margin-bottom: 0.75rem;
+}
+
+/* 검색 영역과 목록 영역 사이 간격 축소 */
+.erp-dashboard main .mt-5 {
+  margin-top: 0.75rem;
+}
+
+.erp-dashboard main .mt-4 {
+  margin-top: 0.75rem;
+}
+
+/* 입력 영역과 카드 내부 간격 축소 */
+.erp-dashboard main .gap-5 {
+  gap: 1rem;
+}
+
+.erp-dashboard main .gap-4 {
+  gap: 0.75rem;
+}
+
+/* 카드 내부 여백 축소 */
+.erp-dashboard main .p-5 {
+  padding: 1rem;
+}
+
+.erp-dashboard main .p-4 {
+  padding: 0.75rem;
+}
+
+/* 좌우 여백 축소 */
+.erp-dashboard main .px-4 {
+  padding-left: 0.75rem;
+  padding-right: 0.75rem;
+}
+
+/* 상하 여백 축소 */
+.erp-dashboard main .py-4 {
+  padding-top: 0.75rem;
+  padding-bottom: 0.75rem;
+}
+
+/* 테이블은 글자를 키우되 행 높이는 지나치게 커지지 않도록 조정 */
+.erp-dashboard main table .py-3 {
+  padding-top: 0.625rem;
+  padding-bottom: 0.625rem;
+}
+
+.erp-dashboard main table .px-4 {
+  padding-left: 0.75rem;
+  padding-right: 0.75rem;
+}
+
+/* 검색 결과가 없을 때 표시되는 빈 영역 높이 축소 */
+.erp-dashboard main .h-64 {
+  height: 12rem;
+}
+
+/* 대시보드 요약 카드의 불필요한 최소 높이 축소 */
+.erp-dashboard main .min-h-\[118px\] {
+  min-height: 108px;
+}

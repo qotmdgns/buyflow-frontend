@@ -1,11 +1,11 @@
 import { RefreshCcw, Search } from "lucide-react"
 
 const INPUT_CLASS_NAME =
-  "h-9 w-full rounded-md border border-slate-200 px-3 text-[11px] outline-none transition placeholder:text-slate-300 focus:border-blue-400 focus:ring-2 focus:ring-blue-100"
+  "h-10 w-full rounded-md border border-slate-200 px-3 text-[14px] outline-none transition placeholder:text-slate-300 focus:border-blue-400 focus:ring-2 focus:ring-blue-100"
 
 function FieldLabel({ children }) {
   return (
-    <span className="mb-1.5 block text-[10px] font-semibold text-slate-600">
+    <span className="mb-1 block text-[13px] font-semibold text-slate-600">
       {children}
     </span>
   )
@@ -37,9 +37,9 @@ export default function ProductSearchForm({
   return (
     <form
       onSubmit={onSearch}
-      className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm"
+      className="rounded-lg border border-slate-200 bg-white p-3 shadow-sm"
     >
-      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+      <div className="grid gap-x-3 gap-y-2.5 md:grid-cols-2 xl:grid-cols-4">
         <label>
           <FieldLabel>품목 코드</FieldLabel>
 
@@ -83,8 +83,8 @@ export default function ProductSearchForm({
         </label>
       </div>
 
-      <div className="mt-4 flex flex-wrap items-end justify-between gap-4">
-        <div className="flex flex-wrap items-end gap-4">
+      <div className="mt-3 flex flex-wrap items-end justify-between gap-3">
+        <div className="flex flex-wrap items-end gap-3">
           <label className="w-[220px] max-w-full">
             <FieldLabel>단위</FieldLabel>
 
@@ -95,14 +95,14 @@ export default function ProductSearchForm({
             />
           </label>
 
-          <label className="mb-2 flex items-center gap-2 text-[11px] text-slate-600">
+          <label className="mb-2 flex items-center gap-2 text-[13px] text-slate-600">
             <input
               type="checkbox"
               checked={filters.lowStockOnly}
               onChange={(event) =>
                 onChange("lowStockOnly", event.target.checked)
               }
-              className="h-3.5 w-3.5 rounded border-slate-300 accent-blue-600"
+              className="h-4 w-4 rounded border-slate-300 accent-blue-600"
             />
             안전재고 이하만 보기
           </label>
@@ -112,7 +112,7 @@ export default function ProductSearchForm({
           <button
             type="button"
             onClick={onReset}
-            className="flex h-9 items-center gap-1 rounded-md border border-slate-200 px-3 text-[11px] font-semibold text-slate-500 transition hover:bg-slate-50"
+            className="flex h-10 items-center gap-1.5 rounded-md border border-slate-200 px-4 text-[13px] font-semibold text-slate-500 transition hover:bg-slate-50"
           >
             <RefreshCcw size={13} />
             초기화
@@ -120,7 +120,7 @@ export default function ProductSearchForm({
 
           <button
             type="submit"
-            className="flex h-9 items-center gap-1 rounded-md bg-blue-600 px-4 text-[11px] font-semibold text-white transition hover:bg-blue-700"
+            className="flex h-10 items-center gap-1.5 rounded-md bg-blue-600 px-5 text-[13px] font-semibold text-white transition hover:bg-blue-700"
           >
             <Search size={13} />
             검색

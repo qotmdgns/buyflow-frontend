@@ -231,15 +231,15 @@ flowchart LR
 
 | 구분        | 화면                  | URL                              | 개발 상태         |
 | ----------- | --------------------- | -------------------------------- | ----------------- |
-| 인증        | 로그인                | `/login`                         | 개발 예정         |
-| 대시보드    | 현황 요약             | `/dashboard`                     | UI 시안 구성 완료 |
-| 품목 관리   | 품목 목록 및 검색     | `/products`                      | 개발 예정         |
-| 공급업체    | 공급업체 목록 및 상세 | `/suppliers`                     | 개발 예정         |
-| 창고 관리   | 창고 목록 및 상세     | `/warehouses`                    | 개발 예정         |
-| 구매 요청   | 구매 요청 목록        | `/purchase-requests`             | 개발 예정         |
-| 구매 요청   | 구매 요청 등록        | `/purchase-requests/new`         | 개발 예정         |
-| 구매 요청   | 구매 요청 상세        | `/purchase-requests/{requestId}` | 개발 예정         |
-| 승인 관리   | 승인 대기 목록        | `/approvals`                     | 개발 예정         |
+| 인증        | 로그인                | `/login`                         | front 개발 완료     |
+| 대시보드    | 현황 요약             | `/dashboard`                     | front 개발 완료      |
+| 품목 관리   | 품목 목록 및 검색     | `/products`                      | front 개발 완료      |
+| 공급업체    | 공급업체 목록 및 상세 | `/suppliers`                     | front 개발 완료         |
+| 창고 관리   | 창고 목록 및 상세     | `/warehouses`                    | front 개발 완료         |
+| 구매 요청   | 구매 요청 목록        | `/purchase-requests`             | front 개발 완료         |
+| 구매 요청   | 구매 요청 등록        | `/purchase-requests/new`         | front 개발 완료         |
+| 구매 요청   | 구매 요청 상세        | `/purchase-requests/{requestId}` | front 개발 완료         |
+| 승인 관리   | 승인 대기 목록        | `/approvals`                     | front 개발 완료         |
 | 발주 관리   | 발주 목록 및 상세     | `/purchase-orders`               | 개발 예정         |
 | 입고 관리   | 입고 목록 및 등록     | `/inbounds`                      | 개발 예정         |
 | 검수 관리   | 검수 목록 및 처리     | `/inspections`                   | 개발 예정         |
@@ -601,24 +601,24 @@ develop
 
 ### 기획 및 설계
 
-- [x] 프로젝트 주제 선정
-- [x] 주요 기능 정의
-- [x] ERD 초안 구성
-- [x] 대시보드 UI 시안 구성
-- [ ] 기능별 상세 UI 설계
+- [o] 프로젝트 주제 선정
+- [o] 주요 기능 정의
+- [o] ERD 초안 구성
+- [o] 대시보드 UI 시안 구성
+- [o] 기능별 상세 UI 설계
 - [ ] 요구사항정의서 작성
 - [ ] API 명세서 작성
 
 ### 프론트엔드
 
-- [x] Next.js 프로젝트 생성
-- [x] GitHub Repository 생성
-- [ ] 공통 레이아웃 구현
-- [ ] 대시보드 구현
-- [ ] 로그인 화면 구현
-- [ ] 기준정보 관리 화면 구현
-- [ ] 구매 요청 화면 구현
-- [ ] 승인 관리 화면 구현
+- [o] Next.js 프로젝트 생성
+- [o] GitHub Repository 생성
+- [o] 공통 레이아웃 구현
+- [o] 대시보드 구현
+- [o] 로그인 화면 구현
+- [o] 기준정보 관리 화면 구현
+- [o] 구매 요청 화면 구현
+- [o] 승인 관리 화면 구현
 - [ ] 발주 관리 화면 구현
 - [ ] 입고 및 검수 화면 구현
 - [ ] 재고 관리 화면 구현
@@ -655,7 +655,7 @@ develop
 | 역할     | 담당자    | 담당 기능                      |
 | -------- | --------- | ------------------------------ |
 | Frontend | 김호현    | Next.js 화면 구현 및 API 연동  |
-| Backend  | 하지수    | Spring Boot REST API 구현      |
+| Backend  | 하지수, 김연준   | Spring Boot REST API 구현      |
 | Database | 배승훈    | ERD 및 DB 스키마 구성          |
 | DevOps   | 추후 작성 | Docker, Kubernetes, CI/CD 구성 |
 
