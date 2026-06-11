@@ -124,3 +124,67 @@ export async function fetchSupplierFilterOptions() {
 
   return response.json()
 }
+
+const SUPPLIER_TRADE_STATUS_LABELS = {
+  ACTIVE: "거래중",
+  STOPPED: "거래중지",
+  INACTIVE: "거래중지",
+}
+
+function normalizeSupplierDetailResponse(data) {
+  return {
+    id: data.id ?? data.supplierId,
+    code: data.code ?? data.supplierCode ?? "",
+    name: data.name ?? data.supplierName ?? "",
+    businessNumber:
+      data.businessNumber ?? data.businessRegistrationNumber ?? "",
+    manager: data.manager ?? data.managerName ?? "",
+    phone: data.phone ?? data.contactNumber ?? "",
+    email: data.email ?? "",
+    address: data.address ?? "",
+    tradeStatus:
+      SUPPLIER_TRADE_STATUS_LABELS[data.tradeStatus] ?? data.tradeStatus ?? "",
+    registeredAt:
+      data.registeredAt ??
+      data.createdAt?.slice?.(0, 10) ??
+      data.createdAt ??
+      "",
+  }
+}
+
+export async function fetchSupplierById(supplierId) {
+  if (!supplierId) {
+    throw new Error("공급업체 ID가 없습니다.")
+  }
+
+  if (USE_MOCK) {
+    await wait(100)
+
+    const supplier = mockSuppliers.find(
+      (item) => item.id === Number(supplierId),
+    )
+
+    if (!supplier) {
+      throw new Error("공급업체 정보를 찾을 수 없습니다.")
+    }
+
+    return normalizeSupplierDetailResponse(supplier)
+  }
+
+  const response = await fetch(
+    `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/suppliers/${encodeURIComponent(
+      supplierId,
+    )}`,
+    { cache: "no-store" },
+  )
+
+  if (response.status === 404) {
+    throw new Error("공급업체 정보를 찾을 수 없습니다.")
+  }
+
+  if (!response.ok) {
+    throw new Error("공급업체 상세 정보를 불러오지 못했습니다.")
+  }
+
+  return normalizeSupplierDetailResponse(await response.json())
+}

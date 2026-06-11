@@ -26,7 +26,6 @@ export const SUPPLIER_TABLE_HEADERS = [
   "주소",
   "상태",
   "등록일",
-  "관리",
 ]
 
 export function createPageNumbers(currentPage, totalPages) {
