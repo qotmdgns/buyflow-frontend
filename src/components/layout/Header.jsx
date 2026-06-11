@@ -76,6 +76,32 @@ const breadcrumbRules = [
       { label: "승인 관리" },
     ],
   },
+
+  {
+    path: "/purchase-orders/new",
+    crumbs: [
+      { label: "구매 및 입고", href: "/purchase-orders" },
+      { label: "발주 관리", href: "/purchase-orders" },
+      { label: "발주 등록" },
+    ],
+  },
+
+  {
+    matches: (pathname) => /^\/purchase-orders\/[^/]+\/edit$/.test(pathname),
+    crumbs: [
+      { label: "구매 및 입고", href: "/purchase-orders" },
+      { label: "발주 관리", href: "/purchase-orders" },
+      { label: "발주 수정" },
+    ],
+  },
+
+  {
+    path: "/purchase-orders",
+    crumbs: [
+      { label: "구매 및 입고", href: "/purchase-orders" },
+      { label: "발주 관리" },
+    ],
+  },
 ]
 
 function getBreadcrumbs(pathname) {
