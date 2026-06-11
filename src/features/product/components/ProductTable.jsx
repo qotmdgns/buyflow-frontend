@@ -35,12 +35,46 @@ function TableMessage({ children, isError = false }) {
 function ProductRow({ product, isSelected, onToggle, onDetail, onEdit }) {
   const isLowStock = product.currentStock < product.safetyStock
 
+  function openDetail() {
+    onDetail(product)
+  }
+
+  function handleRowKeyDown(event) {
+    if (event.key === "Enter" || event.key === " ") {
+      event.preventDefault()
+      openDetail()
+    }
+  }
+
+  function stopRowEvent(event) {
+    event.stopPropagation()
+  }
+
+  function handleDetailClick(event) {
+    event.stopPropagation()
+    onDetail(product)
+  }
+
+  function handleEditClick(event) {
+    event.stopPropagation()
+    onEdit(product)
+  }
+
   return (
-    <tr className="border-t border-slate-100 text-slate-600 hover:bg-slate-50/60">
+    <tr
+      role="button"
+      tabIndex={0}
+      aria-label={`${product.name} 품목 상세 정보 보기`}
+      onClick={openDetail}
+      onKeyDown={handleRowKeyDown}
+      className="cursor-pointer border-t border-slate-100 text-slate-600 transition hover:bg-blue-50/40 focus:bg-blue-50/40 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-200"
+    >
       <td className="px-4 py-2.5">
         <input
           type="checkbox"
           checked={isSelected}
+          onClick={stopRowEvent}
+          onKeyDown={stopRowEvent}
           onChange={() => onToggle(product.id)}
           className="h-3.5 w-3.5 accent-blue-600"
           aria-label={`${product.name} 선택`}
@@ -84,10 +118,14 @@ function ProductRow({ product, isSelected, onToggle, onDetail, onEdit }) {
       </td>
 
       <td className="whitespace-nowrap px-3 py-2.5">
-        <div className="flex items-center gap-2">
+        <div
+          className="flex items-center gap-2"
+          onClick={stopRowEvent}
+          onKeyDown={stopRowEvent}
+        >
           <button
             type="button"
-            onClick={() => onDetail(product)}
+            onClick={handleDetailClick}
             className="text-[10px] font-medium text-blue-600 hover:underline"
           >
             상세
@@ -95,7 +133,7 @@ function ProductRow({ product, isSelected, onToggle, onDetail, onEdit }) {
 
           <button
             type="button"
-            onClick={() => onEdit(product)}
+            onClick={handleEditClick}
             className="text-[10px] font-medium text-slate-500 hover:text-blue-600 hover:underline"
           >
             수정

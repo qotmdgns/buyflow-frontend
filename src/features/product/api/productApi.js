@@ -124,3 +124,33 @@ export async function fetchProductFilterOptions() {
 
   return response.json()
 }
+
+export async function fetchProductById(productId) {
+  if (USE_MOCK) {
+    await wait(100)
+
+    const product = mockProducts.find((item) => item.id === Number(productId))
+
+    if (!product) {
+      throw new Error("품목 정보를 찾을 수 없습니다.")
+    }
+
+    return {
+      ...product,
+      warehouseSettings: product.warehouseSettings?.map((setting) => ({
+        ...setting,
+      })),
+    }
+  }
+
+  const response = await fetch(
+    `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/products/${productId}`,
+    { cache: "no-store" },
+  )
+
+  if (!response.ok) {
+    throw new Error("품목 상세 정보를 불러오지 못했습니다.")
+  }
+
+  return response.json()
+}
