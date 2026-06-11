@@ -1,6 +1,7 @@
 "use client"
 
 import Link from "next/link"
+import { useRouter } from "next/navigation"
 import { ChevronLeft, ChevronRight, RotateCcw, Search } from "lucide-react"
 
 import useApprovalListManagement from "@/features/approval/hooks/useApprovalListManagement"
@@ -77,6 +78,38 @@ export default function ApprovalListManagement() {
     changePageSize,
   } = useApprovalListManagement()
 
+  const router = useRouter()
+
+  function moveToApprovalDetail(approvalId) {
+    router.push(`/approvals/${approvalId}`)
+  }
+
+  function handleRowClick(event, approvalId) {
+    const interactiveElement = event.target.closest?.(
+      "a, button, input, label, select, textarea",
+    )
+
+    // 링크나 버튼처럼 자체 동작을 가진 요소를 클릭한 경우에는
+    // 행 클릭 이벤트를 별도로 실행하지 않습니다.
+    if (interactiveElement) {
+      return
+    }
+
+    moveToApprovalDetail(approvalId)
+  }
+
+  function handleRowKeyDown(event, approvalId) {
+    // 행 내부 버튼이나 링크에서 발생한 키보드 이벤트는 제외합니다.
+    if (event.target !== event.currentTarget) {
+      return
+    }
+
+    if (event.key === "Enter" || event.key === " ") {
+      event.preventDefault()
+
+      moveToApprovalDetail(approvalId)
+    }
+  }
   return (
     <div className="w-full">
       <header className="mb-3">
@@ -204,7 +237,6 @@ export default function ApprovalListManagement() {
                     "승인 단계",
                     "승인 담당자",
                     "상태",
-                    "관리",
                   ].map((heading) => (
                     <th
                       key={heading}
@@ -238,15 +270,19 @@ export default function ApprovalListManagement() {
                   approvals.map((approval) => (
                     <tr
                       key={approval.approvalId}
-                      className="border-t border-slate-100 text-slate-600 hover:bg-slate-50/60"
+                      role="link"
+                      tabIndex={0}
+                      aria-label={`${approval.requestNumber} 승인 상세 화면으로 이동`}
+                      onClick={(event) =>
+                        handleRowClick(event, approval.approvalId)
+                      }
+                      onKeyDown={(event) =>
+                        handleRowKeyDown(event, approval.approvalId)
+                      }
+                      className="cursor-pointer border-t border-slate-100 text-slate-600 transition hover:bg-blue-50/40 focus:bg-blue-50/40 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-200"
                     >
                       <td className="whitespace-nowrap px-3 py-3 font-semibold text-blue-600">
-                        <Link
-                          href={`/approvals/${approval.approvalId}`}
-                          className="hover:underline"
-                        >
-                          {approval.requestNumber}
-                        </Link>
+                        {approval.requestNumber}
                       </td>
 
                       <td className="min-w-[220px] px-3 py-3 font-medium text-slate-700">
@@ -290,15 +326,6 @@ export default function ApprovalListManagement() {
                           status={approval.requestStatus}
                           label={approval.requestStatusLabel}
                         />
-                      </td>
-
-                      <td className="whitespace-nowrap px-3 py-3">
-                        <Link
-                          href={`/approvals/${approval.approvalId}`}
-                          className="rounded-md border border-slate-200 bg-white px-2.5 py-1.5 text-[12px] font-semibold text-slate-500 transition hover:bg-slate-50 hover:text-blue-600"
-                        >
-                          상세보기
-                        </Link>
                       </td>
                     </tr>
                   ))}
