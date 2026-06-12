@@ -1,7 +1,7 @@
-"use client"
+"use client";
 
-import Link from "next/link"
-import { usePathname } from "next/navigation"
+import Link from "next/link";
+import { usePathname } from "next/navigation";
 import {
   Boxes,
   Building2,
@@ -17,7 +17,7 @@ import {
   ShoppingCart,
   UserRound,
   Warehouse,
-} from "lucide-react"
+} from "lucide-react";
 
 const menuGroups = [
   {
@@ -39,7 +39,7 @@ const menuGroups = [
       { label: "승인 관리", href: "/approvals", icon: CheckSquare },
       { label: "발주 관리", href: "/purchase-orders", icon: ClipboardList },
       { label: "입고 관리", href: "/inbounds", icon: LogIn },
-      { label: "검수 관리", href: "#", icon: PackageCheck },
+      { label: "검수 관리", href: "/inspections", icon: PackageCheck },
     ],
   },
   {
@@ -53,25 +53,22 @@ const menuGroups = [
     label: "설정",
     items: [{ label: "시스템 관리", href: "#", icon: Settings }],
   },
-]
+];
 
 function Logo() {
   return (
-    <Link
-      href="/dashboard"
-      className="flex h-14 items-center gap-2 border-b border-slate-200 px-4"
-    >
+    <Link href="/dashboard" className="flex h-14 items-center gap-2 border-b border-slate-200 px-4">
       <span className="flex h-7 w-7 items-center justify-center rounded-md bg-blue-600 text-white">
         <Package size={16} />
       </span>
 
       <span className="text-[15px] font-bold text-blue-600">BuyFlow ERP</span>
     </Link>
-  )
+  );
 }
 
 export default function Sidebar() {
-  const pathname = usePathname()
+  const pathname = usePathname();
 
   return (
     <aside className="fixed inset-y-0 left-0 z-30 hidden w-[220px] border-r border-slate-200 bg-white lg:flex lg:flex-col">
@@ -79,21 +76,12 @@ export default function Sidebar() {
 
       <nav className="flex-1 overflow-y-auto py-2">
         {menuGroups.map((group, groupIndex) => (
-          <div
-            key={`${group.label}-${groupIndex}`}
-            className={groupIndex ? "mt-3" : ""}
-          >
-            {group.label && (
-              <p className="px-4 pb-1 text-[12px] font-bold text-slate-400">
-                {group.label}
-              </p>
-            )}
+          <div key={`${group.label}-${groupIndex}`} className={groupIndex ? "mt-3" : ""}>
+            {group.label && <p className="px-4 pb-1 text-[12px] font-bold text-slate-400">{group.label}</p>}
 
             <div className="space-y-0.5">
               {group.items.map(({ label, href, icon: Icon }) => {
-                const active =
-                  href !== "#" &&
-                  (pathname === href || pathname.startsWith(`${href}/`))
+                const active = href !== "#" && (pathname === href || pathname.startsWith(`${href}/`));
 
                 return (
                   <Link
@@ -108,7 +96,7 @@ export default function Sidebar() {
                     <Icon size={15} strokeWidth={1.8} />
                     {label}
                   </Link>
-                )
+                );
               })}
             </div>
           </div>
@@ -122,9 +110,7 @@ export default function Sidebar() {
           </span>
 
           <div className="min-w-0 flex-1">
-            <p className="truncate text-[13px] font-semibold text-slate-700">
-              김철수 대리
-            </p>
+            <p className="truncate text-[13px] font-semibold text-slate-700">김철수 대리</p>
 
             <p className="text-[12px] text-emerald-500">● 물류운영팀</p>
           </div>
@@ -133,5 +119,5 @@ export default function Sidebar() {
         </div>
       </div>
     </aside>
-  )
+  );
 }
