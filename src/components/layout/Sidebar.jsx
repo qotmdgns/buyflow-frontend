@@ -9,15 +9,14 @@ import {
   ClipboardList,
   History,
   LayoutDashboard,
-  LogIn,
-  LogOut,
   Package,
   PackageCheck,
   Settings,
   ShoppingCart,
-  UserRound,
+  LogIn,
   Warehouse,
 } from "lucide-react"
+import SidebarAccount from "@/features/auth/components/SidebarAccount"
 
 const menuGroups = [
   {
@@ -116,21 +115,7 @@ export default function Sidebar() {
       </nav>
 
       <div className="border-t border-slate-200 p-3">
-        <div className="flex items-center gap-3 rounded-md p-2 hover:bg-slate-50">
-          <span className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-100 text-slate-500">
-            <UserRound size={16} />
-          </span>
-
-          <div className="min-w-0 flex-1">
-            <p className="truncate text-[13px] font-semibold text-slate-700">
-              김철수 대리
-            </p>
-
-            <p className="text-[12px] text-emerald-500">● 물류운영팀</p>
-          </div>
-
-          <LogOut size={14} className="text-slate-400" />
-        </div>
+        <SidebarAccount />
       </div>
     </aside>
   )
