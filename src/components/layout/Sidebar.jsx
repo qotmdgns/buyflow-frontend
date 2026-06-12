@@ -45,13 +45,13 @@ const menuGroups = [
   {
     label: "재고 관리",
     items: [
-      { label: "재고 현황", href: "/inventory", icon: Boxes },
+      { label: "재고 현황", href: "/inventory", icon: Boxes, exact: true },
       { label: "재고 이력", href: "/inventory/history", icon: History },
     ],
   },
   {
     label: "설정",
-    items: [{ label: "시스템 관리", href: "#", icon: Settings }],
+    items: [{ label: "사용자 및 권한 관리", href: "/system", icon: Settings }],
   },
 ]
 
@@ -90,10 +90,10 @@ export default function Sidebar() {
             )}
 
             <div className="space-y-0.5">
-              {group.items.map(({ label, href, icon: Icon }) => {
-                const active =
-                  href !== "#" &&
-                  (pathname === href || pathname.startsWith(`${href}/`))
+              {group.items.map(({ label, href, icon: Icon, exact = false }) => {
+                const active = exact
+                  ? pathname === href
+                  : pathname === href || pathname.startsWith(`${href}/`)
 
                 return (
                   <Link
