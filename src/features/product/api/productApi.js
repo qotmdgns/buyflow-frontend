@@ -10,7 +10,9 @@ function wait(milliseconds) {
 }
 
 function includesKeyword(value, keyword) {
-  return value.toLowerCase().includes(keyword.trim().toLowerCase())
+  return String(value ?? "")
+    .toLowerCase()
+    .includes(keyword.trim().toLowerCase())
 }
 
 function getMockProducts(params) {
@@ -34,6 +36,7 @@ function getMockProducts(params) {
       activeStatus === "전체" ||
       (activeStatus === "사용" && product.isActive) ||
       (activeStatus === "미사용" && !product.isActive)
+
     const matchesLowStock =
       !lowStockOnly || product.currentStock < product.safetyStock
 
@@ -64,10 +67,41 @@ function getMockProducts(params) {
 }
 
 function normalizeProductResponse(data) {
+  // Spring Boot List<Product>
+  if (Array.isArray(data)) {
+    const items = data.map((product) => ({
+      ...product,
+
+      // 프론트가 기대하는 이름
+      id: product.productId,
+      code: product.productNo,
+      name: product.productName,
+      category: product.categoryName,
+
+      // 화면용 기본값
+      safetyStock: product.safetyStock ?? 0,
+      currentStock: product.currentStock ?? 0,
+      isActive: product.isActive ?? true,
+      registeredAt: product.registeredAt ?? "",
+    }))
+
+    return {
+      items,
+      pagination: {
+        page: 1,
+        size: items.length,
+        totalElements: items.length,
+        totalPages: 1,
+      },
+    }
+  }
+
+  // Mock 구조
   if (Array.isArray(data.items) && data.pagination) {
     return data
   }
 
+  // Pageable 구조
   return {
     items: data.content ?? [],
     pagination: {
@@ -92,13 +126,17 @@ export async function fetchProducts(params = {}) {
       return
     }
 
-    // 화면에서는 1페이지부터 표시하고, Spring Pageable에는 0페이지부터 전달합니다.
-    query.set(key, key === "page" ? String(Number(value) - 1) : String(value))
+    query.set(
+      key,
+      key === "page" ? String(Number(value) - 1) : String(value),
+    )
   })
 
   const response = await fetch(
-    `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/products?${query.toString()}`,
-    { cache: "no-store" },
+    `${process.env.NEXT_PUBLIC_API_BASE_URL}/products?${query.toString()}`,
+    {
+      cache: "no-store",
+    },
   )
 
   if (!response.ok) {
@@ -114,8 +152,10 @@ export async function fetchProductFilterOptions() {
   }
 
   const response = await fetch(
-    `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/products/filter-options`,
-    { cache: "no-store" },
+    `${process.env.NEXT_PUBLIC_API_BASE_URL}/products/filter-options`,
+    {
+      cache: "no-store",
+    },
   )
 
   if (!response.ok) {

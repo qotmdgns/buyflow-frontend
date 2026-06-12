@@ -1,0 +1,684 @@
+"use client"
+
+import Link from "next/link"
+import { useRouter } from "next/navigation"
+import { useMemo } from "react"
+
+import {
+  ChevronLeft,
+  ChevronRight,
+  ChevronsLeft,
+  ChevronsRight,
+  CircleAlert,
+  Download,
+  MoreHorizontal,
+  Package,
+  Plus,
+  Printer,
+  RefreshCcw,
+  Search,
+  Settings2,
+  Truck,
+} from "lucide-react"
+
+import useInboundManagement from "@/features/inbound/hooks/useInboundManagement"
+
+import {
+  createPageNumbers,
+  downloadInboundCsv,
+  formatNumber,
+  getInboundStatusMeta,
+  INBOUND_TABS,
+} from "@/features/inbound/utils/inboundUtils"
+
+const INPUT_CLASS_NAME =
+  "h-10 w-full rounded-md border border-slate-200 bg-white px-3 text-[13px] text-slate-700 outline-none transition placeholder:text-slate-300 focus:border-blue-400 focus:ring-2 focus:ring-blue-100"
+
+function MetricCard({ title, value, helper, icon: Icon, tone }) {
+  const toneStyles = {
+    slate: {
+      card: "border-l-slate-700",
+      icon: "bg-slate-100 text-slate-600",
+    },
+    rose: {
+      card: "border-l-rose-500",
+      icon: "bg-rose-50 text-rose-500",
+    },
+    amber: {
+      card: "border-l-amber-500",
+      icon: "bg-amber-50 text-amber-500",
+    },
+  }
+
+  const style = toneStyles[tone]
+
+  return (
+    <article
+      className={`flex min-h-[92px] items-center justify-between rounded-lg border border-slate-200 border-l-4 bg-white px-4 py-3 shadow-sm ${style.card}`}
+    >
+      <div>
+        <p className="text-[13px] font-semibold text-slate-500">{title}</p>
+
+        <p className="mt-1 text-[24px] font-bold leading-none text-slate-900">
+          {String(value).padStart(2, "0")}
+
+          <span className="ml-1 text-[13px] font-semibold text-slate-500">
+            건
+          </span>
+        </p>
+
+        <p className="mt-2 text-[12px] text-slate-400">{helper}</p>
+      </div>
+
+      <span
+        className={`flex h-9 w-9 items-center justify-center rounded-full ${style.icon}`}
+      >
+        <Icon size={17} />
+      </span>
+    </article>
+  )
+}
+
+function StatusBadge({ status }) {
+  const meta = getInboundStatusMeta(status)
+
+  return (
+    <span
+      className={`inline-flex rounded-full border px-2 py-1 text-[12px] font-semibold ${meta.badgeClassName}`}
+    >
+      {meta.label}
+    </span>
+  )
+}
+
+function TableMessage({ children, isError = false }) {
+  return (
+    <tr>
+      <td
+        colSpan={12}
+        className={`h-48 text-center text-[13px] ${
+          isError ? "text-rose-500" : "text-slate-400"
+        }`}
+      >
+        {children}
+      </td>
+    </tr>
+  )
+}
+
+function PageIconButton({ children, label, disabled, onClick }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={disabled}
+      aria-label={label}
+      className="flex h-8 w-8 items-center justify-center rounded-md border border-slate-200 bg-white text-slate-400 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40"
+    >
+      {children}
+    </button>
+  )
+}
+
+export default function InboundManagement() {
+  const router = useRouter()
+
+  const {
+    draftFilters,
+    activeTab,
+    filterOptions,
+    summary,
+    inbounds,
+    pagination,
+    selectedIds,
+    allCurrentRowsSelected,
+    loading,
+    error,
+    updateFilter,
+    searchInbounds,
+    resetFilters,
+    selectTab,
+    movePage,
+    changePageSize,
+    toggleAllRows,
+    toggleRow,
+    exportInbounds,
+  } = useInboundManagement()
+
+  const pageNumbers = useMemo(
+    () => createPageNumbers(pagination.page, pagination.totalPages),
+    [pagination.page, pagination.totalPages],
+  )
+
+  const firstRow = pagination.totalElements
+    ? (pagination.page - 1) * pagination.size + 1
+    : 0
+
+  const lastRow = Math.min(
+    pagination.page * pagination.size,
+    pagination.totalElements,
+  )
+
+  function moveToDetail(inboundId) {
+    router.push(`/inbounds/${inboundId}`)
+  }
+
+  function handleRowClick(event, inboundId) {
+    const interactiveElement = event.target.closest?.(
+      "a, button, input, label, select, textarea",
+    )
+
+    // 체크박스, 링크, 버튼 등 별도 기능이 있는 영역을 눌렀다면
+    // 행 클릭 이동을 실행하지 않습니다.
+    if (interactiveElement) {
+      return
+    }
+
+    moveToDetail(inboundId)
+  }
+
+  function handleRowKeyDown(event, inboundId) {
+    // 행 내부의 체크박스나 링크에서 발생한 이벤트는 제외합니다.
+    if (event.target !== event.currentTarget) {
+      return
+    }
+
+    if (event.key === "Enter" || event.key === " ") {
+      event.preventDefault()
+      moveToDetail(inboundId)
+    }
+  }
+
+  async function handleDownload() {
+    try {
+      const filteredInbounds = await exportInbounds()
+      downloadInboundCsv(filteredInbounds)
+    } catch (downloadError) {
+      console.error(
+        "입고 목록 CSV 다운로드 중 오류가 발생했습니다.",
+        downloadError,
+      )
+
+      window.alert("입고 목록을 다운로드하지 못했습니다.")
+    }
+  }
+
+  function handlePrintReport() {
+    window.print()
+  }
+
+  return (
+    <div className="w-full">
+      <header className="mb-3 flex flex-wrap items-start justify-between gap-3">
+        <div>
+          <h1 className="text-[22px] font-bold text-slate-900">입고 관리</h1>
+
+          <p className="mt-1 text-[13px] text-slate-400">
+            발주별 입고 예정, 부분 입고, 완료 현황을 조회하고 관리합니다.
+          </p>
+        </div>
+
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={handlePrintReport}
+            className="flex h-10 items-center gap-1.5 rounded-md border border-slate-200 bg-white px-3 text-[13px] font-semibold text-slate-600 transition hover:bg-slate-50"
+          >
+            <Printer size={14} />
+            보고서 출력
+          </button>
+
+          <Link
+            href="/inbounds/new"
+            className="flex h-10 items-center gap-1.5 rounded-md bg-blue-600 px-3 text-[13px] font-semibold text-white transition hover:bg-blue-700"
+          >
+            <Plus size={14} />
+            신규 입고 등록
+          </Link>
+        </div>
+      </header>
+
+      <section className="grid gap-3 md:grid-cols-3">
+        <MetricCard
+          title="오늘 입고 예정"
+          value={summary.todayExpected}
+          helper={`어제 대비 +${summary.yesterdayDifference}건`}
+          icon={Truck}
+          tone="slate"
+        />
+
+        <MetricCard
+          title="납기 지연"
+          value={summary.delayed}
+          helper="즉시 확인 필요"
+          icon={CircleAlert}
+          tone="rose"
+        />
+
+        <MetricCard
+          title="부분 입고"
+          value={summary.partial}
+          helper={`진행률 ${summary.progressRate}%`}
+          icon={Package}
+          tone="amber"
+        />
+      </section>
+
+      <div className="mt-4 flex gap-4 border-b border-slate-200">
+        {INBOUND_TABS.map((tab) => {
+          const isActive = activeTab === tab.key
+
+          return (
+            <button
+              key={tab.key}
+              type="button"
+              onClick={() => selectTab(tab.key)}
+              className={`border-b-2 px-1 pb-2 text-[13px] font-semibold transition ${
+                isActive
+                  ? "border-slate-800 text-slate-800"
+                  : "border-transparent text-slate-400 hover:text-slate-600"
+              }`}
+            >
+              {tab.label} ({summary.tabCounts[tab.key] ?? 0})
+            </button>
+          )
+        })}
+      </div>
+
+      <form
+        onSubmit={searchInbounds}
+        className="mt-3 rounded-lg border border-slate-200 bg-white p-4 shadow-sm"
+      >
+        <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+          <label>
+            <span className="mb-1 block text-[13px] font-semibold text-slate-600">
+              발주 번호
+            </span>
+
+            <input
+              value={draftFilters.orderNumber}
+              onChange={(event) =>
+                updateFilter("orderNumber", event.target.value)
+              }
+              placeholder="PO-YYYY-XXXX"
+              className={INPUT_CLASS_NAME}
+            />
+          </label>
+
+          <label>
+            <span className="mb-1 block text-[13px] font-semibold text-slate-600">
+              공급업체
+            </span>
+
+            <input
+              value={draftFilters.supplierKeyword}
+              onChange={(event) =>
+                updateFilter("supplierKeyword", event.target.value)
+              }
+              placeholder="공급업체명 검색"
+              className={INPUT_CLASS_NAME}
+            />
+          </label>
+
+          <label>
+            <span className="mb-1 block text-[13px] font-semibold text-slate-600">
+              품목 코드 또는 품목명
+            </span>
+
+            <input
+              value={draftFilters.itemKeyword}
+              onChange={(event) =>
+                updateFilter("itemKeyword", event.target.value)
+              }
+              placeholder="SKU-XXXXX 또는 품목명"
+              className={INPUT_CLASS_NAME}
+            />
+          </label>
+
+          <label>
+            <span className="mb-1 block text-[13px] font-semibold text-slate-600">
+              입고 창고
+            </span>
+
+            <select
+              value={draftFilters.warehouseName}
+              onChange={(event) =>
+                updateFilter("warehouseName", event.target.value)
+              }
+              className={INPUT_CLASS_NAME}
+            >
+              {filterOptions.warehouses.map((warehouse) => (
+                <option key={warehouse} value={warehouse}>
+                  {warehouse}
+                </option>
+              ))}
+            </select>
+          </label>
+
+          <label>
+            <span className="mb-1 block text-[13px] font-semibold text-slate-600">
+              입고 예정일
+            </span>
+
+            <div className="grid grid-cols-[minmax(0,1fr)_12px_minmax(0,1fr)] items-center gap-1">
+              <input
+                type="date"
+                value={draftFilters.expectedFrom}
+                onChange={(event) =>
+                  updateFilter("expectedFrom", event.target.value)
+                }
+                className={`${INPUT_CLASS_NAME} px-2`}
+              />
+
+              <span className="text-center text-[13px] text-slate-300">-</span>
+
+              <input
+                type="date"
+                value={draftFilters.expectedTo}
+                onChange={(event) =>
+                  updateFilter("expectedTo", event.target.value)
+                }
+                className={`${INPUT_CLASS_NAME} px-2`}
+              />
+            </div>
+          </label>
+
+          <label>
+            <span className="mb-1 block text-[13px] font-semibold text-slate-600">
+              입고 상태
+            </span>
+
+            <select
+              value={draftFilters.status}
+              onChange={(event) => updateFilter("status", event.target.value)}
+              className={INPUT_CLASS_NAME}
+            >
+              {filterOptions.statuses.map((status) => (
+                <option key={status} value={status}>
+                  {status === "전체 상태"
+                    ? status
+                    : getInboundStatusMeta(status).label}
+                </option>
+              ))}
+            </select>
+          </label>
+        </div>
+
+        <div className="mt-3 flex justify-end gap-2 border-t border-slate-100 pt-3">
+          <button
+            type="button"
+            onClick={resetFilters}
+            className="flex h-10 items-center gap-1.5 rounded-md border border-slate-200 bg-white px-4 text-[13px] font-semibold text-slate-600 transition hover:bg-slate-50"
+          >
+            <RefreshCcw size={14} />
+            초기화
+          </button>
+
+          <button
+            type="submit"
+            className="flex h-10 items-center gap-1.5 rounded-md bg-blue-600 px-4 text-[13px] font-semibold text-white transition hover:bg-blue-700"
+          >
+            <Search size={14} />
+            검색
+          </button>
+        </div>
+      </form>
+
+      <section className="mt-3 overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm">
+        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 px-4 py-3">
+          <div className="flex items-center gap-2">
+            <h2 className="text-[15px] font-bold text-slate-800">입고 목록</h2>
+
+            <p className="text-[13px] text-slate-400">
+              총 {pagination.totalElements}건의 데이터가 검색되었습니다.
+            </p>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={handleDownload}
+              className="flex h-9 items-center gap-1.5 rounded-md border border-slate-200 bg-white px-3 text-[13px] font-semibold text-slate-600 transition hover:bg-slate-50"
+            >
+              <Download size={13} />
+              CSV 다운로드
+            </button>
+
+            <button
+              type="button"
+              className="flex h-9 items-center gap-1.5 rounded-md border border-slate-200 bg-white px-3 text-[13px] font-semibold text-slate-600 transition hover:bg-slate-50"
+            >
+              <Settings2 size={13} />열 설정
+            </button>
+          </div>
+        </div>
+
+        <div className="overflow-x-auto">
+          <table className="w-full min-w-[1380px] text-left text-[13px]">
+            <thead className="bg-slate-50 text-slate-500">
+              <tr>
+                <th className="w-10 px-3 py-3">
+                  <input
+                    type="checkbox"
+                    checked={allCurrentRowsSelected}
+                    onChange={toggleAllRows}
+                    className="h-3.5 w-3.5 accent-blue-600"
+                    aria-label="현재 페이지 입고 목록 전체 선택"
+                  />
+                </th>
+
+                {[
+                  "발주 번호",
+                  "공급업체",
+                  "발주일",
+                  "입고 예정일",
+                  "입고 창고",
+                  "품목 수",
+                  "발주 수량",
+                  "누적 입고",
+                  "미입고",
+                  "상태",
+                  "관리",
+                ].map((heading) => (
+                  <th
+                    key={heading}
+                    className="whitespace-nowrap px-3 py-3 font-semibold"
+                  >
+                    {heading}
+                  </th>
+                ))}
+              </tr>
+            </thead>
+
+            <tbody>
+              {loading && (
+                <TableMessage>입고 목록을 불러오는 중입니다.</TableMessage>
+              )}
+
+              {!loading && error && (
+                <TableMessage isError>{error}</TableMessage>
+              )}
+
+              {!loading && !error && inbounds.length === 0 && (
+                <TableMessage>
+                  검색 조건에 해당하는 입고 내역이 없습니다.
+                </TableMessage>
+              )}
+
+              {!loading &&
+                !error &&
+                inbounds.map((inbound) => (
+                  <tr
+                    key={inbound.id}
+                    role="link"
+                    tabIndex={0}
+                    aria-label={`${inbound.orderNumber} 입고 상세 화면으로 이동`}
+                    onClick={(event) => handleRowClick(event, inbound.id)}
+                    onKeyDown={(event) => handleRowKeyDown(event, inbound.id)}
+                    className={`cursor-pointer border-t border-slate-100 text-slate-600 transition hover:bg-blue-50/40 focus:bg-blue-50/40 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-200 ${
+                      inbound.status === "DELAYED" ? "bg-rose-50/60" : ""
+                    }`}
+                  >
+                    <td className="px-3 py-3">
+                      <input
+                        type="checkbox"
+                        checked={selectedIds.has(inbound.id)}
+                        onChange={() => toggleRow(inbound.id)}
+                        onClick={(event) => event.stopPropagation()}
+                        className="h-3.5 w-3.5 accent-blue-600"
+                        aria-label={`${inbound.orderNumber} 선택`}
+                      />
+                    </td>
+
+                    <td className="whitespace-nowrap px-3 py-3 font-semibold">
+                      <Link
+                        href={`/inbounds/${inbound.id}`}
+                        className="text-blue-600 hover:underline"
+                      >
+                        {inbound.orderNumber}
+                      </Link>
+                    </td>
+
+                    <td className="whitespace-nowrap px-3 py-3">
+                      {inbound.supplierName}
+                    </td>
+
+                    <td className="whitespace-nowrap px-3 py-3">
+                      {inbound.orderedAt}
+                    </td>
+
+                    <td
+                      className={`whitespace-nowrap px-3 py-3 ${
+                        inbound.status === "DELAYED"
+                          ? "font-semibold text-rose-500"
+                          : ""
+                      }`}
+                    >
+                      {inbound.expectedInboundAt}
+                    </td>
+
+                    <td className="whitespace-nowrap px-3 py-3">
+                      {inbound.warehouseName}
+                    </td>
+
+                    <td className="whitespace-nowrap px-3 py-3 text-right">
+                      {formatNumber(inbound.itemCount)}
+                    </td>
+
+                    <td className="whitespace-nowrap px-3 py-3 text-right">
+                      {formatNumber(inbound.orderQuantity)}
+                    </td>
+
+                    <td className="whitespace-nowrap px-3 py-3 text-right">
+                      {formatNumber(inbound.receivedQuantity)}
+                    </td>
+
+                    <td
+                      className={`whitespace-nowrap px-3 py-3 text-right font-semibold ${
+                        inbound.remainingQuantity > 0
+                          ? "text-amber-600"
+                          : "text-slate-400"
+                      }`}
+                    >
+                      {formatNumber(inbound.remainingQuantity)}
+                    </td>
+
+                    <td className="whitespace-nowrap px-3 py-3">
+                      <StatusBadge status={inbound.status} />
+                    </td>
+
+                    <td className="whitespace-nowrap px-3 py-3 text-center">
+                      <Link
+                        href={`/inbounds/${inbound.id}`}
+                        aria-label={`${inbound.orderNumber} 입고 상세 보기`}
+                        className="inline-flex h-8 w-8 items-center justify-center rounded-md text-blue-500 transition hover:bg-blue-50"
+                      >
+                        <MoreHorizontal size={15} />
+                      </Link>
+                    </td>
+                  </tr>
+                ))}
+            </tbody>
+          </table>
+        </div>
+
+        <div className="flex flex-wrap items-center justify-between gap-3 border-t border-slate-100 px-4 py-3 text-[13px] text-slate-400">
+          <select
+            value={pagination.size}
+            onChange={(event) => changePageSize(Number(event.target.value))}
+            className="h-8 rounded-md border border-slate-200 bg-white px-2 text-[13px] text-slate-500 outline-none"
+          >
+            {[10, 15, 20, 50].map((size) => (
+              <option key={size} value={size}>
+                페이지당 행 수: {size}
+              </option>
+            ))}
+          </select>
+
+          <p>
+            전체 {pagination.totalElements}건 중 {firstRow} - {lastRow}건 표시
+          </p>
+
+          <div className="flex items-center gap-1">
+            <PageIconButton
+              label="첫 페이지"
+              disabled={pagination.page === 1}
+              onClick={() => movePage(1)}
+            >
+              <ChevronsLeft size={15} />
+            </PageIconButton>
+
+            <PageIconButton
+              label="이전 페이지"
+              disabled={pagination.page === 1}
+              onClick={() => movePage(pagination.page - 1)}
+            >
+              <ChevronLeft size={15} />
+            </PageIconButton>
+
+            {pageNumbers.map((pageNumber) => {
+              if (typeof pageNumber !== "number") {
+                return (
+                  <span key={pageNumber} className="px-1 text-slate-400">
+                    ···
+                  </span>
+                )
+              }
+
+              return (
+                <button
+                  key={pageNumber}
+                  type="button"
+                  onClick={() => movePage(pageNumber)}
+                  className={`flex h-8 min-w-8 items-center justify-center rounded-md px-2 text-[13px] font-semibold ${
+                    pagination.page === pageNumber
+                      ? "bg-blue-600 text-white"
+                      : "border border-transparent bg-white text-slate-500 hover:border-slate-200"
+                  }`}
+                >
+                  {pageNumber}
+                </button>
+              )
+            })}
+
+            <PageIconButton
+              label="다음 페이지"
+              disabled={pagination.page === pagination.totalPages}
+              onClick={() => movePage(pagination.page + 1)}
+            >
+              <ChevronRight size={15} />
+            </PageIconButton>
+
+            <PageIconButton
+              label="마지막 페이지"
+              disabled={pagination.page === pagination.totalPages}
+              onClick={() => movePage(pagination.totalPages)}
+            >
+              <ChevronsRight size={15} />
+            </PageIconButton>
+          </div>
+        </div>
+      </section>
+    </div>
+  )
+}
