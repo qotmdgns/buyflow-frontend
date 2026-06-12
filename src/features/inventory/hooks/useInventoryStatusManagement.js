@@ -128,6 +128,23 @@ export default function useInventoryStatusManagement() {
     setAppliedFilters({ ...DEFAULT_INVENTORY_FILTERS })
   }
 
+  function selectSummaryStatus(stockStatus) {
+    setDraftFilters((currentFilters) => ({
+      ...currentFilters,
+      stockStatus,
+    }))
+
+    setPagination((currentPagination) => ({
+      ...currentPagination,
+      page: 1,
+    }))
+
+    setAppliedFilters((currentFilters) => ({
+      ...currentFilters,
+      stockStatus,
+    }))
+  }
+
   function movePage(nextPage) {
     const safePage = Math.min(Math.max(nextPage, 1), pagination.totalPages)
 
@@ -166,6 +183,7 @@ export default function useInventoryStatusManagement() {
 
   return {
     draftFilters,
+    appliedFilters,
     filterOptions,
     inventories,
     summary,
@@ -177,6 +195,7 @@ export default function useInventoryStatusManagement() {
     updateFilter,
     searchInventories,
     resetFilters,
+    selectSummaryStatus,
     movePage,
     changePageSize,
     openAdjustment,

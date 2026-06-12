@@ -10,6 +10,7 @@ import {
 } from "lucide-react"
 import InventoryAdjustmentModal from "@/features/inventory/components/InventoryAdjustmentModal"
 import InventoryPagination from "@/features/inventory/components/InventoryPagination"
+import InventorySummaryCards from "@/features/inventory/components/InventorySummaryCards"
 import useInventoryStatusManagement from "@/features/inventory/hooks/useInventoryStatusManagement"
 import {
   downloadInventoryCsv,
@@ -69,23 +70,10 @@ function StockStatusBadge({ inventory }) {
   )
 }
 
-function SummaryCard({ label, value, tone = "default" }) {
-  const toneClassName = tone === "danger" ? "text-rose-500" : "text-slate-900"
-
-  return (
-    <article className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
-      <p className="text-[13px] font-semibold text-slate-500">{label}</p>
-
-      <strong className={`mt-2 block text-[24px] ${toneClassName}`}>
-        {formatNumber(value)}
-      </strong>
-    </article>
-  )
-}
-
 export default function InventoryStatusManagement() {
   const {
     draftFilters,
+    appliedFilters,
     filterOptions,
     inventories,
     summary,
@@ -97,6 +85,7 @@ export default function InventoryStatusManagement() {
     updateFilter,
     searchInventories,
     resetFilters,
+    selectSummaryStatus,
     movePage,
     changePageSize,
     openAdjustment,
@@ -116,19 +105,11 @@ export default function InventoryStatusManagement() {
         </p>
       </header>
 
-      <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-        <SummaryCard label="조회 재고 건수" value={summary.total} />
-
-        <SummaryCard label="정상 재고" value={summary.normal} />
-
-        <SummaryCard label="안전재고 미만" value={summary.low} tone="danger" />
-
-        <SummaryCard
-          label="재고 없음"
-          value={summary.outOfStock}
-          tone="danger"
-        />
-      </div>
+      <InventorySummaryCards
+        summary={summary}
+        selectedStatus={appliedFilters.stockStatus}
+        onSelectStatus={selectSummaryStatus}
+      />
 
       <form
         onSubmit={searchInventories}
