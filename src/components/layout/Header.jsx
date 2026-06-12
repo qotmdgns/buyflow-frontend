@@ -127,6 +127,54 @@ const breadcrumbRules = [
       { label: "입고 관리" },
     ],
   },
+
+  {
+    matches: (pathname) => /^\/inspections\/[^/]+\/register$/.test(pathname),
+
+    crumbs: [
+      {
+        label: "구매 및 입고",
+        href: "/inspections",
+      },
+      {
+        label: "검수 관리",
+        href: "/inspections",
+      },
+      {
+        label: "검수 등록",
+      },
+    ],
+  },
+  {
+    matches: (pathname) => /^\/inspections\/[^/]+$/.test(pathname),
+
+    crumbs: [
+      {
+        label: "구매 및 입고",
+        href: "/inspections",
+      },
+      {
+        label: "검수 관리",
+        href: "/inspections",
+      },
+      {
+        label: "검수 상세",
+      },
+    ],
+  },
+  {
+    path: "/inspections",
+
+    crumbs: [
+      {
+        label: "구매 및 입고",
+        href: "/inspections",
+      },
+      {
+        label: "검수 관리",
+      },
+    ],
+  },
 ]
 
 function getBreadcrumbs(pathname) {
