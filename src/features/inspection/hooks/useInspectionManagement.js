@@ -12,6 +12,7 @@ import {
   DEFAULT_INSPECTION_FILTER_OPTIONS,
   DEFAULT_INSPECTION_FILTERS,
   DEFAULT_INSPECTION_PAGINATION,
+  INSPECTION_SUMMARY_FILTERS,
 } from "@/features/inspection/utils/inspectionManagementUtils"
 
 const DEFAULT_SUMMARY = {
@@ -26,6 +27,10 @@ export default function useInspectionManagement() {
 
   const [appliedFilters, setAppliedFilters] = useState(
     DEFAULT_INSPECTION_FILTERS,
+  )
+
+  const [summaryFilter, setSummaryFilter] = useState(
+    INSPECTION_SUMMARY_FILTERS.ALL,
   )
 
   const [filterOptions, setFilterOptions] = useState(
@@ -53,6 +58,7 @@ export default function useInspectionManagement() {
         if (ignore) return
 
         setFilterOptions(nextFilterOptions)
+
         setSummary(nextSummary)
       })
       .catch(() => {
@@ -78,13 +84,18 @@ export default function useInspectionManagement() {
       try {
         const data = await fetchPendingInspections({
           ...appliedFilters,
+
+          summaryFilter,
+
           page: pagination.page,
+
           size: pagination.size,
         })
 
         if (ignore) return
 
         setInspections(data.items)
+
         setPagination(data.pagination)
       } catch (requestError) {
         if (!ignore) {
@@ -104,11 +115,12 @@ export default function useInspectionManagement() {
     return () => {
       ignore = true
     }
-  }, [appliedFilters, pagination.page, pagination.size])
+  }, [appliedFilters, summaryFilter, pagination.page, pagination.size])
 
   function updateFilter(name, value) {
     setDraftFilters((currentFilters) => ({
       ...currentFilters,
+
       [name]: value,
     }))
   }
@@ -118,10 +130,13 @@ export default function useInspectionManagement() {
 
     setPagination((currentPagination) => ({
       ...currentPagination,
+
       page: 1,
     }))
 
-    setAppliedFilters({ ...draftFilters })
+    setAppliedFilters({
+      ...draftFilters,
+    })
   }
 
   function resetFilters() {
@@ -133,8 +148,21 @@ export default function useInspectionManagement() {
       ...DEFAULT_INSPECTION_FILTERS,
     })
 
+    setSummaryFilter(INSPECTION_SUMMARY_FILTERS.ALL)
+
     setPagination((currentPagination) => ({
       ...currentPagination,
+
+      page: 1,
+    }))
+  }
+
+  function changeSummaryFilter(nextFilter) {
+    setSummaryFilter(nextFilter)
+
+    setPagination((currentPagination) => ({
+      ...currentPagination,
+
       page: 1,
     }))
   }
@@ -142,6 +170,7 @@ export default function useInspectionManagement() {
   function movePage(page) {
     setPagination((currentPagination) => ({
       ...currentPagination,
+
       page,
     }))
   }
@@ -149,13 +178,16 @@ export default function useInspectionManagement() {
   function changePageSize(size) {
     setPagination((currentPagination) => ({
       ...currentPagination,
+
       page: 1,
+
       size,
     }))
   }
 
   return {
     draftFilters,
+    summaryFilter,
     filterOptions,
     summary,
     inspections,
@@ -165,6 +197,7 @@ export default function useInspectionManagement() {
     updateFilter,
     searchInspections,
     resetFilters,
+    changeSummaryFilter,
     movePage,
     changePageSize,
   }

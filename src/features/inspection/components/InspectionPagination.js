@@ -35,26 +35,10 @@ export default function InspectionPagination({
   const firstRow = totalElements ? (page - 1) * size + 1 : 0
 
   const lastRow = Math.min(page * size, totalElements)
-
+  1
   return (
     <div className="flex flex-wrap items-center justify-between gap-3 border-t border-slate-100 px-4 py-3 text-[13px] text-slate-400">
-      <div className="flex items-center gap-3">
-        <select
-          value={size}
-          onChange={(event) => onChangePageSize(Number(event.target.value))}
-          className="h-8 rounded-md border border-slate-200 bg-white px-2 text-[13px] text-slate-500 outline-none"
-        >
-          {PAGE_SIZES.map((pageSize) => (
-            <option key={pageSize} value={pageSize}>
-              {pageSize}개씩 보기
-            </option>
-          ))}
-        </select>
-
-        <p>
-          목록 {firstRow}-{lastRow} / {totalElements}
-        </p>
-      </div>
+      <div className="flex items-center gap-3"></div>
 
       <div className="flex items-center gap-1">
         <PageIconButton
