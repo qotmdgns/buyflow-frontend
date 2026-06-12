@@ -5,8 +5,15 @@ import {
 
 import {
   getTodayString,
+  INSPECTION_SUMMARY_FILTERS,
   isInspectionOverdue,
 } from "@/features/inspection/utils/inspectionManagementUtils"
+
+import {
+  getMockInspectionDetail,
+  hasMockInspectionResult,
+  saveMockInspectionResult,
+} from "@/features/inspection/data/mockInspectionDetailData"
 
 const USE_MOCK = process.env.NEXT_PUBLIC_USE_INSPECTION_MOCK !== "false"
 
@@ -42,6 +49,23 @@ function isWithinRange(value, from, to) {
   return true
 }
 
+function matchesSummaryFilter(inspection, summaryFilter, today) {
+  switch (summaryFilter) {
+    case INSPECTION_SUMMARY_FILTERS.TODAY:
+      return inspection.receivedAt === today
+
+    case INSPECTION_SUMMARY_FILTERS.URGENT:
+      return inspection.priority === "긴급"
+
+    case INSPECTION_SUMMARY_FILTERS.OVERDUE:
+      return isInspectionOverdue(inspection, today)
+
+    case INSPECTION_SUMMARY_FILTERS.ALL:
+    default:
+      return true
+  }
+}
+
 function filterMockPendingInspections(params = {}) {
   const {
     inspectionNumber = "",
@@ -52,10 +76,18 @@ function filterMockPendingInspections(params = {}) {
     priority = "전체",
     receivedFrom = "",
     receivedTo = "",
+    summaryFilter = INSPECTION_SUMMARY_FILTERS.ALL,
   } = params
 
+  const today = getTodayString()
+
   return mockPendingInspections.filter((inspection) => {
+    if (hasMockInspectionResult(inspection.id)) {
+      return false
+    }
+
     return (
+      matchesSummaryFilter(inspection, summaryFilter, today) &&
       (!inspectionNumber ||
         includesKeyword(inspection.inspectionNumber, inspectionNumber)) &&
       (!inboundNumber ||
@@ -73,11 +105,13 @@ function filterMockPendingInspections(params = {}) {
 
 function getMockPendingInspections(params = {}) {
   const page = Number(params.page ?? 1)
+
   const size = Number(params.size ?? 15)
 
   const filteredInspections = filterMockPendingInspections(params)
 
   const totalElements = filteredInspections.length
+
   const totalPages = Math.max(1, Math.ceil(totalElements / size))
 
   const safePage = Math.min(Math.max(page, 1), totalPages)
@@ -99,18 +133,22 @@ function getMockPendingInspections(params = {}) {
 function getMockPendingInspectionSummary() {
   const today = getTodayString()
 
-  return {
-    total: mockPendingInspections.length,
+  const pendingInspections = mockPendingInspections.filter(
+    (inspection) => !hasMockInspectionResult(inspection.id),
+  )
 
-    receivedToday: mockPendingInspections.filter(
+  return {
+    total: pendingInspections.length,
+
+    receivedToday: pendingInspections.filter(
       (inspection) => inspection.receivedAt === today,
     ).length,
 
-    urgent: mockPendingInspections.filter(
+    urgent: pendingInspections.filter(
       (inspection) => inspection.priority === "긴급",
     ).length,
 
-    overdue: mockPendingInspections.filter((inspection) =>
+    overdue: pendingInspections.filter((inspection) =>
       isInspectionOverdue(inspection, today),
     ).length,
   }
@@ -122,6 +160,7 @@ function createQueryString(params = {}) {
   Object.entries(params).forEach(([key, value]) => {
     if (
       value === "" ||
+      value === "ALL" ||
       value === "전체" ||
       value === "전체 공급업체" ||
       value === "전체 창고"
@@ -166,12 +205,13 @@ export async function fetchPendingInspections(params = {}) {
 
   const query = createQueryString(params)
 
-  const response = await fetch(
-    createApiUrl(`/api/inspections/pending?${query}`),
-    {
-      cache: "no-store",
-    },
-  )
+  const path = query
+    ? `/api/inspections/pending?${query}`
+    : "/api/inspections/pending"
+
+  const response = await fetch(createApiUrl(path), {
+    cache: "no-store",
+  })
 
   if (!response.ok) {
     throw new Error("검수 대기 목록을 불러오지 못했습니다.")
@@ -216,4 +256,170 @@ export async function fetchPendingInspectionSummary() {
   }
 
   return response.json()
+}
+
+function normalizeNullableNumber(value) {
+  if (value === null || value === undefined || value === "") {
+    return null
+  }
+
+  return Number(value)
+}
+
+function normalizeInspectionDetailResponse(data) {
+  const rawResult = data.inspectionResult ?? data.result ?? null
+
+  const rawItems = rawResult?.items ?? data.items ?? data.inspectionItems ?? []
+
+  const items = rawItems.map((item, index) => ({
+    id: item.id ?? item.inspectionItemId ?? index + 1,
+
+    itemCode: item.itemCode ?? item.code ?? "",
+
+    itemName: item.itemName ?? item.name ?? "",
+
+    category: item.category ?? item.categoryName ?? "",
+
+    specification: item.specification ?? item.spec ?? "",
+
+    unit: item.unit ?? "",
+
+    lotNumber: item.lotNumber ?? item.lotNo ?? "",
+
+    receivedQuantity: Number(item.receivedQuantity ?? item.quantity ?? 0),
+
+    acceptedQuantity: normalizeNullableNumber(item.acceptedQuantity),
+
+    defectiveQuantity: normalizeNullableNumber(item.defectiveQuantity),
+
+    defectReason: item.defectReason ?? "",
+
+    disposition: item.disposition ?? "NONE",
+  }))
+
+  const totalReceivedQuantity = items.reduce(
+    (total, item) => total + Number(item.receivedQuantity ?? 0),
+
+    0,
+  )
+
+  return {
+    id: data.id ?? data.inspectionId,
+
+    inspectionNumber: data.inspectionNumber ?? "",
+
+    inboundNumber: data.inboundNumber ?? "",
+
+    orderNumber: data.orderNumber ?? "",
+
+    supplierName: data.supplierName ?? "",
+
+    warehouseName: data.warehouseName ?? "",
+
+    receivedAt: data.receivedAt ?? "",
+
+    inspectionDueAt: data.inspectionDueAt ?? "",
+
+    priority: data.priority ?? "일반",
+
+    status: data.status ?? rawResult?.status ?? "PENDING",
+
+    receivedBy: data.receivedBy ?? "",
+
+    itemCount: Number(data.itemCount ?? items.length),
+
+    totalReceivedQuantity: Number(
+      data.totalReceivedQuantity ?? totalReceivedQuantity,
+    ),
+
+    items,
+
+    inspectionResult: rawResult
+      ? {
+          status: rawResult.status ?? data.status,
+
+          inspectorName: rawResult.inspectorName ?? "",
+
+          inspectedAt: rawResult.inspectedAt ?? "",
+
+          note: rawResult.note ?? "",
+
+          items,
+        }
+      : null,
+  }
+}
+
+export async function fetchInspectionDetail(inspectionId) {
+  if (!inspectionId) {
+    throw new Error("검수 대기 ID가 없습니다.")
+  }
+
+  if (USE_MOCK) {
+    await wait(150)
+
+    const mockDetail = getMockInspectionDetail(inspectionId)
+
+    if (!mockDetail) {
+      throw new Error("존재하지 않는 검수 대기 건입니다.")
+    }
+
+    return normalizeInspectionDetailResponse(mockDetail)
+  }
+
+  const response = await fetch(
+    createApiUrl(`/api/inspections/${encodeURIComponent(inspectionId)}`),
+
+    {
+      cache: "no-store",
+    },
+  )
+
+  if (response.status === 404) {
+    throw new Error("존재하지 않는 검수 대기 건입니다.")
+  }
+
+  if (!response.ok) {
+    throw new Error("검수 상세 정보를 불러오지 못했습니다.")
+  }
+
+  return normalizeInspectionDetailResponse(await response.json())
+}
+
+export async function submitInspectionResult(inspectionId, payload) {
+  if (!inspectionId) {
+    throw new Error("검수 대기 ID가 없습니다.")
+  }
+
+  if (USE_MOCK) {
+    await wait(250)
+
+    const savedInspection = saveMockInspectionResult(inspectionId, payload)
+
+    if (!savedInspection) {
+      throw new Error("존재하지 않는 검수 대기 건입니다.")
+    }
+
+    return normalizeInspectionDetailResponse(savedInspection)
+  }
+
+  const response = await fetch(
+    createApiUrl(`/api/inspections/${encodeURIComponent(inspectionId)}/result`),
+
+    {
+      method: "POST",
+
+      headers: {
+        "Content-Type": "application/json",
+      },
+
+      body: JSON.stringify(payload),
+    },
+  )
+
+  if (!response.ok) {
+    throw new Error("검수 결과를 저장하지 못했습니다.")
+  }
+
+  return normalizeInspectionDetailResponse(await response.json())
 }

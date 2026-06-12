@@ -1,3 +1,10 @@
+export const INSPECTION_SUMMARY_FILTERS = {
+  ALL: "ALL",
+  TODAY: "TODAY",
+  URGENT: "URGENT",
+  OVERDUE: "OVERDUE",
+}
+
 export const DEFAULT_INSPECTION_FILTERS = {
   inspectionNumber: "",
   inboundNumber: "",
@@ -50,17 +57,34 @@ export function isInspectionOverdue(inspection, today = getTodayString()) {
 }
 
 export function getInspectionStatusMeta(status) {
-  if (status === "PENDING") {
-    return {
+  const statusMap = {
+    PENDING: {
       label: "검수 대기",
       badgeClassName: "border-amber-200 bg-amber-50 text-amber-600",
-    }
+    },
+
+    COMPLETED: {
+      label: "검수 완료",
+      badgeClassName: "border-emerald-200 bg-emerald-50 text-emerald-600",
+    },
+
+    PARTIAL_ACCEPTED: {
+      label: "부분 합격",
+      badgeClassName: "border-orange-200 bg-orange-50 text-orange-600",
+    },
+
+    REJECTED: {
+      label: "불합격",
+      badgeClassName: "border-rose-200 bg-rose-50 text-rose-500",
+    },
   }
 
-  return {
-    label: status,
-    badgeClassName: "border-slate-200 bg-slate-50 text-slate-500",
-  }
+  return (
+    statusMap[status] ?? {
+      label: status || "-",
+      badgeClassName: "border-slate-200 bg-slate-50 text-slate-500",
+    }
+  )
 }
 
 export function formatNumber(value = 0) {
@@ -97,4 +121,42 @@ export function createPageNumbers(currentPage, totalPages) {
     "ellipsis-right",
     totalPages,
   ]
+}
+export function getDispositionLabel(disposition) {
+  const labels = {
+    NONE: "-",
+    RETURN: "반품",
+    EXCHANGE: "교환 요청",
+    CONDITIONAL_ACCEPTANCE: "조건부 입고",
+  }
+
+  return labels[disposition] ?? disposition ?? "-"
+}
+
+export function getInspectionItemResultMeta(item) {
+  if (item.acceptedQuantity == null || item.defectiveQuantity == null) {
+    return {
+      label: "검수 대기",
+      badgeClassName: "border-slate-200 bg-slate-50 text-slate-500",
+    }
+  }
+
+  if (Number(item.defectiveQuantity) === 0) {
+    return {
+      label: "합격",
+      badgeClassName: "border-emerald-200 bg-emerald-50 text-emerald-600",
+    }
+  }
+
+  if (Number(item.acceptedQuantity) === 0) {
+    return {
+      label: "불합격",
+      badgeClassName: "border-rose-200 bg-rose-50 text-rose-500",
+    }
+  }
+
+  return {
+    label: "부분 합격",
+    badgeClassName: "border-orange-200 bg-orange-50 text-orange-600",
+  }
 }
