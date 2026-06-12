@@ -35,7 +35,7 @@ export default function InspectionPagination({
   const firstRow = totalElements ? (page - 1) * size + 1 : 0
 
   const lastRow = Math.min(page * size, totalElements)
-
+  1
   return (
     <div className="flex flex-wrap items-center justify-between gap-3 border-t border-slate-100 px-4 py-3 text-[13px] text-slate-400">
       <div className="flex items-center gap-3"></div>
