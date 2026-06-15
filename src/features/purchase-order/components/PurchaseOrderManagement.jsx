@@ -313,19 +313,7 @@ export default function PurchaseOrderManagement() {
           </table>
         </div>
 
-        <div className="flex flex-wrap items-center justify-between gap-3 border-t border-slate-100 px-4 py-3">
-          <select
-            value={pagination.size}
-            onChange={(event) => changePageSize(Number(event.target.value))}
-            className="h-9 rounded-md border border-slate-200 bg-white px-2 text-[13px] text-slate-600 outline-none"
-          >
-            {[10, 15, 20, 50].map((size) => (
-              <option key={size} value={size}>
-                {size}개씩 보기
-              </option>
-            ))}
-          </select>
-
+        <div className="flex flex-wrap items-center justify-end gap-3 border-t border-slate-100 px-4 py-3">
           <div className="flex items-center gap-2">
             <button
               type="button"

@@ -11,7 +11,6 @@ import {
   ChevronsRight,
   CircleAlert,
   Download,
-  MoreHorizontal,
   Package,
   Plus,
   Printer,
@@ -591,9 +590,9 @@ export default function InboundManagement() {
                       <Link
                         href={`/inbounds/${inbound.id}`}
                         aria-label={`${inbound.orderNumber} 입고 상세 보기`}
-                        className="inline-flex h-8 w-8 items-center justify-center rounded-md text-blue-500 transition hover:bg-blue-50"
+                        className="inline-flex items-center justify-center rounded-md border border-blue-200 bg-blue-50 px-3 py-1.5 text-[13px] font-semibold text-blue-600 transition hover:bg-blue-100"
                       >
-                        <MoreHorizontal size={15} />
+                        입고 상세
                       </Link>
                     </td>
                   </tr>
@@ -602,23 +601,7 @@ export default function InboundManagement() {
           </table>
         </div>
 
-        <div className="flex flex-wrap items-center justify-between gap-3 border-t border-slate-100 px-4 py-3 text-[13px] text-slate-400">
-          <select
-            value={pagination.size}
-            onChange={(event) => changePageSize(Number(event.target.value))}
-            className="h-8 rounded-md border border-slate-200 bg-white px-2 text-[13px] text-slate-500 outline-none"
-          >
-            {[10, 15, 20, 50].map((size) => (
-              <option key={size} value={size}>
-                페이지당 행 수: {size}
-              </option>
-            ))}
-          </select>
-
-          <p>
-            전체 {pagination.totalElements}건 중 {firstRow} - {lastRow}건 표시
-          </p>
-
+        <div className="flex w-full flex-wrap items-center justify-end gap-3 border-t border-slate-100 px-4 py-3 text-[13px] text-slate-400">
           <div className="flex items-center gap-1">
             <PageIconButton
               label="첫 페이지"

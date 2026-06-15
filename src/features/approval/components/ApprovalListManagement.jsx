@@ -333,19 +333,7 @@ export default function ApprovalListManagement() {
             </table>
           </div>
 
-          <div className="flex flex-wrap items-center justify-between gap-3 border-t border-slate-100 px-4 py-3 text-[13px] text-slate-400">
-            <select
-              value={pageSize}
-              onChange={(event) => changePageSize(Number(event.target.value))}
-              className="h-8 rounded-md border border-slate-200 bg-white px-2 text-[13px] text-slate-500 outline-none"
-            >
-              {[10, 15, 20, 50].map((size) => (
-                <option key={size} value={size}>
-                  {size}개씩 보기
-                </option>
-              ))}
-            </select>
-
+          <div className="flex flex-wrap items-center justify-end gap-3 border-t border-slate-100 px-4 py-3 text-[13px] text-slate-400">
             <div className="flex items-center gap-2">
               <button
                 type="button"

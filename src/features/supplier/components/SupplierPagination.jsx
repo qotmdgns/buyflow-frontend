@@ -2,8 +2,6 @@ import { useMemo } from "react"
 import { ChevronLeft, ChevronRight } from "lucide-react"
 import { createPageNumbers } from "@/features/supplier/utils/supplierManagementUtils"
 
-const PAGE_SIZES = [10, 15, 20, 50]
-
 function PageIconButton({ children, label, disabled, onClick }) {
   return (
     <button
@@ -18,44 +16,16 @@ function PageIconButton({ children, label, disabled, onClick }) {
   )
 }
 
-export default function SupplierPagination({
-  pagination,
-  pageSize,
-  onChangePageSize,
-  onMovePage,
-}) {
-  const { page, totalPages, totalElements } = pagination
+export default function SupplierPagination({ pagination, onMovePage }) {
+  const { page, totalPages } = pagination
 
   const pageNumbers = useMemo(
     () => createPageNumbers(page, totalPages),
     [page, totalPages],
   )
 
-  const firstRow = totalElements ? (page - 1) * pageSize + 1 : 0
-  const lastRow = Math.min(page * pageSize, totalElements)
-
   return (
-    <div className="flex flex-wrap items-center justify-between gap-3 border-t border-slate-100 px-4 py-3 text-[13px] text-slate-500">
-      <div className="flex items-center gap-3">
-        <span>페이지당 행 수</span>
-
-        <select
-          value={pageSize}
-          onChange={(event) => onChangePageSize(Number(event.target.value))}
-          className="h-8 rounded-md border border-slate-200 bg-white px-2 text-[13px] text-slate-600 outline-none"
-        >
-          {PAGE_SIZES.map((size) => (
-            <option key={size} value={size}>
-              {size}
-            </option>
-          ))}
-        </select>
-
-        <p>
-          총 {totalElements}건 중 {firstRow} - {lastRow}
-        </p>
-      </div>
-
+    <div className="flex flex-wrap items-center justify-end gap-3 border-t border-slate-100 px-4 py-3 text-[13px] text-slate-500">
       <div className="flex items-center gap-1">
         <PageIconButton
           label="이전 페이지"
