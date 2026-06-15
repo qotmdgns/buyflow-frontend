@@ -1,10 +1,6 @@
-import InventoryHistoryManagement from "@/features/inventory/components/InventoryHistoryManagement"
+import StockHistoryManagement from "@/features/stock/components/StockHistoryManagement"
 
-function getStringParam(value, fallback = "") {
-  return typeof value === "string" ? value : fallback
-}
-
-export default async function InventoryHistoryPage({ searchParams }) {
+export default async function StockHistoryPage({ searchParams }) {
   const params = await searchParams
 
   const initialFilters = {
@@ -15,7 +11,7 @@ export default async function InventoryHistoryPage({ searchParams }) {
   const componentKey = `${initialFilters.itemKeyword}:${initialFilters.warehouseCode}`
 
   return (
-    <InventoryHistoryManagement
+    <StockHistoryManagement
       key={componentKey}
       initialFilters={initialFilters}
     />

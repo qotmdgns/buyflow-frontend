@@ -1,4 +1,4 @@
-export const DEFAULT_INVENTORY_FILTERS = {
+export const DEFAULT_STOCK_FILTERS = {
   itemCode: "",
   itemName: "",
   category: "전체",
@@ -21,14 +21,14 @@ export const DEFAULT_PAGINATION = {
   totalPages: 1,
 }
 
-export const DEFAULT_INVENTORY_FILTER_OPTIONS = {
+export const DEFAULT_STOCK_FILTER_OPTIONS = {
   categories: ["전체"],
   warehouses: [{ value: "전체", label: "전체" }],
   stockStatuses: ["전체", "정상", "안전재고 미만", "재고 없음"],
   movementTypes: ["전체", "입고", "재고 조정 증가", "재고 조정 감소"],
 }
 
-export const INVENTORY_TABLE_HEADERS = [
+export const STOCK_TABLE_HEADERS = [
   "품목 코드",
   "품목명",
   "카테고리",
@@ -42,7 +42,7 @@ export const INVENTORY_TABLE_HEADERS = [
   "관리",
 ]
 
-export const INVENTORY_HISTORY_TABLE_HEADERS = [
+export const STOCK_HISTORY_TABLE_HEADERS = [
   "변경 일시",
   "변경 유형",
   "품목",
@@ -148,28 +148,28 @@ function downloadCsv(filename, headers, rows) {
   URL.revokeObjectURL(url)
 }
 
-export function downloadInventoryCsv(inventories) {
-  const rows = inventories.map((inventory) => [
-    inventory.itemCode,
-    inventory.itemName,
-    inventory.category,
-    inventory.warehouseName,
-    inventory.locationCode,
-    inventory.unit,
-    inventory.currentStock,
-    inventory.safetyStock,
-    inventory.currentStock - inventory.safetyStock,
-    getStockStatus(inventory.currentStock, inventory.safetyStock),
+export function downloadStockCsv(stocks) {
+  const rows = stocks.map((stock) => [
+    stock.itemCode,
+    stock.itemName,
+    stock.category,
+    stock.warehouseName,
+    stock.locationCode,
+    stock.unit,
+    stock.currentStock,
+    stock.safetyStock,
+    stock.currentStock - stock.safetyStock,
+    getStockStatus(stock.currentStock, stock.safetyStock),
   ])
 
   downloadCsv(
-    `inventory-list-${new Date().toISOString().slice(0, 10)}.csv`,
-    INVENTORY_TABLE_HEADERS.slice(0, -1),
+    `stock-list-${new Date().toISOString().slice(0, 10)}.csv`,
+    STOCK_TABLE_HEADERS.slice(0, -1),
     rows,
   )
 }
 
-export function downloadInventoryHistoryCsv(histories) {
+export function downloadStockHistoryCsv(histories) {
   const rows = histories.map((history) => [
     history.occurredAt,
     history.movementType,
@@ -184,8 +184,8 @@ export function downloadInventoryHistoryCsv(histories) {
   ])
 
   downloadCsv(
-    `inventory-history-${new Date().toISOString().slice(0, 10)}.csv`,
-    INVENTORY_HISTORY_TABLE_HEADERS,
+    `stock-history-${new Date().toISOString().slice(0, 10)}.csv`,
+    STOCK_HISTORY_TABLE_HEADERS,
     rows,
   )
 }

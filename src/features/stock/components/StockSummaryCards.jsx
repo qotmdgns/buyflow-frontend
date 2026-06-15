@@ -2,7 +2,7 @@
 
 import { Search, Check, AlertCircle, X } from "lucide-react"
 
-import { formatNumber } from "@/features/inventory/utils/inventoryManagementUtils"
+import { formatNumber } from "@/features/stock/utils/StockManagementUtils"
 
 const CARD_ITEMS = [
   {
@@ -47,7 +47,7 @@ const CARD_ITEMS = [
   },
 ]
 
-export default function InventorySummaryCards({
+export default function StockSummaryCards({
   summary,
   selectedStatus,
   onSelectStatus,

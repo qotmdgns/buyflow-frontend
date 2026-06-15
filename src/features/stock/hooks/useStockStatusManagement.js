@@ -2,15 +2,15 @@
 
 import { useEffect, useState } from "react"
 import {
-  createInventoryAdjustment,
-  fetchInventories,
-  fetchInventoryFilterOptions,
-} from "@/features/inventory/api/inventoryApi"
+  createStockAdjustment,
+  fetchStocks,
+  fetchStockFilterOptions,
+} from "@/features/stock/api/stockApi"
 import {
-  DEFAULT_INVENTORY_FILTER_OPTIONS,
-  DEFAULT_INVENTORY_FILTERS,
+  DEFAULT_STOCK_FILTER_OPTIONS,
+  DEFAULT_STOCK_FILTERS,
   DEFAULT_PAGINATION,
-} from "@/features/inventory/utils/inventoryManagementUtils"
+} from "@/features/stock/utils/StockManagementUtils"
 
 const DEFAULT_SUMMARY = {
   total: 0,
@@ -19,20 +19,20 @@ const DEFAULT_SUMMARY = {
   outOfStock: 0,
 }
 
-export default function useInventoryStatusManagement() {
+export default function useStockStatusManagement() {
   const [draftFilters, setDraftFilters] = useState({
-    ...DEFAULT_INVENTORY_FILTERS,
+    ...DEFAULT_STOCK_FILTERS,
   })
 
   const [appliedFilters, setAppliedFilters] = useState({
-    ...DEFAULT_INVENTORY_FILTERS,
+    ...DEFAULT_STOCK_FILTERS,
   })
 
   const [filterOptions, setFilterOptions] = useState(
-    DEFAULT_INVENTORY_FILTER_OPTIONS,
+    DEFAULT_STOCK_FILTER_OPTIONS,
   )
 
-  const [inventories, setInventories] = useState([])
+  const [stocks, setStocks] = useState([])
   const [summary, setSummary] = useState(DEFAULT_SUMMARY)
   const [pagination, setPagination] = useState(DEFAULT_PAGINATION)
   const [pageSize, setPageSize] = useState(10)
@@ -45,7 +45,7 @@ export default function useInventoryStatusManagement() {
   useEffect(() => {
     let ignore = false
 
-    fetchInventoryFilterOptions()
+    fetchStockFilterOptions()
       .then((data) => {
         if (!ignore) {
           setFilterOptions(data)
@@ -53,7 +53,7 @@ export default function useInventoryStatusManagement() {
       })
       .catch(() => {
         if (!ignore) {
-          setFilterOptions(DEFAULT_INVENTORY_FILTER_OPTIONS)
+          setFilterOptions(DEFAULT_STOCK_FILTER_OPTIONS)
         }
       })
 
@@ -65,12 +65,12 @@ export default function useInventoryStatusManagement() {
   useEffect(() => {
     let ignore = false
 
-    async function loadInventories() {
+    async function loadStocks() {
       setLoading(true)
       setError("")
 
       try {
-        const data = await fetchInventories({
+        const data = await fetchStocks({
           ...appliedFilters,
           page: pagination.page,
           size: pageSize,
@@ -78,7 +78,7 @@ export default function useInventoryStatusManagement() {
 
         if (ignore) return
 
-        setInventories(data.items)
+        setStocks(data.items)
         setPagination(data.pagination)
         setSummary(data.summary ?? DEFAULT_SUMMARY)
       } catch (requestError) {
@@ -92,7 +92,7 @@ export default function useInventoryStatusManagement() {
       }
     }
 
-    loadInventories()
+    loadStocks()
 
     return () => {
       ignore = true
@@ -106,7 +106,7 @@ export default function useInventoryStatusManagement() {
     }))
   }
 
-  function searchInventories(event) {
+  function searchStocks(event) {
     event.preventDefault()
 
     setPagination((currentPagination) => ({
@@ -118,14 +118,14 @@ export default function useInventoryStatusManagement() {
   }
 
   function resetFilters() {
-    setDraftFilters({ ...DEFAULT_INVENTORY_FILTERS })
+    setDraftFilters({ ...DEFAULT_STOCK_FILTERS })
 
     setPagination((currentPagination) => ({
       ...currentPagination,
       page: 1,
     }))
 
-    setAppliedFilters({ ...DEFAULT_INVENTORY_FILTERS })
+    setAppliedFilters({ ...DEFAULT_STOCK_FILTERS })
   }
 
   function selectSummaryStatus(stockStatus) {
@@ -163,8 +163,8 @@ export default function useInventoryStatusManagement() {
     }))
   }
 
-  function openAdjustment(inventory) {
-    setAdjustmentTarget(inventory)
+  function openAdjustment(stock) {
+    setAdjustmentTarget(stock)
   }
 
   function closeAdjustment() {
@@ -172,8 +172,8 @@ export default function useInventoryStatusManagement() {
   }
 
   async function saveAdjustment(form) {
-    await createInventoryAdjustment({
-      inventoryId: adjustmentTarget.id,
+    await createStockAdjustment({
+      stockId: adjustmentTarget.id,
       ...form,
     })
 
@@ -185,7 +185,7 @@ export default function useInventoryStatusManagement() {
     draftFilters,
     appliedFilters,
     filterOptions,
-    inventories,
+    stocks,
     summary,
     pagination,
     pageSize,
@@ -193,7 +193,7 @@ export default function useInventoryStatusManagement() {
     error,
     adjustmentTarget,
     updateFilter,
-    searchInventories,
+    searchStocks,
     resetFilters,
     selectSummaryStatus,
     movePage,

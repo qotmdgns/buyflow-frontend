@@ -1,17 +1,17 @@
 import {
-  inventoryFilterOptions,
-  mockInventories,
-  mockInventoryHistories,
-} from "@/features/inventory/data/mockInventoryData"
-import { getStockStatus } from "@/features/inventory/utils/inventoryManagementUtils"
+  StockFilterOptions,
+  StockInventories,
+  mockStockHistories,
+} from "@/features/stock/data/mockStockData"
+import { getStockStatus } from "@/features/stock/utils/StockManagementUtils"
 
-const USE_MOCK = process.env.NEXT_PUBLIC_USE_INVENTORY_MOCK !== "false"
+const USE_MOCK = process.env.NEXT_PUBLIC_USE_STOCK_MOCK !== "false"
 
-let inventoryDatabase = mockInventories.map((inventory) => ({
-  ...inventory,
+let stockDatabase = mockstocks.map((stock) => ({
+  ...stock,
 }))
 
-let inventoryHistoryDatabase = mockInventoryHistories.map((history) => ({
+let stockHistoryDatabase = mockStockHistories.map((history) => ({
   ...history,
 }))
 
@@ -56,13 +56,10 @@ function buildQuery(params) {
   return query
 }
 
-function getInventorySummary(inventories) {
+function getStockSummary(inventories) {
   return inventories.reduce(
-    (summary, inventory) => {
-      const status = getStockStatus(
-        inventory.currentStock,
-        inventory.safetyStock,
-      )
+    (summary, stock) => {
+      const status = getStockStatus(stock.currentStock, stock.safetyStock)
 
       summary.total += 1
 
@@ -102,29 +99,29 @@ function getMockInventories(params = {}) {
 
   // 품목 코드, 품목명, 카테고리, 창고 조건만 적용합니다.
   // 카드 요약 숫자를 계산할 때는 stockStatus를 제외합니다.
-  const baseFilteredInventories = inventoryDatabase.filter((inventory) => {
+  const baseFilteredInventories = stockDatabase.filter((stock) => {
     return (
-      (!itemCode || includesKeyword(inventory.itemCode, itemCode)) &&
-      (!itemName || includesKeyword(inventory.itemName, itemName)) &&
-      (category === "전체" || inventory.category === category) &&
-      (warehouseCode === "전체" || inventory.warehouseCode === warehouseCode)
+      (!itemCode || includesKeyword(stock.itemCode, itemCode)) &&
+      (!itemName || includesKeyword(stock.itemName, itemName)) &&
+      (category === "전체" || stock.category === category) &&
+      (warehouseCode === "전체" || stock.warehouseCode === warehouseCode)
     )
   })
 
   // 하단 목록에는 카드에서 선택한 stockStatus 조건까지 적용합니다.
-  const visibleInventories = baseFilteredInventories.filter((inventory) => {
-    const status = getStockStatus(inventory.currentStock, inventory.safetyStock)
+  const visibleInventories = baseFilteredInventories.filter((stock) => {
+    const status = getStockStatus(stock.currentStock, stock.safetyStock)
 
     return stockStatus === "전체" || status === stockStatus
   })
 
   return {
     ...paginate(visibleInventories, page, size),
-    summary: getInventorySummary(baseFilteredInventories),
+    summary: getStockSummary(baseFilteredInventories),
   }
 }
 
-function getMockInventoryHistories(params = {}) {
+function getMockStockHistories(params = {}) {
   const {
     page = 1,
     size = 10,
@@ -135,7 +132,7 @@ function getMockInventoryHistories(params = {}) {
     movementType = "전체",
   } = params
 
-  const histories = inventoryHistoryDatabase
+  const histories = stockHistoryDatabase
     .filter((history) => {
       const date = history.occurredAt.slice(0, 10)
 
@@ -182,9 +179,9 @@ function createDateTimeString() {
   return `${date} ${time}`
 }
 
-export async function fetchInventoryFilterOptions() {
+export async function fetchStockFilterOptions() {
   if (USE_MOCK) {
-    return inventoryFilterOptions
+    return stockFilterOptions
   }
 
   const response = await fetch(
@@ -220,17 +217,17 @@ export async function fetchInventories(params = {}) {
   return normalizeListResponse(await response.json())
 }
 
-export async function fetchInventoryHistories(params = {}) {
+export async function fetchStockHistories(params = {}) {
   if (USE_MOCK) {
     await wait(150)
 
-    return getMockInventoryHistories(params)
+    return getMockStockHistories(params)
   }
 
   const query = buildQuery(params)
 
   const response = await fetch(
-    `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/inventory-histories?${query.toString()}`,
+    `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/stock-histories?${query.toString()}`,
     { cache: "no-store" },
   )
 
@@ -241,12 +238,12 @@ export async function fetchInventoryHistories(params = {}) {
   return normalizeListResponse(await response.json())
 }
 
-export async function createInventoryAdjustment(payload) {
+export async function createStockAdjustment(payload) {
   if (USE_MOCK) {
     await wait(200)
 
-    const target = inventoryDatabase.find(
-      (inventory) => inventory.id === Number(payload.inventoryId),
+    const target = stockDatabase.find(
+      (stock) => stock.id === Number(payload.stockId),
     )
 
     if (!target) {
@@ -270,19 +267,19 @@ export async function createInventoryAdjustment(payload) {
 
     const occurredAt = createDateTimeString()
 
-    inventoryDatabase = inventoryDatabase.map((inventory) =>
-      inventory.id === target.id
+    stockDatabase = stockDatabase.map((stock) =>
+      stock.id === target.id
         ? {
-            ...inventory,
+            ...stock,
             currentStock: afterStock,
             lastChangedAt: occurredAt,
           }
-        : inventory,
+        : stock,
     )
 
     const history = {
       id: `HIS-ADJ-${Date.now()}`,
-      inventoryId: target.id,
+      stockId: target.id,
       occurredAt,
       movementType: signedQuantity > 0 ? "재고 조정 증가" : "재고 조정 감소",
       itemCode: target.itemCode,
@@ -297,13 +294,13 @@ export async function createInventoryAdjustment(payload) {
       processedBy: "김철수 대리",
     }
 
-    inventoryHistoryDatabase = [history, ...inventoryHistoryDatabase]
+    stockHistoryDatabase = [history, ...stockHistoryDatabase]
 
     return history
   }
 
   const response = await fetch(
-    `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/inventories/${payload.inventoryId}/adjustments`,
+    `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/inventories/${payload.stockId}/adjustments`,
     {
       method: "POST",
       headers: {

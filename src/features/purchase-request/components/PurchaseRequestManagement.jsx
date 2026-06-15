@@ -17,7 +17,6 @@ export default function PurchaseRequestManagement() {
     summary,
     requests,
     pagination,
-    pageSize,
     selectedIds,
     allCurrentRowsSelected,
     loading,
@@ -27,7 +26,6 @@ export default function PurchaseRequestManagement() {
     resetFilters,
     selectSummaryStatus,
     movePage,
-    changePageSize,
     exportRequests,
     toggleAllRows,
     toggleRow,
@@ -109,8 +107,6 @@ export default function PurchaseRequestManagement() {
 
           <PurchaseRequestPagination
             pagination={pagination}
-            pageSize={pageSize}
-            onChangePageSize={changePageSize}
             onMovePage={movePage}
           />
         </div>
