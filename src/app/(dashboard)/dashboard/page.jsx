@@ -1,7 +1,6 @@
 import Link from "next/link"
 import {
   AlertTriangle,
-  ArrowRight,
   ClipboardCheck,
   Clock3,
   Download,
@@ -69,14 +68,6 @@ function SummaryCard({ item }) {
       </div>
 
       <p className="mt-2 text-[12px] text-slate-400">{item.note}</p>
-
-      <button
-        type="button"
-        className="mt-2 flex items-center gap-1 text-[12px] text-slate-500 hover:text-blue-600"
-      >
-        상세보기
-        <ArrowRight size={10} />
-      </button>
     </article>
   )
 }

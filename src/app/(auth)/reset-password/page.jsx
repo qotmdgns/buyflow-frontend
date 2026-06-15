@@ -2,14 +2,13 @@ import AuthFormPage from "@/features/auth/components/AuthFormPage"
 import AuthShell from "@/features/auth/components/AuthShell"
 
 export const metadata = {
-  title: "로그인 | 물류 ERP 시스템",
-  description: "입고 및 재고 관리 시스템 로그인",
+  title: "비밀번호 재설정 | 물류 ERP 시스템",
 }
 
-export default function LoginPage() {
+export default function ResetPasswordPage() {
   return (
     <AuthShell>
-      <AuthFormPage mode="login" />
+      <AuthFormPage mode="reset-password" />
     </AuthShell>
   )
 }

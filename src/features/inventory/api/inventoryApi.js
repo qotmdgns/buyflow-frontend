@@ -100,21 +100,27 @@ function getMockInventories(params = {}) {
     stockStatus = "전체",
   } = params
 
-  const filteredInventories = inventoryDatabase.filter((inventory) => {
-    const status = getStockStatus(inventory.currentStock, inventory.safetyStock)
-
+  // 품목 코드, 품목명, 카테고리, 창고 조건만 적용합니다.
+  // 카드 요약 숫자를 계산할 때는 stockStatus를 제외합니다.
+  const baseFilteredInventories = inventoryDatabase.filter((inventory) => {
     return (
       (!itemCode || includesKeyword(inventory.itemCode, itemCode)) &&
       (!itemName || includesKeyword(inventory.itemName, itemName)) &&
       (category === "전체" || inventory.category === category) &&
-      (warehouseCode === "전체" || inventory.warehouseCode === warehouseCode) &&
-      (stockStatus === "전체" || status === stockStatus)
+      (warehouseCode === "전체" || inventory.warehouseCode === warehouseCode)
     )
   })
 
+  // 하단 목록에는 카드에서 선택한 stockStatus 조건까지 적용합니다.
+  const visibleInventories = baseFilteredInventories.filter((inventory) => {
+    const status = getStockStatus(inventory.currentStock, inventory.safetyStock)
+
+    return stockStatus === "전체" || status === stockStatus
+  })
+
   return {
-    ...paginate(filteredInventories, page, size),
-    summary: getInventorySummary(filteredInventories),
+    ...paginate(visibleInventories, page, size),
+    summary: getInventorySummary(baseFilteredInventories),
   }
 }
 
