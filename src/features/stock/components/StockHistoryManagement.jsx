@@ -1,14 +1,14 @@
 "use client"
 
 import { Download, RefreshCcw, Search } from "lucide-react"
-import InventoryPagination from "@/features/inventory/components/InventoryPagination"
-import useInventoryHistoryManagement from "@/features/inventory/hooks/useInventoryHistoryManagement"
+import StockPagination from "@/features/stock/components/StockPagination"
+import useStockHistoryManagement from "@/features/stock/hooks/useStockHistoryManagement"
 import {
-  downloadInventoryHistoryCsv,
+  downloadStockHistoryCsv,
   formatNumber,
   formatSignedQuantity,
-  INVENTORY_HISTORY_TABLE_HEADERS,
-} from "@/features/inventory/utils/inventoryManagementUtils"
+  STOCK_HISTORY_TABLE_HEADERS,
+} from "@/features/stock/utils/StockManagementUtils"
 
 const INPUT_CLASS_NAME =
   "h-10 w-full rounded-md border border-slate-200 px-3 text-[14px] outline-none transition placeholder:text-slate-300 focus:border-blue-400 focus:ring-2 focus:ring-blue-100"
@@ -59,7 +59,7 @@ function MovementBadge({ type }) {
   )
 }
 
-export default function InventoryHistoryManagement({ initialFilters }) {
+export default function StockHistoryManagement({ initialFilters }) {
   const {
     draftFilters,
     filterOptions,
@@ -73,7 +73,7 @@ export default function InventoryHistoryManagement({ initialFilters }) {
     resetFilters,
     movePage,
     changePageSize,
-  } = useInventoryHistoryManagement(initialFilters)
+  } = useHistoryManagement(initialFilters)
 
   return (
     <div className="w-full">
@@ -186,7 +186,7 @@ export default function InventoryHistoryManagement({ initialFilters }) {
 
           <button
             type="button"
-            onClick={() => downloadInventoryHistoryCsv(histories)}
+            onClick={() => downloadStockHistoryCsv(histories)}
             className="flex h-9 items-center gap-1.5 rounded-md border border-slate-200 bg-white px-3 text-[13px] font-semibold text-slate-600 transition hover:bg-slate-50"
           >
             <Download size={14} />
@@ -198,7 +198,7 @@ export default function InventoryHistoryManagement({ initialFilters }) {
           <table className="w-full min-w-[1450px] text-left text-[13px]">
             <thead className="bg-slate-50 text-slate-600">
               <tr>
-                {INVENTORY_HISTORY_TABLE_HEADERS.map((heading) => (
+                {STOCK_HISTORY_TABLE_HEADERS.map((heading) => (
                   <th
                     key={heading}
                     className="whitespace-nowrap px-3 py-3 font-semibold"
@@ -213,7 +213,7 @@ export default function InventoryHistoryManagement({ initialFilters }) {
               {loading && (
                 <tr>
                   <td
-                    colSpan={INVENTORY_HISTORY_TABLE_HEADERS.length}
+                    colSpan={STOCK_HISTORY_TABLE_HEADERS.length}
                     className="px-3 py-12 text-center text-slate-400"
                   >
                     재고 이력을 불러오는 중입니다.
@@ -224,7 +224,7 @@ export default function InventoryHistoryManagement({ initialFilters }) {
               {!loading && error && (
                 <tr>
                   <td
-                    colSpan={INVENTORY_HISTORY_TABLE_HEADERS.length}
+                    colSpan={STOCK_HISTORY_TABLE_HEADERS.length}
                     className="px-3 py-12 text-center text-rose-500"
                   >
                     {error}
@@ -235,7 +235,7 @@ export default function InventoryHistoryManagement({ initialFilters }) {
               {!loading && !error && histories.length === 0 && (
                 <tr>
                   <td
-                    colSpan={INVENTORY_HISTORY_TABLE_HEADERS.length}
+                    colSpan={STOCK_HISTORY_TABLE_HEADERS.length}
                     className="px-3 py-12 text-center text-slate-400"
                   >
                     검색 조건에 해당하는 재고 이력이 없습니다.
@@ -305,7 +305,7 @@ export default function InventoryHistoryManagement({ initialFilters }) {
           </table>
         </div>
 
-        <InventoryPagination
+        <StockPagination
           pagination={pagination}
           pageSize={pageSize}
           onChangePageSize={changePageSize}

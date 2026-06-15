@@ -2,16 +2,12 @@
 
 import { useState } from "react"
 import { X } from "lucide-react"
-import { formatNumber } from "@/features/inventory/utils/inventoryManagementUtils"
+import { formatNumber } from "@/features/stock/utils/StockManagementUtils"
 
 const INPUT_CLASS_NAME =
   "h-10 w-full rounded-md border border-slate-200 px-3 text-[14px] outline-none transition focus:border-blue-400 focus:ring-2 focus:ring-blue-100"
 
-export default function InventoryAdjustmentModal({
-  inventory,
-  onClose,
-  onSubmit,
-}) {
+export default function StockAdjustmentModal({ stock, onClose, onSubmit }) {
   const [form, setForm] = useState({
     adjustmentType: "increase",
     quantity: "",
@@ -25,8 +21,8 @@ export default function InventoryAdjustmentModal({
 
   const afterStock =
     form.adjustmentType === "increase"
-      ? inventory.currentStock + quantity
-      : inventory.currentStock - quantity
+      ? stock.currentStock + quantity
+      : stock.currentStock - quantity
 
   function updateForm(name, value) {
     setForm((currentForm) => ({
@@ -90,16 +86,16 @@ export default function InventoryAdjustmentModal({
 
         <form onSubmit={handleSubmit} className="space-y-4 p-5">
           <div className="rounded-md bg-slate-50 p-3 text-[13px]">
-            <p className="font-semibold text-slate-800">{inventory.itemName}</p>
+            <p className="font-semibold text-slate-800">{stock.itemName}</p>
 
             <p className="mt-1 text-slate-500">
-              {inventory.itemCode} · {inventory.warehouseName}
+              {stock.itemCode} · {stock.warehouseName}
             </p>
 
             <p className="mt-1 text-slate-500">
               현재 재고:{" "}
               <strong className="text-slate-800">
-                {formatNumber(inventory.currentStock)} {inventory.unit}
+                {formatNumber(stock.currentStock)} {stock.unit}
               </strong>
             </p>
           </div>
@@ -153,7 +149,7 @@ export default function InventoryAdjustmentModal({
           <div className="rounded-md border border-blue-100 bg-blue-50 p-3 text-[13px] text-blue-700">
             조정 후 예상 재고:{" "}
             <strong>
-              {formatNumber(afterStock)} {inventory.unit}
+              {formatNumber(afterStock)} {stock.unit}
             </strong>
           </div>
 

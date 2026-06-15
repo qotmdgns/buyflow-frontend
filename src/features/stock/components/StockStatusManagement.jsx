@@ -8,16 +8,16 @@ import {
   Search,
   SlidersHorizontal,
 } from "lucide-react"
-import InventoryAdjustmentModal from "@/features/inventory/components/InventoryAdjustmentModal"
-import InventoryPagination from "@/features/inventory/components/InventoryPagination"
-import InventorySummaryCards from "@/features/inventory/components/InventorySummaryCards"
-import useInventoryStatusManagement from "@/features/inventory/hooks/useInventoryStatusManagement"
+import StockAdjustmentModal from "@/features/stock/components/StockAdjustmentModal"
+import StockPagination from "@/features/stock/components/StockPagination"
+import StockSummaryCards from "@/features/stock/components/StockSummaryCards"
+import useStockStatusManagement from "@/features/stock/hooks/useStockStatusManagement"
 import {
-  downloadInventoryCsv,
+  downloadStockCsv,
   formatNumber,
   getStockStatus,
-  INVENTORY_TABLE_HEADERS,
-} from "@/features/inventory/utils/inventoryManagementUtils"
+  STOCK_TABLE_HEADERS,
+} from "@/features/stock/utils/StockManagementUtils"
 
 const INPUT_CLASS_NAME =
   "h-10 w-full rounded-md border border-slate-200 px-3 text-[14px] outline-none transition placeholder:text-slate-300 focus:border-blue-400 focus:ring-2 focus:ring-blue-100"
@@ -52,8 +52,8 @@ function SelectField({ value, options, onChange }) {
   )
 }
 
-function StockStatusBadge({ inventory }) {
-  const status = getStockStatus(inventory.currentStock, inventory.safetyStock)
+function StockStatusBadge({ stock }) {
+  const status = getStockStatus(stock.currentStock, stock.safetyStock)
 
   const styles = {
     정상: "border-emerald-200 bg-emerald-50 text-emerald-600",
@@ -70,12 +70,12 @@ function StockStatusBadge({ inventory }) {
   )
 }
 
-export default function InventoryStatusManagement() {
+export default function StockStatusManagement() {
   const {
     draftFilters,
     appliedFilters,
     filterOptions,
-    inventories,
+    stocks,
     summary,
     pagination,
     pageSize,
@@ -83,7 +83,7 @@ export default function InventoryStatusManagement() {
     error,
     adjustmentTarget,
     updateFilter,
-    searchInventories,
+    searchStocks,
     resetFilters,
     selectSummaryStatus,
     movePage,
@@ -91,7 +91,7 @@ export default function InventoryStatusManagement() {
     openAdjustment,
     closeAdjustment,
     saveAdjustment,
-  } = useInventoryStatusManagement()
+  } = useStockStatusManagement()
 
   return (
     <div className="w-full">
@@ -105,14 +105,14 @@ export default function InventoryStatusManagement() {
         </p>
       </header>
 
-      <InventorySummaryCards
+      <StockSummaryCards
         summary={summary}
         selectedStatus={appliedFilters.stockStatus}
         onSelectStatus={selectSummaryStatus}
       />
 
       <form
-        onSubmit={searchInventories}
+        onSubmit={searchStocks}
         className="mt-3 rounded-lg border border-slate-200 bg-white p-3 shadow-sm"
       >
         <div className="grid gap-x-3 gap-y-2.5 md:grid-cols-2 xl:grid-cols-5">
@@ -205,7 +205,7 @@ export default function InventoryStatusManagement() {
 
           <button
             type="button"
-            onClick={() => downloadInventoryCsv(inventories)}
+            onClick={() => downloadStockCsv(stocks)}
             className="flex h-9 items-center gap-1.5 rounded-md border border-slate-200 bg-white px-3 text-[13px] font-semibold text-slate-600 transition hover:bg-slate-50"
           >
             <Download size={14} />
@@ -217,7 +217,7 @@ export default function InventoryStatusManagement() {
           <table className="w-full min-w-[1380px] text-left text-[13px]">
             <thead className="bg-slate-50 text-slate-600">
               <tr>
-                {INVENTORY_TABLE_HEADERS.map((heading) => (
+                {STOCK_TABLE_HEADERS.map((heading) => (
                   <th
                     key={heading}
                     className="whitespace-nowrap px-3 py-3 font-semibold"
@@ -232,7 +232,7 @@ export default function InventoryStatusManagement() {
               {loading && (
                 <tr>
                   <td
-                    colSpan={INVENTORY_TABLE_HEADERS.length}
+                    colSpan={STOCK_TABLE_HEADERS.length}
                     className="px-3 py-12 text-center text-slate-400"
                   >
                     재고 현황을 불러오는 중입니다.
@@ -243,7 +243,7 @@ export default function InventoryStatusManagement() {
               {!loading && error && (
                 <tr>
                   <td
-                    colSpan={INVENTORY_TABLE_HEADERS.length}
+                    colSpan={STOCK_TABLE_HEADERS.length}
                     className="px-3 py-12 text-center text-rose-500"
                   >
                     {error}
@@ -251,10 +251,10 @@ export default function InventoryStatusManagement() {
                 </tr>
               )}
 
-              {!loading && !error && inventories.length === 0 && (
+              {!loading && !error && stocks.length === 0 && (
                 <tr>
                   <td
-                    colSpan={INVENTORY_TABLE_HEADERS.length}
+                    colSpan={STOCK_TABLE_HEADERS.length}
                     className="px-3 py-12 text-center text-slate-400"
                   >
                     검색 조건에 해당하는 재고가 없습니다.
@@ -264,43 +264,42 @@ export default function InventoryStatusManagement() {
 
               {!loading &&
                 !error &&
-                inventories.map((inventory) => {
-                  const difference =
-                    inventory.currentStock - inventory.safetyStock
+                stocks.map((stock) => {
+                  const difference = stock.currentStock - stock.safetyStock
 
                   return (
                     <tr
-                      key={inventory.id}
+                      key={stock.id}
                       className="border-t border-slate-100 text-slate-600"
                     >
                       <td className="whitespace-nowrap px-3 py-3 text-slate-400">
-                        {inventory.itemCode}
+                        {stock.itemCode}
                       </td>
 
                       <td className="px-3 py-3 font-semibold text-slate-800">
-                        {inventory.itemName}
+                        {stock.itemName}
                       </td>
 
                       <td className="whitespace-nowrap px-3 py-3">
-                        {inventory.category}
+                        {stock.category}
                       </td>
 
                       <td className="whitespace-nowrap px-3 py-3">
-                        {inventory.warehouseName}
+                        {stock.warehouseName}
                       </td>
 
                       <td className="whitespace-nowrap px-3 py-3">
-                        {inventory.locationCode}
+                        {stock.locationCode}
                       </td>
 
-                      <td className="px-3 py-3">{inventory.unit}</td>
+                      <td className="px-3 py-3">{stock.unit}</td>
 
                       <td className="px-3 py-3 font-semibold text-slate-800">
-                        {formatNumber(inventory.currentStock)}
+                        {formatNumber(stock.currentStock)}
                       </td>
 
                       <td className="px-3 py-3">
-                        {formatNumber(inventory.safetyStock)}
+                        {formatNumber(stock.safetyStock)}
                       </td>
 
                       <td
@@ -313,14 +312,14 @@ export default function InventoryStatusManagement() {
                       </td>
 
                       <td className="px-3 py-3">
-                        <StockStatusBadge inventory={inventory} />
+                        <StockStatusBadge stock={stock} />
                       </td>
 
                       <td className="whitespace-nowrap px-3 py-3">
                         <div className="flex gap-2">
                           <button
                             type="button"
-                            onClick={() => openAdjustment(inventory)}
+                            onClick={() => openAdjustment(stock)}
                             className="flex items-center gap-1 text-[12px] font-semibold text-blue-600 hover:underline"
                           >
                             <SlidersHorizontal size={13} />
@@ -328,10 +327,10 @@ export default function InventoryStatusManagement() {
                           </button>
 
                           <Link
-                            href={`/inventory/history?itemCode=${encodeURIComponent(
-                              inventory.itemCode,
+                            href={`/stock/history?itemCode=${encodeURIComponent(
+                              stock.itemCode,
                             )}&warehouseCode=${encodeURIComponent(
-                              inventory.warehouseCode,
+                              stock.warehouseCode,
                             )}`}
                             className="flex items-center gap-1 text-[12px] font-semibold text-slate-500 hover:text-blue-600 hover:underline"
                           >
@@ -347,7 +346,7 @@ export default function InventoryStatusManagement() {
           </table>
         </div>
 
-        <InventoryPagination
+        <StockPagination
           pagination={pagination}
           pageSize={pageSize}
           onChangePageSize={changePageSize}
@@ -356,8 +355,8 @@ export default function InventoryStatusManagement() {
       </section>
 
       {adjustmentTarget && (
-        <InventoryAdjustmentModal
-          inventory={adjustmentTarget}
+        <StockAdjustmentModal
+          stock={adjustmentTarget}
           onClose={closeAdjustment}
           onSubmit={saveAdjustment}
         />

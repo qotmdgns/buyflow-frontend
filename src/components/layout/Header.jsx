@@ -177,18 +177,12 @@ const breadcrumbRules = [
   },
 
   {
-    path: "/inventory/history",
-    crumbs: [
-      { label: "재고 관리", href: "/inventory" },
-      { label: "재고 이력" },
-    ],
+    path: "/stock/history",
+    crumbs: [{ label: "재고 관리", href: "/stock" }, { label: "재고 이력" }],
   },
   {
-    path: "/inventory",
-    crumbs: [
-      { label: "재고 관리", href: "/inventory" },
-      { label: "재고 현황" },
-    ],
+    path: "/stock",
+    crumbs: [{ label: "재고 관리", href: "/stock" }, { label: "재고 현황" }],
   },
 ]
 

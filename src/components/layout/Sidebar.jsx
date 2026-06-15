@@ -44,8 +44,8 @@ const menuGroups = [
   {
     label: "재고 관리",
     items: [
-      { label: "재고 현황", href: "/inventory", icon: Boxes, exact: true },
-      { label: "재고 이력", href: "/inventory/history", icon: History },
+      { label: "재고 현황", href: "/stock", icon: Boxes, exact: true },
+      { label: "재고 이력", href: "/stock/history", icon: History },
     ],
   },
   {

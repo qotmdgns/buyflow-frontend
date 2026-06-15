@@ -2,14 +2,14 @@
 
 import { useEffect, useState } from "react"
 import {
-  fetchInventoryFilterOptions,
-  fetchInventoryHistories,
-} from "@/features/inventory/api/inventoryApi"
+  fetchStockFilterOptions,
+  fetchStockHistories,
+} from "@/features/stock/api/stockApi"
 import {
   DEFAULT_HISTORY_FILTERS,
-  DEFAULT_INVENTORY_FILTER_OPTIONS,
+  DEFAULT_STOCK_FILTER_OPTIONS,
   DEFAULT_PAGINATION,
-} from "@/features/inventory/utils/inventoryManagementUtils"
+} from "@/features/stock/utils/StockManagementUtils"
 
 function createInitialFilters(initialFilters = {}) {
   return {
@@ -18,7 +18,7 @@ function createInitialFilters(initialFilters = {}) {
   }
 }
 
-export default function useInventoryHistoryManagement(initialFilters = {}) {
+export default function useStockHistoryManagement(initialFilters = {}) {
   const [draftFilters, setDraftFilters] = useState(() =>
     createInitialFilters(initialFilters),
   )
@@ -28,7 +28,7 @@ export default function useInventoryHistoryManagement(initialFilters = {}) {
   )
 
   const [filterOptions, setFilterOptions] = useState(
-    DEFAULT_INVENTORY_FILTER_OPTIONS,
+    DEFAULT_STOCK_FILTER_OPTIONS,
   )
 
   const [histories, setHistories] = useState([])
@@ -41,7 +41,7 @@ export default function useInventoryHistoryManagement(initialFilters = {}) {
   useEffect(() => {
     let ignore = false
 
-    fetchInventoryFilterOptions()
+    fetchStockFilterOptions()
       .then((data) => {
         if (!ignore) {
           setFilterOptions(data)
@@ -49,7 +49,7 @@ export default function useInventoryHistoryManagement(initialFilters = {}) {
       })
       .catch(() => {
         if (!ignore) {
-          setFilterOptions(DEFAULT_INVENTORY_FILTER_OPTIONS)
+          setFilterOptions(DEFAULT_STOCK_FILTER_OPTIONS)
         }
       })
 
@@ -66,7 +66,7 @@ export default function useInventoryHistoryManagement(initialFilters = {}) {
       setError("")
 
       try {
-        const data = await fetchInventoryHistories({
+        const data = await fetchStockHistories({
           ...appliedFilters,
           page: pagination.page,
           size: pageSize,
