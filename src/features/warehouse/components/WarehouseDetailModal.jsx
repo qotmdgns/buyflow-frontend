@@ -132,10 +132,18 @@ export default function WarehouseDetailModal({
 
             <DetailItem label="창고 유형" value={warehouse.type} />
 
+            <DetailItem label="우편번호" value={warehouse.zipcode} />
+
             <DetailItem
-              label="주소"
-              value={warehouse.address}
+              label="기본 주소"
+              value={warehouse.baseAddress || warehouse.address}
               icon={MapPin}
+              fullWidth
+            />
+
+            <DetailItem
+              label="상세 주소"
+              value={warehouse.detailAddress}
               fullWidth
             />
 

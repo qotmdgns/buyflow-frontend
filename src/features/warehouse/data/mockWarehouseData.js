@@ -8,6 +8,7 @@ const seedWarehouses = [
   {
     name: "인천 제1 물류센터",
     type: "일반 창고",
+    zipcode: "22348",
     baseAddress: "인천광역시 중구 서해대로 123",
     detailAddress: "",
     activeStatus: "사용 중",
@@ -19,6 +20,7 @@ const seedWarehouses = [
   {
     name: "평택 냉장창고",
     type: "냉장 창고",
+    zipcode: "17957",
     baseAddress: "경기도 평택시 포승읍 평택항로 45",
     detailAddress: "",
     activeStatus: "사용 중",
@@ -30,6 +32,7 @@ const seedWarehouses = [
   {
     name: "부산 항만보관소",
     type: "보세 창고",
+    zipcode: "48562",
     baseAddress: "부산광역시 남구 신선로 789",
     detailAddress: "",
     activeStatus: "사용 중지",
@@ -41,6 +44,7 @@ const seedWarehouses = [
   {
     name: "대전 유통허브",
     type: "일반 창고",
+    zipcode: "34365",
     baseAddress: "대전광역시 대덕구 대화로 100",
     detailAddress: "",
     activeStatus: "사용 중",
@@ -52,6 +56,7 @@ const seedWarehouses = [
   {
     name: "광주 호남영업소",
     type: "일반 창고",
+    zipcode: "62233",
     baseAddress: "광주광역시 광산구 하남산단로 55",
     detailAddress: "",
     activeStatus: "사용 중",
@@ -63,6 +68,7 @@ const seedWarehouses = [
   {
     name: "서울 북부물류센터",
     type: "일반 창고",
+    zipcode: "01689",
     baseAddress: "서울특별시 노원구 동일로 321",
     detailAddress: "",
     activeStatus: "사용 중",
@@ -74,6 +80,7 @@ const seedWarehouses = [
   {
     name: "용인 중앙창고",
     type: "일반 창고",
+    zipcode: "17182",
     baseAddress: "경기도 용인시 처인구 백암로 210",
     detailAddress: "",
     activeStatus: "사용 중",
@@ -85,6 +92,7 @@ const seedWarehouses = [
   {
     name: "청주 중부보관소",
     type: "냉동 창고",
+    zipcode: "28427",
     baseAddress: "충청북도 청주시 흥덕구 산업단지로 88",
     detailAddress: "",
     activeStatus: "사용 중지",
@@ -96,6 +104,7 @@ const seedWarehouses = [
   {
     name: "울산 산업자재창고",
     type: "위험물 창고",
+    zipcode: "44776",
     baseAddress: "울산광역시 남구 산업로 150",
     detailAddress: "",
     activeStatus: "사용 중",
@@ -107,6 +116,7 @@ const seedWarehouses = [
   {
     name: "제주 지역보관소",
     type: "일반 창고",
+    zipcode: "63218",
     baseAddress: "제주특별자치도 제주시 연삼로 27",
     detailAddress: "",
     activeStatus: "사용 중",

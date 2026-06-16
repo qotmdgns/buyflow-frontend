@@ -40,7 +40,9 @@ export const EMPTY_WAREHOUSE_FORM = {
 export const WAREHOUSE_TABLE_HEADERS = [
   "창고 유형",
   "창고명",
-  "위치(주소)",
+  "우편 번호",
+  "기본 주소",
+  "상세 주소",
   "사용 여부",
   "담당자",
   "연락처",
