@@ -330,3 +330,19 @@ export async function fetchPurchaseRequestDetail(requestId) {
 
   return normalizePurchaseRequestDetailResponse(await response.json())
 }
+
+export async function createPurchaseRequest(payload) {
+  const response = await fetch(createApiUrl("/api/purchase-requests"), {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(payload),
+  })
+
+  if (!response.ok) {
+    throw new Error("구매 요청 등록에 실패했습니다.")
+  }
+
+  return normalizePurchaseRequestDetailResponse(await response.json())
+}

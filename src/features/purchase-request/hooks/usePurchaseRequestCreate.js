@@ -1,6 +1,8 @@
 "use client"
 
 import { useMemo, useRef, useState } from "react"
+import { useRouter } from "next/navigation"
+import { createPurchaseRequest } from "@/features/purchase-request/api/purchaseRequestApi"
 import {
   initialPurchaseRequestItems,
   mockPurchaseRequestProducts,
@@ -22,6 +24,7 @@ const INITIAL_FORM = {
 }
 
 export default function usePurchaseRequestCreate() {
+  const router = useRouter()
   const [form, setForm] = useState(INITIAL_FORM)
   const [requestItems, setRequestItems] = useState(initialPurchaseRequestItems)
   const [attachment, setAttachment] = useState(null)
@@ -190,15 +193,31 @@ export default function usePurchaseRequestCreate() {
 
     try {
       // TODO: 백엔드 API 연동 시 실제 승인 요청 API를 호출합니다.
-      // await createPurchaseRequestApproval({
-      //   form,
-      //   requestItems,
-      //   attachment,
-      // })
+      const createdRequest = await createPurchaseRequest({
+        requestNumber: form.requestNumber,
+        requestorId: 1,
+        requester: form.requester,
+        department: form.department,
+        requestDate: form.requestDate,
+        expectedDate: form.expectedDate,
+        title: form.title,
+        urgency: form.urgency,
+        priority: form.urgency === "긴급" ? "URGENT" : "NORMAL",
+        status: "PENDING_APPROVAL",
+        reason: form.reason,
+        items: requestItems.map((item) => ({
+          productId: item.productId ?? item.id,
+          requestQuantity: Number(item.quantity ?? item.requestQuantity ?? 1),
+          estimatedUnitPrice: Number(
+            item.unitPrice ?? item.estimatedUnitPrice ?? 0,
+          ),
+          remark: item.remark ?? "",
+        })),
+      })
 
-      window.alert(
-        "승인 요청을 전송했습니다. 백엔드 API는 추후 연결하면 됩니다.",
-      )
+      window.alert("승인 요청을 전송했습니다.")
+
+      router.push(`/purchase-requests/${createdRequest.id}`)
     } catch (error) {
       console.error("승인 요청 처리 중 오류가 발생했습니다.", error)
       window.alert("승인 요청 처리에 실패했습니다. 다시 시도해 주세요.")
