@@ -17,7 +17,7 @@ import {
   formatNumber,
   getStockStatus,
   STOCK_TABLE_HEADERS,
-} from "@/features/stock/utils/StockManagementUtils"
+} from "@/features/stock/utils/stockManagementUtils"
 
 const INPUT_CLASS_NAME =
   "h-10 w-full rounded-md border border-slate-200 px-3 text-[14px] outline-none transition placeholder:text-slate-300 focus:border-blue-400 focus:ring-2 focus:ring-blue-100"

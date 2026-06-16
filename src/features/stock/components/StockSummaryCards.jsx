@@ -2,7 +2,7 @@
 
 import { Search, Check, AlertCircle, X } from "lucide-react"
 
-import { formatNumber } from "@/features/stock/utils/StockManagementUtils"
+import { formatNumber } from "@/features/stock/utils/stockManagementUtils"
 
 const CARD_ITEMS = [
   {
