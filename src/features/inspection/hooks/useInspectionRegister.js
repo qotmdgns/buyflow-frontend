@@ -7,25 +7,13 @@ import {
   submitInspectionResult,
 } from "@/features/inspection/api/inspectionApi"
 
-function getLocalDateTimeValue(date = new Date()) {
-  const year = date.getFullYear()
-
-  const month = String(date.getMonth() + 1).padStart(2, "0")
-
-  const day = String(date.getDate()).padStart(2, "0")
-
-  const hours = String(date.getHours()).padStart(2, "0")
-
-  const minutes = String(date.getMinutes()).padStart(2, "0")
-
-  return `${year}-${month}-${day}T${hours}:${minutes}`
-}
-
 function createInitialForm(inspection) {
   return {
     inspectorName: "김철수 대리",
 
-    inspectedAt: getLocalDateTimeValue(),
+    // 검수 일시는 프론트에서 만들지 않습니다.
+    // 저장 시 백엔드에서 서버 시간으로 기록합니다.
+    inspectedAt: inspection.inspectionResult?.inspectedAt ?? "",
 
     note: "",
 
@@ -46,10 +34,6 @@ function createInitialForm(inspection) {
 function validateInspectionForm(form) {
   if (!form.inspectorName.trim()) {
     return "검수 담당자를 입력해 주세요."
-  }
-
-  if (!form.inspectedAt) {
-    return "검수 일시를 입력해 주세요."
   }
 
   for (const item of form.items) {
@@ -197,7 +181,8 @@ export default function useInspectionRegister(inspectionId) {
 
         inspectorName: form.inspectorName.trim(),
 
-        inspectedAt: form.inspectedAt,
+        // inspectedAt은 보내지 않습니다.
+        // 백엔드에서 저장 시점의 서버 시간으로 기록합니다.
 
         note: form.note.trim(),
 
