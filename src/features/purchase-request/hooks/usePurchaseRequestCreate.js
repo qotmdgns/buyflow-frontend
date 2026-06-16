@@ -1,10 +1,11 @@
 "use client"
 
-import { useMemo, useRef, useState } from "react"
+import { useMemo, useRef, useState, useEffect } from "react"
+import { useRouter } from "next/navigation"
 import {
-  initialPurchaseRequestItems,
-  mockPurchaseRequestProducts,
-} from "@/features/purchase-request/data/mockPurchaseRequestData"
+  createPurchaseRequest,
+  fetchPurchaseRequestProducts,
+} from "@/features/purchase-request/api/purchaseRequestApi"
 import {
   calculateRequestTotal,
   getTodayString,
@@ -22,8 +23,10 @@ const INITIAL_FORM = {
 }
 
 export default function usePurchaseRequestCreate() {
+  const router = useRouter()
+  const [products, setProducts] = useState([])
   const [form, setForm] = useState(INITIAL_FORM)
-  const [requestItems, setRequestItems] = useState(initialPurchaseRequestItems)
+  const [requestItems, setRequestItems] = useState([])
   const [attachment, setAttachment] = useState(null)
 
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -37,6 +40,17 @@ export default function usePurchaseRequestCreate() {
   const [appliedKeyword, setAppliedKeyword] = useState("")
   const [appliedCategory, setAppliedCategory] = useState("전체 카테고리")
 
+  useEffect(() => {
+    fetchPurchaseRequestProducts()
+      .then((data) => {
+        setProducts(Array.isArray(data) ? data : (data.items ?? []))
+      })
+      .catch((error) => {
+        console.error("품목 목록 조회 실패:", error)
+        window.alert("품목 목록을 불러오지 못했습니다.")
+      })
+  }, [])
+
   const totalAmount = useMemo(
     () => calculateRequestTotal(requestItems),
     [requestItems],
@@ -45,11 +59,15 @@ export default function usePurchaseRequestCreate() {
   const filteredProducts = useMemo(() => {
     const normalizedKeyword = appliedKeyword.trim().toLowerCase()
 
-    return mockPurchaseRequestProducts.filter((product) => {
+    return products.filter((product) => {
       const matchesKeyword =
         !normalizedKeyword ||
-        product.code.toLowerCase().includes(normalizedKeyword) ||
-        product.name.toLowerCase().includes(normalizedKeyword)
+        String(product.code ?? "")
+          .toLowerCase()
+          .includes(normalizedKeyword) ||
+        String(product.name ?? "")
+          .toLowerCase()
+          .includes(normalizedKeyword)
 
       const matchesCategory =
         appliedCategory === "전체 카테고리" ||
@@ -57,7 +75,7 @@ export default function usePurchaseRequestCreate() {
 
       return matchesKeyword && matchesCategory
     })
-  }, [appliedCategory, appliedKeyword])
+  }, [products, appliedCategory, appliedKeyword])
 
   function updateForm(name, value) {
     setForm((currentForm) => ({
@@ -124,7 +142,7 @@ export default function usePurchaseRequestCreate() {
       requestItems.map((item) => [item.id, item.quantity]),
     )
 
-    const nextItems = mockPurchaseRequestProducts
+    const nextItems = products
       .filter((product) => draftSelectedIds.has(product.id))
       .map((product) => ({
         ...product,
@@ -190,15 +208,31 @@ export default function usePurchaseRequestCreate() {
 
     try {
       // TODO: 백엔드 API 연동 시 실제 승인 요청 API를 호출합니다.
-      // await createPurchaseRequestApproval({
-      //   form,
-      //   requestItems,
-      //   attachment,
-      // })
+      const createdRequest = await createPurchaseRequest({
+        requestNumber: form.requestNumber,
+        requestorId: 1,
+        requester: form.requester,
+        department: form.department,
+        requestDate: form.requestDate,
+        expectedDate: form.expectedDate,
+        title: form.title,
+        urgency: form.urgency,
+        priority: form.urgency === "긴급" ? "URGENT" : "NORMAL",
+        status: "PENDING_APPROVAL",
+        reason: form.reason,
+        items: requestItems.map((item) => ({
+          productId: item.productId ?? item.id,
+          requestQuantity: Number(item.quantity ?? item.requestQuantity ?? 1),
+          estimatedUnitPrice: Number(
+            item.unitPrice ?? item.estimatedUnitPrice ?? 0,
+          ),
+          remark: item.remark ?? "",
+        })),
+      })
 
-      window.alert(
-        "승인 요청을 전송했습니다. 백엔드 API는 추후 연결하면 됩니다.",
-      )
+      window.alert("승인 요청을 전송했습니다.")
+
+      router.push(`/purchase-requests/${createdRequest.id}`)
     } catch (error) {
       console.error("승인 요청 처리 중 오류가 발생했습니다.", error)
       window.alert("승인 요청 처리에 실패했습니다. 다시 시도해 주세요.")

@@ -271,31 +271,44 @@ function normalizeInspectionDetailResponse(data) {
 
   const rawItems = rawResult?.items ?? data.items ?? data.inspectionItems ?? []
 
-  const items = rawItems.map((item, index) => ({
-    id: item.id ?? item.inspectionItemId ?? index + 1,
+  const items = rawItems.map((item, index) => {
+    const receiptItemId =
+      item.receiptItemId ?? item.id ?? item.inspectionItemId ?? index + 1
 
-    itemCode: item.itemCode ?? item.code ?? "",
+    return {
+      id: receiptItemId,
 
-    itemName: item.itemName ?? item.name ?? "",
+      receiptItemId,
 
-    category: item.category ?? item.categoryName ?? "",
+      itemCode: item.itemCode ?? item.code ?? "",
 
-    specification: item.specification ?? item.spec ?? "",
+      itemName: item.itemName ?? item.name ?? "",
 
-    unit: item.unit ?? "",
+      category: item.category ?? item.categoryName ?? "",
 
-    lotNumber: item.lotNumber ?? item.lotNo ?? "",
+      specification: item.specification ?? item.spec ?? "",
 
-    receivedQuantity: Number(item.receivedQuantity ?? item.quantity ?? 0),
+      unit: item.unit ?? "",
 
-    acceptedQuantity: normalizeNullableNumber(item.acceptedQuantity),
+      lotNumber: item.lotNumber ?? item.lotNo ?? "",
 
-    defectiveQuantity: normalizeNullableNumber(item.defectiveQuantity),
+      receivedQuantity: Number(
+        item.receivedQuantity ?? item.receiptQty ?? item.quantity ?? 0,
+      ),
 
-    defectReason: item.defectReason ?? "",
+      acceptedQuantity: normalizeNullableNumber(
+        item.acceptedQuantity ?? item.acceptedQty,
+      ),
 
-    disposition: item.disposition ?? "NONE",
-  }))
+      defectiveQuantity: normalizeNullableNumber(
+        item.defectiveQuantity ?? item.defectQuantity ?? item.defectQty,
+      ),
+
+      defectReason: item.defectReason ?? "",
+
+      disposition: item.disposition ?? "NONE",
+    }
+  })
 
   const totalReceivedQuantity = items.reduce(
     (total, item) => total + Number(item.receivedQuantity ?? 0),
@@ -405,7 +418,6 @@ export async function submitInspectionResult(inspectionId, payload) {
 
   const response = await fetch(
     createApiUrl(`/api/inspections/${encodeURIComponent(inspectionId)}/result`),
-
     {
       method: "POST",
 
@@ -421,5 +433,5 @@ export async function submitInspectionResult(inspectionId, payload) {
     throw new Error("검수 결과를 저장하지 못했습니다.")
   }
 
-  return normalizeInspectionDetailResponse(await response.json())
+  return fetchInspectionDetail(inspectionId)
 }

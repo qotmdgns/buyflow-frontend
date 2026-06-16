@@ -115,6 +115,10 @@ function InspectionTargetSummary({ inspection }) {
   )
 }
 
+function formatDateTime(value) {
+  return value ? String(value).replace("T", " ").slice(0, 16) : ""
+}
+
 function InspectionResultForm({ form, onChange }) {
   return (
     <section className="mt-3 rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
@@ -136,14 +140,18 @@ function InspectionResultForm({ form, onChange }) {
 
         <label>
           <span className="mb-1 block text-[12px] font-semibold text-slate-500">
-            검수 일시 <strong className="text-rose-500">*</strong>
+            검수 일시
           </span>
 
           <input
-            type="datetime-local"
-            value={form.inspectedAt}
-            onChange={(event) => onChange("inspectedAt", event.target.value)}
-            className={INPUT_CLASS_NAME}
+            type="text"
+            value={
+              form.inspectedAt
+                ? formatDateTime(form.inspectedAt)
+                : "검수 결과 저장 시 서버 시간으로 자동 기록됩니다."
+            }
+            readOnly
+            className={`${INPUT_CLASS_NAME} cursor-not-allowed bg-slate-50 text-slate-500`}
           />
         </label>
       </div>
@@ -186,8 +194,8 @@ function InspectionItemTable({ items, totals, onChange }) {
                 "규격",
                 "LOT 번호",
                 "입고 수량",
-                "합격 수량",
-                "불량 수량",
+                "최종 합격 수량",
+                "최종 불량 수량",
                 "불량 사유",
                 "처리 방식",
               ].map((heading) => (
