@@ -192,25 +192,29 @@ export default function useInspectionRegister(inspectionId) {
     setActionError("")
 
     try {
-      return await submitInspectionResult(
-        inspectionId,
+      return await submitInspectionResult(inspectionId, {
+        inspectorId: 1,
 
-        {
-          inspectorName: form.inspectorName.trim(),
+        inspectorName: form.inspectorName.trim(),
 
-          inspectedAt: form.inspectedAt,
+        inspectedAt: form.inspectedAt,
 
-          note: form.note.trim(),
+        note: form.note.trim(),
 
-          items: form.items.map((item) => ({
-            ...item,
+        items: form.items.map((item) => ({
+          receiptItemId: item.receiptItemId ?? item.id,
 
-            acceptedQuantity: Number(item.acceptedQuantity),
+          receivedQuantity: Number(item.receivedQuantity),
 
-            defectiveQuantity: Number(item.defectiveQuantity),
-          })),
-        },
-      )
+          acceptedQuantity: Number(item.acceptedQuantity),
+
+          defectiveQuantity: Number(item.defectiveQuantity),
+
+          defectReason: item.defectReason.trim(),
+
+          disposition: item.disposition,
+        })),
+      })
     } catch (requestError) {
       setActionError(requestError.message || "검수 결과를 저장하지 못했습니다.")
 

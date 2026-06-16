@@ -186,8 +186,8 @@ function InspectionItemTable({ items, totals, onChange }) {
                 "규격",
                 "LOT 번호",
                 "입고 수량",
-                "합격 수량",
-                "불량 수량",
+                "최종 합격 수량",
+                "최종 불량 수량",
                 "불량 사유",
                 "처리 방식",
               ].map((heading) => (
