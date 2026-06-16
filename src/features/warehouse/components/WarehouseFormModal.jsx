@@ -1,6 +1,7 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useState, useRef } from "react"
+import Script from "next/script"
 import {
   Building2,
   MapPin,
@@ -54,6 +55,8 @@ export default function WarehouseFormModal({
   const [submitError, setSubmitError] = useState("")
   const [submitting, setSubmitting] = useState(false)
 
+  const detailAddressRef = useRef(null)
+
   const isEditMode = mode === "edit"
 
   useEffect(() => {
@@ -88,14 +91,32 @@ export default function WarehouseFormModal({
   }
 
   function findAddress() {
-    const searchedAddress = window.prompt(
-      "주소 검색 API 연결 전 임시 기능입니다.\n기본 주소를 입력하세요.",
-      form.baseAddress,
-    )
-
-    if (searchedAddress) {
-      updateForm("baseAddress", searchedAddress)
+    if (!window.kakao || !window.kakao.Postcode) {
+      setSubmitError(
+        "주소 검색 API를 불러오는 중입니다. 잠시 후 다시 시도해주세요.",
+      )
+      return
     }
+
+    new window.kakao.Postcode({
+      oncomplete(data) {
+        let selectedAddress = ""
+
+        if (data.userSelectedType === "R") {
+          selectedAddress = data.roadAddress
+        } else {
+          selectedAddress = data.jibunAddress
+        }
+
+        updateForm("zipcode", data.zonecode)
+        updateForm("baseAddress", selectedAddress)
+        updateForm("detailAddress", "")
+
+        window.setTimeout(() => {
+          detailAddressRef.current?.focus()
+        }, 0)
+      },
+    }).open()
   }
 
   async function submitForm(event) {
@@ -139,6 +160,10 @@ export default function WarehouseFormModal({
       }}
       className="fixed inset-0 z-[70] flex items-center justify-center bg-slate-900/45 px-4 py-6 backdrop-blur-[1px]"
     >
+      <Script
+        src="https://t1.kakaocdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"
+        strategy="afterInteractive"
+      />
       <section
         role="dialog"
         aria-modal="true"
@@ -270,17 +295,20 @@ export default function WarehouseFormModal({
 
                   <input
                     value={form.baseAddress}
+                    onClick={findAddress}
                     onChange={(event) =>
                       updateForm("baseAddress", event.target.value)
                     }
                     placeholder="기본 주소 검색"
-                    className={`${INPUT_CLASS_NAME} pl-9`}
+                    readOnly
+                    className={`${INPUT_CLASS_NAME} pl-9 cursor-pointer bg-slate-50`}
                   />
                 </div>
 
                 <FieldError message={errors.baseAddress} />
 
                 <input
+                  ref={detailAddressRef}
                   value={form.detailAddress}
                   onChange={(event) =>
                     updateForm("detailAddress", event.target.value)
