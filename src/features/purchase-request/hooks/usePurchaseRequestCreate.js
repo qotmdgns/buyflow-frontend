@@ -1,12 +1,11 @@
 "use client"
 
-import { useMemo, useRef, useState } from "react"
+import { useMemo, useRef, useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
-import { createPurchaseRequest } from "@/features/purchase-request/api/purchaseRequestApi"
 import {
-  initialPurchaseRequestItems,
-  mockPurchaseRequestProducts,
-} from "@/features/purchase-request/data/mockPurchaseRequestData"
+  createPurchaseRequest,
+  fetchPurchaseRequestProducts,
+} from "@/features/purchase-request/api/purchaseRequestApi"
 import {
   calculateRequestTotal,
   getTodayString,
@@ -25,8 +24,9 @@ const INITIAL_FORM = {
 
 export default function usePurchaseRequestCreate() {
   const router = useRouter()
+  const [products, setProducts] = useState([])
   const [form, setForm] = useState(INITIAL_FORM)
-  const [requestItems, setRequestItems] = useState(initialPurchaseRequestItems)
+  const [requestItems, setRequestItems] = useState([])
   const [attachment, setAttachment] = useState(null)
 
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -40,6 +40,17 @@ export default function usePurchaseRequestCreate() {
   const [appliedKeyword, setAppliedKeyword] = useState("")
   const [appliedCategory, setAppliedCategory] = useState("전체 카테고리")
 
+  useEffect(() => {
+    fetchPurchaseRequestProducts()
+      .then((data) => {
+        setProducts(Array.isArray(data) ? data : (data.items ?? []))
+      })
+      .catch((error) => {
+        console.error("품목 목록 조회 실패:", error)
+        window.alert("품목 목록을 불러오지 못했습니다.")
+      })
+  }, [])
+
   const totalAmount = useMemo(
     () => calculateRequestTotal(requestItems),
     [requestItems],
@@ -48,11 +59,15 @@ export default function usePurchaseRequestCreate() {
   const filteredProducts = useMemo(() => {
     const normalizedKeyword = appliedKeyword.trim().toLowerCase()
 
-    return mockPurchaseRequestProducts.filter((product) => {
+    return products.filter((product) => {
       const matchesKeyword =
         !normalizedKeyword ||
-        product.code.toLowerCase().includes(normalizedKeyword) ||
-        product.name.toLowerCase().includes(normalizedKeyword)
+        String(product.code ?? "")
+          .toLowerCase()
+          .includes(normalizedKeyword) ||
+        String(product.name ?? "")
+          .toLowerCase()
+          .includes(normalizedKeyword)
 
       const matchesCategory =
         appliedCategory === "전체 카테고리" ||
@@ -60,7 +75,7 @@ export default function usePurchaseRequestCreate() {
 
       return matchesKeyword && matchesCategory
     })
-  }, [appliedCategory, appliedKeyword])
+  }, [products, appliedCategory, appliedKeyword])
 
   function updateForm(name, value) {
     setForm((currentForm) => ({
@@ -127,7 +142,7 @@ export default function usePurchaseRequestCreate() {
       requestItems.map((item) => [item.id, item.quantity]),
     )
 
-    const nextItems = mockPurchaseRequestProducts
+    const nextItems = products
       .filter((product) => draftSelectedIds.has(product.id))
       .map((product) => ({
         ...product,
