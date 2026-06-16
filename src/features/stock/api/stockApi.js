@@ -1,13 +1,13 @@
 import {
-  StockFilterOptions,
-  StockInventories,
+  stockFilterOptions,
+  mockStocks,
   mockStockHistories,
 } from "@/features/stock/data/mockStockData"
-import { getStockStatus } from "@/features/stock/utils/StockManagementUtils"
+import { getStockStatus } from "@/features/stock/utils/stockManagementUtils"
 
 const USE_MOCK = process.env.NEXT_PUBLIC_USE_STOCK_MOCK !== "false"
 
-let stockDatabase = mockstocks.map((stock) => ({
+let stockDatabase = mockStocks.map((stock) => ({
   ...stock,
 }))
 
@@ -315,4 +315,8 @@ export async function createStockAdjustment(payload) {
   }
 
   return response.json()
+}
+
+export async function fetchStocks(params = {}) {
+  return fetchInventories(params)
 }

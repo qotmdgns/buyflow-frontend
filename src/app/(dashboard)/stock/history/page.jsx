@@ -1,5 +1,13 @@
 import StockHistoryManagement from "@/features/stock/components/StockHistoryManagement"
 
+function getStringParam(value, defaultValue = "") {
+  if (Array.isArray(value)) {
+    return value[0] ?? defaultValue
+  }
+
+  return value ?? defaultValue
+}
+
 export default async function StockHistoryPage({ searchParams }) {
   const params = await searchParams
 

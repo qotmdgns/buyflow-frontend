@@ -10,7 +10,7 @@ import {
   DEFAULT_STOCK_FILTER_OPTIONS,
   DEFAULT_STOCK_FILTERS,
   DEFAULT_PAGINATION,
-} from "@/features/stock/utils/StockManagementUtils"
+} from "@/features/stock/utils/stockManagementUtils"
 
 const DEFAULT_SUMMARY = {
   total: 0,

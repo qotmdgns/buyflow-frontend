@@ -1,5 +1,5 @@
 import { useMemo } from "react"
-import { createPageNumbers } from "@/features/stock/utils/StockManagementUtils"
+import { createPageNumbers } from "@/features/stock/utils/stockManagementUtils"
 
 export default function StockPagination({ pagination, onMovePage }) {
   const { page, totalPages } = pagination

@@ -9,7 +9,7 @@ import {
   DEFAULT_HISTORY_FILTERS,
   DEFAULT_STOCK_FILTER_OPTIONS,
   DEFAULT_PAGINATION,
-} from "@/features/stock/utils/StockManagementUtils"
+} from "@/features/stock/utils/stockManagementUtils"
 
 function createInitialFilters(initialFilters = {}) {
   return {
