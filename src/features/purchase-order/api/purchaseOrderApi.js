@@ -13,7 +13,8 @@ import {
   getTodayString,
 } from "@/features/purchase-order/utils/purchaseOrderUtils"
 
-const USE_MOCK = process.env.NEXT_PUBLIC_USE_PURCHASE_ORDER_MOCK !== "false"
+const USE_MOCK = process.env.
+NEXT_PUBLIC_USE_PURCHASE_ORDER_MOCK=false
 
 let purchaseOrderDatabase = structuredClone(mockPurchaseOrders)
 
@@ -127,7 +128,7 @@ export async function fetchPurchaseOrders(params = {}) {
     const query = new URLSearchParams(params)
 
     const response = await fetch(
-      createApiUrl(`/api/purchase-orders?${query.toString()}`),
+      createApiUrl(`/api/purchase-orders` + (query.toString() ? `${query.toString()}` : ""),
       { cache: "no-store" },
     )
 

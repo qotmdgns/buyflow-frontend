@@ -97,7 +97,7 @@ async function readJsonOrNull(response) {
 
     return JSON.parse(text)
   }
-}
+
 
 function createWarehouseRecord(payload, id, registeredAt = getTodayString()) {
   const zipcode = payload.zipcode.trim()
@@ -220,7 +220,7 @@ export async function fetchWarehouses(params = {}) {
   }
 
   const response = await fetch(
-    `${process.env.NEXT_PUBLIC_API_BASE_URL}/warehouses?${query.toString()}`,
+    `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/warehouses` + (query.toString() ? `${query.toString()}` : ""),
     { cache: "no-store" },
   )
 
@@ -264,7 +264,7 @@ export async function fetchWarehouseById(warehouseId) {
   }
 
   const response = await fetch(
-    `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/warehouses/${warehouseId}`,
+    `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/warehouses${warehouseId}`,
     { cache: "no-store" },
   )
 
@@ -303,7 +303,7 @@ export async function createWarehouse(payload) {
   }
 
   const response = await fetch(
-    `${process.env.NEXT_PUBLIC_API_BASE_URL}/warehouses`,
+    `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/warehouses`,
     {
       method: "POST",
       headers: {
@@ -366,7 +366,7 @@ export async function updateWarehouse(warehouseId, payload) {
   }
 
   const response = await fetch(
-    `${process.env.NEXT_PUBLIC_API_BASE_URL}/warehouses/${warehouseId}`,
+    `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/warehouses/${warehouseId}`,
     {
       method: "PATCH",
       headers: {
@@ -409,7 +409,7 @@ export async function deleteWarehouse(warehouseId) {
   }
 
   const response = await fetch(
-    `${process.env.NEXT_PUBLIC_API_BASE_URL}/warehouses/${warehouseId}`,
+    `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/warehouses/${warehouseId}`,
     {
       method: "DELETE",
     },
