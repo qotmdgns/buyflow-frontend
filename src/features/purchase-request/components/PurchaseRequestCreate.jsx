@@ -20,6 +20,7 @@ export default function PurchaseRequestCreate() {
     draftSelectedIds,
     keyword,
     category,
+    categoryOptions,
     filteredProducts,
     updateForm,
     changeAttachment,
@@ -118,6 +119,7 @@ export default function PurchaseRequestCreate() {
           selectedIds={draftSelectedIds}
           keyword={keyword}
           category={category}
+          categoryOptions={categoryOptions}
           onKeywordChange={setKeyword}
           onCategoryChange={setCategory}
           onSearch={searchProducts}

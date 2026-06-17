@@ -1,5 +1,4 @@
 import { Search, X } from "lucide-react"
-import { purchaseRequestCategoryOptions } from "@/features/purchase-request/data/mockPurchaseRequestData"
 
 function CategoryBadge({ children }) {
   return (
@@ -14,6 +13,7 @@ export default function PurchaseItemSelectModal({
   selectedIds,
   keyword,
   category,
+  categoryOptions,
   onKeywordChange,
   onCategoryChange,
   onSearch,
@@ -64,7 +64,7 @@ export default function PurchaseItemSelectModal({
             onChange={(event) => onCategoryChange(event.target.value)}
             className="h-10 min-w-40 rounded-md border border-slate-200 bg-white px-3 text-[13px] text-slate-500 outline-none"
           >
-            {purchaseRequestCategoryOptions.map((option) => (
+            {(categoryOptions ?? ["전체 카테고리"]).map((option) => (
               <option key={option} value={option}>
                 {option}
               </option>
