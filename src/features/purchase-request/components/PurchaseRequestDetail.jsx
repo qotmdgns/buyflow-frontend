@@ -144,7 +144,7 @@ function PurchaseRequestItems({ items, totalAmount }) {
         </div>
       ) : (
         <div className="overflow-x-auto">
-          <table className="w-full min-w-[1050px] text-left text-[13px]">
+          <table className="w-full min-w-[1250px] text-left text-[13px]">
             <thead className="bg-slate-50 text-slate-500">
               <tr>
                 {[
@@ -157,6 +157,7 @@ function PurchaseRequestItems({ items, totalAmount }) {
                   "단위",
                   "예상 단가",
                   "예상 금액",
+                  "비고",
                 ].map((heading) => (
                   <th
                     key={heading}
@@ -210,6 +211,10 @@ function PurchaseRequestItems({ items, totalAmount }) {
 
                   <td className="whitespace-nowrap px-3 py-2.5 text-right font-semibold text-blue-600">
                     {formatWon(item.estimatedAmount)}
+                  </td>
+
+                  <td className="min-w-56 px-3 py-2.5 text-slate-500">
+                    {item.remark || "-"}
                   </td>
                 </tr>
               ))}

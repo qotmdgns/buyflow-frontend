@@ -179,11 +179,16 @@ export default function usePurchaseRequestCreate() {
       requestItems.map((item) => [item.id, item.quantity]),
     )
 
+    const currentRemarkMap = new Map(
+      requestItems.map((item) => [item.id, item.remark ?? ""]),
+    )
+
     const nextItems = products
       .filter((product) => draftSelectedIds.has(product.id))
       .map((product) => ({
         ...product,
         quantity: currentQuantityMap.get(product.id) ?? 1,
+        remark: currentRemarkMap.get(product.id) ?? "",
       }))
 
     setRequestItems(nextItems)
@@ -196,6 +201,14 @@ export default function usePurchaseRequestCreate() {
     setRequestItems((currentItems) =>
       currentItems.map((item) =>
         item.id === productId ? { ...item, quantity: safeQuantity } : item,
+      ),
+    )
+  }
+
+  function changeRemark(productId, remark) {
+    setRequestItems((currentItems) =>
+      currentItems.map((item) =>
+        item.id === productId ? { ...item, remark } : item,
       ),
     )
   }
@@ -307,6 +320,7 @@ export default function usePurchaseRequestCreate() {
     toggleAllFilteredProducts,
     confirmSelectedProducts,
     changeQuantity,
+    changeRemark,
     removeItem,
     submitApproval,
   }

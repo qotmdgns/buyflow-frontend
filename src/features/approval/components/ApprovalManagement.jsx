@@ -110,7 +110,7 @@ function ItemTableCard({ items }) {
   return (
     <SectionCard title="구매 요청 품목">
       <div className="mt-4 overflow-x-auto rounded-md border border-slate-100">
-        <table className="w-full min-w-[900px] text-left text-[12px]">
+        <table className="w-full min-w-[1150px] text-left text-[12px]">
           <thead className="bg-slate-50 text-slate-500">
             <tr>
               {[
@@ -123,6 +123,7 @@ function ItemTableCard({ items }) {
                 "단위",
                 "예상 단가",
                 "예상 금액",
+                "비고",
               ].map((heading) => (
                 <th
                   key={heading}
@@ -170,6 +171,10 @@ function ItemTableCard({ items }) {
 
                 <td className="whitespace-nowrap px-3 py-3 text-right font-semibold text-blue-600">
                   {formatWon(item.expectedAmount)}
+                </td>
+
+                <td className="min-w-52 px-3 py-3 text-slate-500">
+                  {item.remark || "-"}
                 </td>
               </tr>
             ))}
