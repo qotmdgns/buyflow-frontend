@@ -128,7 +128,7 @@ export async function fetchPurchaseOrders(params = {}) {
     const query = new URLSearchParams(params)
 
     const response = await fetch(
-      createApiUrl(`/api/purchase-orders` + (query.toString() ? `${query.toString()}` : "")),
+      createApiUrl(`/api/orders` + (query.toString() ? `?${query.toString()}` : "")),
       { cache: "no-store" },
     )
 
@@ -184,7 +184,7 @@ export async function fetchPurchaseOrders(params = {}) {
 export async function fetchPurchaseOrderFilterOptions() {
   if (!USE_MOCK) {
     const response = await fetch(
-      createApiUrl("/api/purchase-orders/filter-options"),
+      createApiUrl("/api/orders/filter-options"),
       { cache: "no-store" },
     )
 
@@ -214,7 +214,7 @@ export async function fetchPurchaseOrderFilterOptions() {
 export async function fetchPurchaseOrderFormOptions() {
   if (!USE_MOCK) {
     const response = await fetch(
-      createApiUrl("/api/purchase-orders/form-options"),
+      createApiUrl("/api/orders/form-options"),
       { cache: "no-store" },
     )
 
@@ -236,7 +236,7 @@ export async function fetchPurchaseOrderFormOptions() {
 export async function fetchPurchaseOrderById(orderId) {
   if (!USE_MOCK) {
     const response = await fetch(
-      createApiUrl(`/api/purchase-orders/${orderId}`),
+      createApiUrl(`/api/orders/${orderId}`),
       { cache: "no-store" },
     )
 
@@ -262,7 +262,7 @@ export async function fetchPurchaseOrderById(orderId) {
 
 export async function createPurchaseOrder(payload, attachment = null) {
   if (!USE_MOCK) {
-    const response = await fetch(createApiUrl("/api/purchase-orders"), {
+    const response = await fetch(createApiUrl("/api/orders"), {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload),
@@ -296,7 +296,7 @@ export async function createPurchaseOrder(payload, attachment = null) {
 export async function updatePurchaseOrder(orderId, payload, attachment = null) {
   if (!USE_MOCK) {
     const response = await fetch(
-      createApiUrl(`/api/purchase-orders/${orderId}`),
+      createApiUrl(`/api/orders/${orderId}`),
       {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
@@ -354,7 +354,7 @@ export async function updatePurchaseOrder(orderId, payload, attachment = null) {
 export async function cancelPurchaseOrder(orderId, cancelReason) {
   if (!USE_MOCK) {
     const response = await fetch(
-      createApiUrl(`/api/purchase-orders/${orderId}/cancel`),
+      createApiUrl(`/api/orders/${orderId}/cancel`),
       {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },

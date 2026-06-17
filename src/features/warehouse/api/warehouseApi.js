@@ -220,7 +220,7 @@ export async function fetchWarehouses(params = {}) {
   }
 
   const response = await fetch(
-    `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/warehouses` + (query.toString() ? `${query.toString()}` : ""),
+    `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/warehouses` + (query.toString() ? `?${query.toString()}` : ""),
     { cache: "no-store" },
   )
 
@@ -264,7 +264,7 @@ export async function fetchWarehouseById(warehouseId) {
   }
 
   const response = await fetch(
-    `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/warehouses${warehouseId}`,
+    `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/warehouses/${warehouseId}`,
     { cache: "no-store" },
   )
 
