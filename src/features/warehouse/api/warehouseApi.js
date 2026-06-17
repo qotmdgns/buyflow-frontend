@@ -4,7 +4,8 @@ import {
 } from "@/features/warehouse/data/mockWarehouseData"
 import { buildWarehouseAddress } from "@/features/warehouse/utils/warehouseManagementUtils"
 
-const USE_MOCK = process.env.NEXT_PUBLIC_USE_WAREHOUSE_MOCK !== "false"
+const USE_MOCK = process.env.
+NEXT_PUBLIC_USE_WAREHOUSE_MOCK=false
 
 let warehouseDatabase = mockWarehouses.map((warehouse) => ({ ...warehouse }))
 
@@ -20,7 +21,7 @@ function includesKeyword(value, keyword) {
 
 function getTodayString() {
   return new Date().toISOString().slice(0, 10)
-
+}
   function formatDate(value) {
     if (!value) {
       return ""
@@ -94,7 +95,6 @@ function getTodayString() {
 
     return JSON.parse(text)
   }
-}
 
 function createWarehouseRecord(payload, id, registeredAt = getTodayString()) {
   const zipcode = payload.zipcode.trim()
