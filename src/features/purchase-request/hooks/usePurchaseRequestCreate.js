@@ -177,12 +177,6 @@ export default function usePurchaseRequestCreate() {
     )
   }
 
-  function saveDraft() {
-    window.alert(
-      "구매 요청을 임시 저장했습니다. 백엔드 API는 추후 연결하면 됩니다.",
-    )
-  }
-
   async function submitApproval() {
     if (submittingRef.current) {
       return
@@ -273,7 +267,6 @@ export default function usePurchaseRequestCreate() {
     confirmSelectedProducts,
     changeQuantity,
     removeItem,
-    saveDraft,
     submitApproval,
   }
 }

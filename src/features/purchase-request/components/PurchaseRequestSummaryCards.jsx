@@ -1,6 +1,5 @@
 const summaryItems = [
   { key: "total", label: "전체", status: "전체", tone: "default" },
-  { key: "draft", label: "임시 저장", status: "임시 저장", tone: "muted" },
   { key: "pending", label: "승인 대기", status: "승인 대기", tone: "muted" },
   { key: "approved", label: "승인 완료", status: "승인 완료", tone: "primary" },
   { key: "rejected", label: "반려", status: "반려", tone: "danger" },
@@ -20,7 +19,7 @@ export default function PurchaseRequestSummaryCards({
   onSelect,
 }) {
   return (
-    <section className="mt-3 grid gap-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
+    <section className="mt-3 grid gap-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
       {summaryItems.map((item) => {
         const isActive = activeStatus === item.status
 

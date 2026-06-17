@@ -34,7 +34,6 @@ export default function PurchaseRequestCreate() {
     confirmSelectedProducts,
     changeQuantity,
     removeItem,
-    saveDraft,
     submitApproval,
   } = usePurchaseRequestCreate()
 
@@ -93,14 +92,6 @@ export default function PurchaseRequestCreate() {
           className="h-10 rounded-md border border-slate-200 bg-white px-4 text-[13px] font-semibold text-slate-500 transition hover:bg-slate-50"
         >
           취소
-        </button>
-
-        <button
-          type="button"
-          onClick={saveDraft}
-          className="h-10 rounded-md border border-blue-200 bg-white px-4 text-[13px] font-semibold text-blue-600 transition hover:bg-blue-50"
-        >
-          임시 저장
         </button>
 
         <button
