@@ -33,6 +33,7 @@ export const EMPTY_WAREHOUSE_FORM = {
   baseAddress: "",
   detailAddress: "",
   manager: "",
+  userId: "",
   phone: "",
   memo: "",
 }
