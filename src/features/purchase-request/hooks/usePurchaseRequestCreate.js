@@ -2,6 +2,7 @@
 
 import { useMemo, useRef, useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
+import { useAuth } from "@/features/auth/context/AuthContext"
 import {
   createPurchaseRequest,
   fetchPurchaseRequestProducts,
@@ -13,8 +14,8 @@ import {
 
 const INITIAL_FORM = {
   requestNumber: "",
-  requester: "김철수",
-  department: "물류운영팀",
+  requester: "",
+  department: "",
   requestDate: getTodayString(),
   expectedDate: "",
   title: "",
@@ -22,8 +23,21 @@ const INITIAL_FORM = {
   reason: "",
 }
 
+function getCurrentRequestorId(user) {
+  const rawUserId = user?.dbUserId ?? user?.userId
+  const requestorId = Number(rawUserId)
+
+  if (!Number.isFinite(requestorId) || requestorId <= 0) {
+    return null
+  }
+
+  return requestorId
+}
+
 export default function usePurchaseRequestCreate() {
   const router = useRouter()
+  const { user, isAuthReady } = useAuth()
+
   const [products, setProducts] = useState([])
   const [form, setForm] = useState(INITIAL_FORM)
   const [requestItems, setRequestItems] = useState([])
@@ -39,6 +53,21 @@ export default function usePurchaseRequestCreate() {
   const [category, setCategory] = useState("전체 카테고리")
   const [appliedKeyword, setAppliedKeyword] = useState("")
   const [appliedCategory, setAppliedCategory] = useState("전체 카테고리")
+
+  useEffect(() => {
+    if (!isAuthReady || !user) {
+      return
+    }
+
+    const requesterName = user.name ?? user.userName ?? user.username ?? ""
+    const departmentName = user.department ?? user.departmentName ?? ""
+
+    setForm((currentForm) => ({
+      ...currentForm,
+      requester: currentForm.requester || requesterName,
+      department: currentForm.department || departmentName,
+    }))
+  }, [isAuthReady, user])
 
   useEffect(() => {
     fetchPurchaseRequestProducts()
@@ -207,11 +236,23 @@ export default function usePurchaseRequestCreate() {
     submittingRef.current = true
     setIsSubmitting(true)
 
+    const requestorId = getCurrentRequestorId(user)
+
+    if (!requestorId) {
+      window.alert(
+        "로그인 사용자 ID를 확인할 수 없습니다. 다시 로그인해 주세요.",
+      )
+      return
+    }
+
+    submittingRef.current = true
+    setIsSubmitting(true)
+
     try {
       // TODO: 백엔드 API 연동 시 실제 승인 요청 API를 호출합니다.
       const createdRequest = await createPurchaseRequest({
         requestNumber: form.requestNumber,
-        requestorId: 1,
+        requestorId: Number(user?.dbUserId ?? user?.userId ?? 1),
         requester: form.requester,
         department: form.department,
         requestDate: form.requestDate,

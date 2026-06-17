@@ -5,6 +5,7 @@ const SESSION_SESSION_KEY = "buyflow.auth.session-session"
 const DEFAULT_USERS = [
   {
     id: "user-001",
+    dbUserId: 1,
     employeeNo: "EMP-2024-001",
     loginId: "kimcs",
     password: "1234",
