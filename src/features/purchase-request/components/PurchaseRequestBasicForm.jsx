@@ -57,12 +57,10 @@ export default function PurchaseRequestBasicForm({
       <div className="grid gap-3 md:grid-cols-2">
         <TextField
           label="요청 번호"
-          required
-          value={form.requestNumber}
-          onChange={(event) => onChange("requestNumber", event.target.value)}
-          placeholder="예) PR-2026-0001"
+          value="자동 생성"
+          disabled
+          placeholder="승인 요청 시 자동 생성됩니다."
         />
-
         <TextField
           label="요청자"
           required
