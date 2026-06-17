@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useRef } from "react"
 import Script from "next/script"
+import { useAuth } from "@/features/auth/context/AuthContext"
 import {
   Building2,
   MapPin,
@@ -37,6 +38,14 @@ function FieldError({ message }) {
   return <p className="mt-1 text-[12px] text-rose-500">{message}</p>
 }
 
+function getCurrentUserId(user) {
+  return user?.userId ?? user?.id ?? user?.sub ?? ""
+}
+
+function getCurrentUserName(user) {
+  return user?.userName ?? user?.name ?? user?.username ?? ""
+}
+
 function createFormValue(initialValue) {
   return {
     ...EMPTY_WAREHOUSE_FORM,
@@ -50,7 +59,18 @@ export default function WarehouseFormModal({
   onClose,
   onSubmit,
 }) {
+  const { user, isAuthReady } = useAuth()
   const [form, setForm] = useState(() => createFormValue(initialValue))
+
+  const currentUserId = getCurrentUserId(user)
+  const currentUserName = getCurrentUserName(user)
+
+  const resolvedManager =
+    !isEditMode && isAuthReady ? form.manager || currentUserName : form.manager
+
+  const resolvedUserId =
+    !isEditMode && isAuthReady ? form.userId || currentUserId : form.userId
+
   const [errors, setErrors] = useState({})
   const [submitError, setSubmitError] = useState("")
   const [submitting, setSubmitting] = useState(false)
@@ -122,7 +142,13 @@ export default function WarehouseFormModal({
   async function submitForm(event) {
     event.preventDefault()
 
-    const nextErrors = validateWarehouseForm(form)
+    const submitPayload = {
+      ...form,
+      userId: resolvedUserId,
+      manager: resolvedManager,
+    }
+
+    const nextErrors = validateWarehouseForm(submitPayload)
 
     if (Object.keys(nextErrors).length > 0) {
       setErrors(nextErrors)
@@ -133,7 +159,7 @@ export default function WarehouseFormModal({
     setSubmitError("")
 
     try {
-      await onSubmit(form)
+      await onSubmit(submitPayload)
     } catch (requestError) {
       setSubmitError(
         requestError.message ||
@@ -332,7 +358,7 @@ export default function WarehouseFormModal({
                   />
 
                   <input
-                    value={form.manager}
+                    value={resolvedManager}
                     onChange={(event) =>
                       updateForm("manager", event.target.value)
                     }

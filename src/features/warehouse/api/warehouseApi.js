@@ -20,80 +20,81 @@ function includesKeyword(value, keyword) {
 
 function getTodayString() {
   return new Date().toISOString().slice(0, 10)
+}
 
-  function formatDate(value) {
-    if (!value) {
-      return ""
-    }
-
-    return String(value).slice(0, 10)
+function formatDate(value) {
+  if (!value) {
+    return ""
   }
 
-  function toUseYn(activeStatus) {
-    return activeStatus === "사용 중지" ? "N" : "Y"
+  return String(value).slice(0, 10)
+}
+
+function toUseYn(activeStatus) {
+  return activeStatus === "사용 중지" ? "N" : "Y"
+}
+
+function toActiveStatus(useYn) {
+  return useYn === "N" ? "사용 중지" : "사용 중"
+}
+
+function toBackendPayload(payload, includeCode = true) {
+  const result = {
+    warehouseName: payload.name.trim(),
+    zipcode: payload.zipcode.trim(),
+    address: payload.baseAddress.trim(),
+    detailAddress: payload.detailAddress.trim(),
+    contact: payload.phone.trim(),
+    useYn: toUseYn(payload.activeStatus),
+    type: payload.type,
   }
 
-  function toActiveStatus(useYn) {
-    return useYn === "N" ? "사용 중지" : "사용 중"
+  if (includeCode) {
+    result.warehouseCode = payload.code.trim().toUpperCase()
   }
 
-  function toBackendPayload(payload, includeCode = true) {
-    const result = {
-      warehouseName: payload.name.trim(),
-      zipcode: payload.zipcode.trim(),
-      address: payload.baseAddress.trim(),
-      detailAddress: payload.detailAddress.trim(),
-      contact: payload.phone.trim(),
-      useYn: toUseYn(payload.activeStatus),
-      type: payload.type,
-    }
-
-    if (includeCode) {
-      result.warehouseCode = payload.code.trim().toUpperCase()
-    }
-
-    if (payload.userId) {
-      result.userId = payload.userId
-    }
-
-    if (payload.manager) {
-      result.managerName = payload.manager.trim()
-    }
-
-    return result
+  if (payload.userId) {
+    result.userId = payload.userId
   }
 
-  function toFrontendWarehouse(data) {
-    const baseAddress = data.baseAddress ?? data.address ?? ""
-    const detailAddress = data.detailAddress ?? ""
-
-    return {
-      id: data.id ?? data.warehouseCode ?? data.code,
-      code: data.code ?? data.warehouseCode ?? "",
-      name: data.name ?? data.warehouseName ?? "",
-      type: data.type ?? "",
-      zipcode: data.zipcode ?? "",
-      baseAddress,
-      detailAddress,
-      address: buildWarehouseAddress(baseAddress, detailAddress),
-      activeStatus: data.activeStatus ?? toActiveStatus(data.useYn),
-      manager: data.manager ?? data.managerName ?? "",
-      phone: data.phone ?? data.contact ?? "",
-      memo: data.memo ?? "",
-      registeredAt: data.registeredAt ?? formatDate(data.createdAt),
-      updatedAt: data.updatedAt ? formatDate(data.updatedAt) : "",
-    }
+  if (payload.manager) {
+    result.managerName = payload.manager.trim()
   }
 
-  async function readJsonOrNull(response) {
-    const text = await response.text()
+  return result
+}
 
-    if (!text) {
-      return null
-    }
+function toFrontendWarehouse(data) {
+  const baseAddress = data.baseAddress ?? data.address ?? ""
+  const detailAddress = data.detailAddress ?? ""
 
-    return JSON.parse(text)
+  return {
+    id: data.id ?? data.warehouseCode ?? data.code,
+    code: data.code ?? data.warehouseCode ?? "",
+    name: data.name ?? data.warehouseName ?? "",
+    type: data.type ?? "",
+    zipcode: data.zipcode ?? "",
+    baseAddress,
+    detailAddress,
+    address: buildWarehouseAddress(baseAddress, detailAddress),
+    activeStatus: data.activeStatus ?? toActiveStatus(data.useYn),
+    manager: data.manager ?? data.managerName ?? "",
+    userId: data.userId ?? data.user?.userId ?? "",
+    phone: data.phone ?? data.contact ?? "",
+    memo: data.memo ?? "",
+    registeredAt: data.registeredAt ?? formatDate(data.createdAt),
+    updatedAt: data.updatedAt ? formatDate(data.updatedAt) : "",
   }
+}
+
+async function readJsonOrNull(response) {
+  const text = await response.text()
+
+  if (!text) {
+    return null
+  }
+
+  return JSON.parse(text)
 }
 
 function createWarehouseRecord(payload, id, registeredAt = getTodayString()) {
@@ -112,6 +113,7 @@ function createWarehouseRecord(payload, id, registeredAt = getTodayString()) {
     detailAddress,
     address: buildWarehouseAddress(baseAddress, detailAddress),
     manager: payload.manager.trim(),
+    userId: payload.userId,
     phone: payload.phone.trim(),
     memo: payload.memo.trim(),
     registeredAt,
