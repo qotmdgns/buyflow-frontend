@@ -128,7 +128,7 @@ export async function fetchPurchaseOrders(params = {}) {
     const query = new URLSearchParams(params)
 
     const response = await fetch(
-      createApiUrl(`/api/purchase-orders` + (query.toString() ? `${query.toString()}` : ""),
+      createApiUrl(`/api/purchase-orders` + (query.toString() ? `${query.toString()}` : "")),
       { cache: "no-store" },
     )
 
