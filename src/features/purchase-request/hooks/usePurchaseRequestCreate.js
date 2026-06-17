@@ -12,7 +12,7 @@ import {
 } from "@/features/purchase-request/utils/purchaseRequestUtils"
 
 const INITIAL_FORM = {
-  requestNumber: "PR-2026-0001",
+  requestNumber: "",
   requester: "김철수",
   department: "물류운영팀",
   requestDate: getTodayString(),
@@ -76,6 +76,14 @@ export default function usePurchaseRequestCreate() {
       return matchesKeyword && matchesCategory
     })
   }, [products, appliedCategory, appliedKeyword])
+
+  const categoryOptions = useMemo(() => {
+    const categories = products
+      .map((product) => product.category)
+      .filter(Boolean)
+
+    return ["전체 카테고리", ...Array.from(new Set(categories))]
+  }, [products])
 
   function updateForm(name, value) {
     setForm((currentForm) => ({
@@ -181,7 +189,6 @@ export default function usePurchaseRequestCreate() {
     }
 
     const requiredFields = [
-      { label: "요청 번호", value: form.requestNumber },
       { label: "요청자", value: form.requester },
       { label: "요청 부서", value: form.department },
       { label: "요청일", value: form.requestDate },
@@ -252,6 +259,7 @@ export default function usePurchaseRequestCreate() {
     draftSelectedIds,
     keyword,
     category,
+    categoryOptions,
     filteredProducts,
     updateForm,
     changeAttachment,
