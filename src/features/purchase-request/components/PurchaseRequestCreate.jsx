@@ -33,6 +33,7 @@ export default function PurchaseRequestCreate() {
     toggleAllFilteredProducts,
     confirmSelectedProducts,
     changeQuantity,
+    changeRemark,
     removeItem,
     submitApproval,
   } = usePurchaseRequestCreate()
@@ -77,6 +78,7 @@ export default function PurchaseRequestCreate() {
         totalAmount={totalAmount}
         onOpenItemModal={openItemModal}
         onChangeQuantity={changeQuantity}
+        onChangeRemark={changeRemark}
         onRemoveItem={removeItem}
       />
 

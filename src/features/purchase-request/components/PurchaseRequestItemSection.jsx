@@ -14,6 +14,7 @@ export default function PurchaseRequestItemSection({
   totalAmount,
   onOpenItemModal,
   onChangeQuantity,
+  onChangeRemark,
   onRemoveItem,
 }) {
   return (
@@ -41,7 +42,7 @@ export default function PurchaseRequestItemSection({
         <EmptyItems />
       ) : (
         <div className="overflow-x-auto">
-          <table className="w-full min-w-[1050px] text-left text-[13px]">
+          <table className="w-full min-w-[1250px] text-left text-[13px]">
             <thead className="bg-slate-50 text-slate-500">
               <tr>
                 {[
@@ -53,6 +54,7 @@ export default function PurchaseRequestItemSection({
                   "요청 수량",
                   "기준 단가",
                   "요청 금액",
+                  "비고",
                   "",
                 ].map((heading) => (
                   <th
@@ -107,6 +109,18 @@ export default function PurchaseRequestItemSection({
 
                   <td className="whitespace-nowrap px-3 py-2.5 text-right font-semibold text-slate-700">
                     {formatWon(item.unitPrice * item.quantity)}
+                  </td>
+
+                  <td className="px-3 py-2.5">
+                    <input
+                      type="text"
+                      value={item.remark ?? ""}
+                      onChange={(event) =>
+                        onChangeRemark(item.id, event.target.value)
+                      }
+                      placeholder="비고 입력"
+                      className="h-9 w-56 rounded-md border border-slate-200 px-2 text-[13px] outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100"
+                    />
                   </td>
 
                   <td className="px-3 py-2.5 text-right">
