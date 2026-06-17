@@ -64,6 +64,7 @@ export default function WarehouseFormModal({
 
   const currentUserId = getCurrentUserId(user)
   const currentUserName = getCurrentUserName(user)
+  const isEditMode = mode === "edit"
 
   const resolvedManager =
     !isEditMode && isAuthReady ? form.manager || currentUserName : form.manager
@@ -76,8 +77,6 @@ export default function WarehouseFormModal({
   const [submitting, setSubmitting] = useState(false)
 
   const detailAddressRef = useRef(null)
-
-  const isEditMode = mode === "edit"
 
   useEffect(() => {
     const previousOverflow = document.body.style.overflow
