@@ -174,7 +174,7 @@ export default function PurchaseOrderManagement() {
               onChange={(event) => updateFilter("status", event.target.value)}
               className={INPUT_CLASS_NAME}
             >
-              {filterOptions.statuses.map((status) => (
+              {filterOptions?.statuses.map((status) => (
                 <option key={status} value={status}>
                   {status === "전체"
                     ? status
