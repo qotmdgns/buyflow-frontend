@@ -55,11 +55,11 @@ export default function ProductWarehouseSettingSection({
                 <tr key={setting.rowId} className="border-t border-slate-100">
                   <td className="px-3 py-2">
                     <select
-                      value={setting.warehouseId}
+                      value={setting.warehouseCode}
                       onChange={(event) =>
                         onChange(
                           setting.rowId,
-                          "warehouseId",
+                          "warehouseCode",
                           event.target.value,
                         )
                       }

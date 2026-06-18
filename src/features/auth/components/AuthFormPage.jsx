@@ -166,28 +166,28 @@ export default function AuthFormPage({ mode }) {
   const config = FORM_CONFIG[mode]
   const SubmitIcon = config.submitIcon
 
-  function handleSubmit(event) {
+  async function handleSubmit(event) {
     event.preventDefault()
 
     setError("")
     setMessage("")
 
-    const formData = new FormData(event.currentTarget)
+    const formElement = event.currentTarget
+    const formData = new FormData(formElement)
 
     function getValue(key) {
-      return String(formData.get(key) ?? "")
+      return String(formData.get(key) ?? "").trim()
     }
 
     try {
       if (mode === "login") {
-        login({
+        await login({
           loginId: getValue("loginId"),
           password: getValue("password"),
           remember: formData.get("remember") === "on",
         })
 
         router.push("/dashboard")
-
         return
       }
 
@@ -199,7 +199,7 @@ export default function AuthFormPage({ mode }) {
           throw new Error("비밀번호와 비밀번호 확인이 일치하지 않습니다.")
         }
 
-        signup({
+        await signup({
           name: getValue("name"),
           loginId: getValue("loginId"),
           email: getValue("email"),
@@ -208,21 +208,18 @@ export default function AuthFormPage({ mode }) {
           password,
         })
 
-        event.currentTarget.reset()
-
+        formElement.reset()
         setMessage("회원가입이 완료되었습니다. 로그인 화면에서 로그인하세요.")
-
         return
       }
 
       if (mode === "find-id") {
-        const loginId = findLoginId({
+        const loginId = await findLoginId({
           name: getValue("name"),
           email: getValue("email"),
         })
 
         setMessage(`회원님의 아이디는 ${loginId} 입니다.`)
-
         return
       }
 
@@ -234,14 +231,13 @@ export default function AuthFormPage({ mode }) {
           throw new Error("새 비밀번호와 비밀번호 확인이 일치하지 않습니다.")
         }
 
-        resetPassword({
+        await resetPassword({
           loginId: getValue("loginId"),
           email: getValue("email"),
           newPassword,
         })
 
-        event.currentTarget.reset()
-
+        formElement.reset()
         setMessage("비밀번호가 변경되었습니다. 새 비밀번호로 로그인하세요.")
       }
     } catch (submitError) {

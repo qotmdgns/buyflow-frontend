@@ -172,7 +172,7 @@ function createQueryString(params = {}) {
     // Spring Pageable은 0페이지부터 시작합니다.
     query.set(
       key,
-      key === "page" ? String(Math.max(Number(value) - 1, 0)) : String(value),
+      key === "page" ? String(Math.max(Number(value), 1)) : String(value),
     )
   })
 
