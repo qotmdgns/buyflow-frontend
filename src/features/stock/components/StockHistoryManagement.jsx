@@ -247,47 +247,47 @@ export default function StockHistoryManagement({ initialFilters }) {
                 !error &&
                 histories.map((history) => (
                   <tr
-                    key={history.id}
+                    key={history.historyid}
                     className="border-t border-slate-100 text-slate-600"
                   >
                     <td className="whitespace-nowrap px-3 py-3">
-                      {history.occurredAt}
+                      {history.createdAt}
                     </td>
 
                     <td className="whitespace-nowrap px-3 py-3">
-                      <MovementBadge type={history.movementType} />
+                      <span>{history.historyType}</span>
                     </td>
 
                     <td className="px-3 py-3">
                       <p className="font-semibold text-slate-800">
-                        {history.itemName}
+                        
                       </p>
 
                       <p className="mt-0.5 text-[12px] text-slate-400">
-                        {history.itemCode}
+                        
                       </p>
                     </td>
 
                     <td className="whitespace-nowrap px-3 py-3">
-                      {history.warehouseName}
+                      
                     </td>
 
                     <td
                       className={`px-3 py-3 font-bold ${
-                        history.quantity > 0
+                        history.changeQty > 0
                           ? "text-emerald-600"
                           : "text-rose-500"
                       }`}
                     >
-                      {formatSignedQuantity(history.quantity)}
+                      {formatSignedQuantity(history.changeQty)}
                     </td>
 
                     <td className="px-3 py-3">
-                      {formatNumber(history.beforeStock)}
+                      {formatNumber(history.beforeQty)}
                     </td>
 
                     <td className="px-3 py-3 font-semibold text-slate-800">
-                      {formatNumber(history.afterStock)}
+                      {formatNumber(history.afterQty)}
                     </td>
 
                     <td className="whitespace-nowrap px-3 py-3 text-slate-400">
@@ -297,7 +297,7 @@ export default function StockHistoryManagement({ initialFilters }) {
                     <td className="min-w-56 px-3 py-3">{history.reason}</td>
 
                     <td className="whitespace-nowrap px-3 py-3">
-                      {history.processedBy}
+                      {history.createdBy}
                     </td>
                   </tr>
                 ))}

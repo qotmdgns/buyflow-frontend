@@ -155,6 +155,18 @@ function getMockStockHistories(params = {}) {
 }
 
 function normalizeListResponse(data) {
+  if (Array.isArray(data)) {
+    return {
+      items: data,
+      pagination: {
+        page: 1,
+        size: data.length,
+        totalElements: data.length,
+        totalPages: 1,
+      },
+    }
+  }
+
   if (Array.isArray(data.items) && data.pagination) {
     return data
   }
