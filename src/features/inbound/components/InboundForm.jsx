@@ -107,7 +107,7 @@ export default function InboundForm({
               <option value="">입고 처리할 발주 선택</option>
 
               {options.eligibleOrders.map((order) => (
-                <option key={order.id} value={order.id}>
+                <option key={order.orderId} value={order.orderId}>
                   {order.orderNumber} / {order.supplierName} / 미입고{" "}
                   {formatNumber(order.remainingQuantity)}
                 </option>

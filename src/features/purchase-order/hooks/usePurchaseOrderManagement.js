@@ -65,6 +65,11 @@ export default function usePurchaseOrderManagement() {
 
         if (!ignore) {
           setOrders(data.items)
+          console.log("현재 page", pagination.page)
+          console.log("현재 size", pagination.size)
+
+          console.log("서버 page", data.pagination.page)
+          console.log("서버 size", data.pagination.size)
           setPagination(data.pagination)
         }
       } catch (requestError) {
@@ -124,7 +129,7 @@ export default function usePurchaseOrderManagement() {
   }
 
   function openDetail(order) {
-    setSelectedOrderId(order.id)
+    setSelectedOrderId(order.odrerId)
   }
 
   function closeDetail() {

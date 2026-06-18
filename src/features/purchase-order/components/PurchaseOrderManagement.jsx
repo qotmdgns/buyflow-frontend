@@ -81,7 +81,7 @@ export default function PurchaseOrderManagement() {
   function moveToEdit(order) {
     closeDetail()
 
-    router.push(`/purchase-orders/${order.id}/edit`)
+    router.push(`/purchase-orders/${order.orderId}/edit`)
   }
 
   return (
@@ -268,7 +268,7 @@ export default function PurchaseOrderManagement() {
                 !error &&
                 orders.map((order) => (
                   <tr
-                    key={order.id}
+                    key={order.orderId}
                     onClick={() => openDetail(order)}
                     className="cursor-pointer border-t border-slate-100 text-slate-600 transition hover:bg-blue-50/50"
                   >
