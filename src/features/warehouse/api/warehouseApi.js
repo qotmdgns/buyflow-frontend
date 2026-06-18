@@ -41,25 +41,30 @@ function toActiveStatus(useYn) {
 
 function toBackendPayload(payload, includeCode = true) {
   const result = {
-    warehouseName: payload.name.trim(),
-    zipcode: payload.zipcode.trim(),
-    address: payload.baseAddress.trim(),
-    detailAddress: payload.detailAddress.trim(),
-    contact: payload.phone.trim(),
+    warehouseName: payload.name ? payload.name.trim() : (payload.warehouseName ? payload.warehouseName.trim() : ""),
+    zipcode: payload.zipcode ? payload.zipcode.trim() : "",
+    address: payload.baseAddress ? payload.baseAddress.trim() : (payload.address ? payload.address.trim() : ""),
+    detailAddress: payload.detailAddress ? payload.detailAddress.trim() : "",
+    contact: payload.phone ? payload.phone.trim() : (payload.contact ? payload.contact.trim() : ""),
     useYn: toUseYn(payload.activeStatus),
     type: payload.type,
+    memo: payload.memo ? payload.memo.trim() : ""
   }
 
-  if (includeCode) {
-    result.warehouseCode = payload.code.trim().toUpperCase()
-  }
+  result.warehouseCode = payload.code ? payload.code.trim().toUpperCase() : (payload.warehouseCode ? payload.warehouseCode.trim().toUpperCase() : "");
+
+  // if (includeCode) {
+  //   result.warehouseCode = payload.code.trim().toUpperCase()
+  // }
 
   if (payload.userId) {
     result.userId = payload.userId
   }
 
-  if (payload.manager) {
-    result.managerName = payload.manager.trim()
+  if (payload.manager || payload.managerName) {
+    const mgr = payload.manager || payload.managerName
+    result.managerName = mgr.trim()
+    result.manager = mgr.trim()
   }
 
   return result
@@ -355,7 +360,7 @@ export async function updateWarehouse(warehouseCode, payload) {
     const updatedWarehouse = createWarehouseRecord(
       payload,
       Number(warehouseCode),
-      previousWarehouse.registeredAt,
+      previousWarehouse.updatedAt,
     )
 
     warehouseDatabase = warehouseDatabase.map((warehouse) =>

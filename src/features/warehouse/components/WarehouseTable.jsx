@@ -74,7 +74,9 @@ function WarehouseRow({ warehouse, onDetail }) {
         <StatusBadge status={warehouse.activeStatus} />
       </td>
 
-      <td className="whitespace-nowrap px-3 py-2.5">{warehouse.manager}</td>
+      <td className="whitespace-nowrap px-3 py-2.5">
+        {warehouse.manager || warehouse.managerName || "-"}
+      </td>
 
       <td className="whitespace-nowrap px-3 py-2.5 text-slate-600">
         {warehouse.phone}
@@ -82,6 +84,10 @@ function WarehouseRow({ warehouse, onDetail }) {
 
       <td className="whitespace-nowrap px-3 py-2.5 text-slate-600">
         {warehouse.registeredAt}
+      </td>
+
+      <td className="whitespace-nowrap px-3 py-2.5 text-slate-600">
+        {warehouse.updatedAt}
       </td>
     </tr>
   )

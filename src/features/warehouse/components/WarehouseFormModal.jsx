@@ -138,34 +138,48 @@ export default function WarehouseFormModal({
     }).open()
   }
 
-  async function submitForm(event) {
-    event.preventDefault()
+async function submitForm(event) {
+    event.preventDefault();
+
+    const finalManager = form.manager || form.managerName || resolvedManager || "";
+    const finalUserId = form.userId || resolvedUserId || "";
+    const finalDetailAddress = form.detailAddress || form.detailAddres || "";
+    
+    const finalCode = form.code ? form.code.trim().toUpperCase() : ""; 
+    const finalName = form.name || form.warehouseName || "";
 
     const submitPayload = {
       ...form,
-      userId: resolvedUserId,
-      manager: resolvedManager,
-    }
+      code: finalCode,
+      name: finalName,
+      warehouseCode: finalCode,
+      warehouseName: finalName,
+      detailAddress: finalDetailAddress,
+      detailAddres: finalDetailAddress,
+      userId: finalUserId,
+      manager: finalManager,
+      managerName: finalManager
+    };
 
-    const nextErrors = validateWarehouseForm(submitPayload)
+    const nextErrors = validateWarehouseForm(submitPayload);
 
     if (Object.keys(nextErrors).length > 0) {
-      setErrors(nextErrors)
-      return
+      setErrors(nextErrors);
+      return;
     }
 
-    setSubmitting(true)
-    setSubmitError("")
+    setSubmitting(true);
+    setSubmitError("");
 
     try {
-      await onSubmit(submitPayload)
+      await onSubmit(submitPayload);
     } catch (requestError) {
       setSubmitError(
         requestError.message ||
           `${isEditMode ? "창고 정보를 수정" : "신규 창고를 등록"}하지 못했습니다.`,
-      )
+      );
     } finally {
-      setSubmitting(false)
+      setSubmitting(false);
     }
   }
 
@@ -222,6 +236,7 @@ export default function WarehouseFormModal({
 
                 <input
                   value={form.code || ""}
+                  disabled={isEditMode}
                   onChange={(event) => updateForm("code", event.target.value)}
                   placeholder="WH-XXXX"
                   className={INPUT_CLASS_NAME}
@@ -334,7 +349,7 @@ export default function WarehouseFormModal({
 
                 <input
                   ref={detailAddressRef}
-                  value={form.detailAddres || ""}
+                  value={form.detailAddress || ""}
                   onChange={(event) =>
                     updateForm("detailAddress", event.target.value)
                   }

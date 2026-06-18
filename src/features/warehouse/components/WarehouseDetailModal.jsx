@@ -157,6 +157,8 @@ export default function WarehouseDetailModal({
 
             <DetailItem label="등록일" value={warehouse.registeredAt} />
 
+            <DetailItem label="수정일" value={warehouse.updatedAt} />
+
             <DetailItem label="비고" value={warehouse.memo} fullWidth />
           </div>
         </div>
