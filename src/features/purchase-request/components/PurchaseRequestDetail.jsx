@@ -107,7 +107,13 @@ function PurchaseRequestBasicInformation({ request }) {
           {request.department}
         </InformationItem>
 
-        <InformationItem label="요청일">{request.requestedAt}</InformationItem>
+        <InformationItem label="등록일">
+          {request.createdAt || request.requestedAt}
+        </InformationItem>
+
+        <InformationItem label="수정일">
+          {request.updatedAt || "-"}
+        </InformationItem>
 
         <InformationItem label="희망 입고일">
           {request.desiredInboundAt}
@@ -144,7 +150,7 @@ function PurchaseRequestItems({ items, totalAmount }) {
         </div>
       ) : (
         <div className="overflow-x-auto">
-          <table className="w-full min-w-[1250px] text-left text-[13px]">
+          <table className="w-full min-w-[1450px] text-left text-[13px]">
             <thead className="bg-slate-50 text-slate-500">
               <tr>
                 {[
@@ -158,6 +164,8 @@ function PurchaseRequestItems({ items, totalAmount }) {
                   "예상 단가",
                   "예상 금액",
                   "비고",
+                  "품목 등록일",
+                  "품목 수정일",
                 ].map((heading) => (
                   <th
                     key={heading}
@@ -215,6 +223,14 @@ function PurchaseRequestItems({ items, totalAmount }) {
 
                   <td className="min-w-56 px-3 py-2.5 text-slate-500">
                     {item.remark || "-"}
+                  </td>
+
+                  <td className="whitespace-nowrap px-3 py-2.5 text-slate-500">
+                    {item.createdAt || "-"}
+                  </td>
+
+                  <td className="whitespace-nowrap px-3 py-2.5 text-slate-500">
+                    {item.updatedAt || "-"}
                   </td>
                 </tr>
               ))}

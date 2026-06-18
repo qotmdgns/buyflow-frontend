@@ -49,7 +49,7 @@ function TableMessage({ children, isError = false }) {
   return (
     <tr>
       <td
-        colSpan={12}
+        colSpan={13}
         className={`h-52 text-center text-[14px] ${
           isError ? "text-rose-500" : "text-slate-400"
         }`}
@@ -103,7 +103,7 @@ export default function PurchaseRequestTable({
 
   return (
     <div className="overflow-x-auto">
-      <table className="w-full min-w-[1400px] text-left text-[13px]">
+      <table className="w-full min-w-[1550px] text-left text-[13px]">
         <thead className="bg-slate-50 text-slate-500">
           <tr>
             <th className="w-10 px-3 py-2.5">
@@ -185,7 +185,11 @@ export default function PurchaseRequestTable({
                 </td>
 
                 <td className="whitespace-nowrap px-3 py-2.5">
-                  {request.requestedAt}
+                  {request.createdAt || request.requestedAt || "-"}
+                </td>
+
+                <td className="whitespace-nowrap px-3 py-2.5">
+                  {request.updatedAt || "-"}
                 </td>
 
                 <td className="whitespace-nowrap px-3 py-2.5">
