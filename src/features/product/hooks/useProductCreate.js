@@ -19,14 +19,14 @@ const INITIAL_FORM = {
 const INITIAL_WAREHOUSE_SETTINGS = [
   {
     rowId: 1,
-    warehouseId: "WH-001",
+    warehouseCode: "WH-001",
     locationCode: "A-12-04",
     safetyStock: "100",
     reorderPoint: "50",
   },
   {
     rowId: 2,
-    warehouseId: "WH-001",
+    warehouseCode: "WH-001",
     locationCode: "A-12-04",
     safetyStock: "100",
     reorderPoint: "50",
@@ -66,7 +66,7 @@ export default function useProductCreate() {
       safetyStock: toNonNegativeNumber(form.safetyStock),
 
       warehouseSettings: warehouseSettings.map((setting) => ({
-        warehouseId: setting.warehouseId,
+        warehouseCode: setting.warehouseCode,
         locationCode: setting.locationCode.trim(),
         safetyStock: toNonNegativeNumber(setting.safetyStock),
         reorderPoint: toNonNegativeNumber(setting.reorderPoint),
@@ -117,7 +117,7 @@ export default function useProductCreate() {
       ...currentSettings,
       {
         rowId: Date.now(),
-        warehouseId: "WH-001",
+        warehouseCode: "WH-001",
         locationCode: "",
         safetyStock: "0",
         reorderPoint: "0",

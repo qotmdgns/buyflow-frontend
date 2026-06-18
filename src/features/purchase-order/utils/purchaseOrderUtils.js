@@ -51,7 +51,7 @@ export const EMPTY_PURCHASE_ORDER_FORM = {
   orderedAt: "",
   expectedInboundFrom: "",
   expectedInboundTo: "",
-  warehouseId: "",
+  warehouseCode: "",
   memo: "",
   status: "DRAFT",
 }
@@ -159,7 +159,7 @@ export function createPurchaseOrderForm(detail = null) {
     orderedAt: detail.orderedAt ?? "",
     expectedInboundFrom: detail.expectedInboundFrom ?? "",
     expectedInboundTo: detail.expectedInboundTo ?? "",
-    warehouseId: String(detail.warehouseId ?? ""),
+    warehouseCode: String(detail.warehouseCode ?? ""),
     memo: detail.memo ?? "",
     status: detail.status ?? "DRAFT",
   }
@@ -186,8 +186,8 @@ export function validatePurchaseOrderForm(form, items) {
     errors.expectedInbound = "입고 예정일 범위를 확인하세요."
   }
 
-  if (!form.warehouseId) {
-    errors.warehouseId = "입고 창고를 선택하세요."
+  if (!form.warehouseCode) {
+    errors.warehouseCode = "입고 창고를 선택하세요."
   }
 
   if (!items.length) {
