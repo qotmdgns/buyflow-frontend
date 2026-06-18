@@ -27,12 +27,53 @@ function clone(value) {
 }
 
 function createApiUrl(path) {
-  const baseUrl = (process.env.NEXT_PUBLIC_API_BASE_URL ?? "").replace(
-    /\/$/,
-    "",
-  )
+  const baseUrl = (process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:8080").replace(/\/$/, "")
+  const refinedPath = path.startsWith("/") ? path : `/${path}`
 
-  return `${baseUrl}${path}`
+  return `${baseUrl}${refinedPath}`
+}
+
+function toFrontendPurchaseOrder(data) {
+  if (!data) return null;
+  return {
+    orderId: data.orderId,
+    id: data.orderId,
+    orderNumber: data.orderNo || `PO-2026-${String(data.orderId).padStart(4, "0")}`,
+    requestId: data.requestId,
+    requestNumber: data.requestNo || "-",
+    requestTitle: data.requestTitle || "-",
+    supplierId: data.supplierId,
+    supplierName: data.supplierName || "-",
+    
+    // 백엔드 userName을 프론트 그리드용 orderManager로 매핑
+    orderManager: data.userName || data.orderManager || "-", 
+    
+    orderedAt: data.createdAt ? String(data.createdAt).slice(0, 10) : "-",
+    expectedInboundFrom: data.expectedInboundFrom || (data.dueDate ? String(data.dueDate).slice(0, 10) : "-"),
+    expectedInboundTo: data.expectedInboundTo || (data.dueDate ? String(data.dueDate).slice(0, 10) : "-"),
+    warehouseCode: data.warehouseCode || "",
+    warehouseName: data.warehouseName || "일반 창고",
+    memo: data.memo || "",
+    status: data.orderStatus || "DRAFT",
+    items: data.items || []
+  };
+}
+
+function normalizePurchaseOrderResponse(data) {
+  if (!data) return { items: [], pagination: { page: 1, size: 10, totalElements: 0, totalPages: 1 } };
+
+  const itemsArray = data.content || data.items || [];
+  
+  return {
+    /* ⭕ map 안에서 호출하던 구형 이름(toFrontendWarehouse)을 새 이름으로 싱크 교정! */
+    items: itemsArray.map(toFrontendPurchaseOrder), 
+    pagination: {
+      page: (data.number ?? 0) + 1,
+      size: data.size ?? 10,
+      totalElements: data.totalElements ?? itemsArray.length,
+      totalPages: Math.max(data.totalPages ?? 1, 1),
+    },
+  }
 }
 
 function includesKeyword(value, keyword) {
@@ -126,7 +167,6 @@ function createRecord(payload, id, attachment, previousOrder = null) {
 export async function fetchPurchaseOrders(params = {}) {
   if (!USE_MOCK) {
     const query = new URLSearchParams(params)
-
     const response = await fetch(
       createApiUrl(`/api/orders` + (query.toString() ? `?${query.toString()}` : "")),
       { cache: "no-store" },
@@ -136,7 +176,7 @@ export async function fetchPurchaseOrders(params = {}) {
       throw new Error("발주 목록을 불러오지 못했습니다.")
     }
 
-    return response.json()
+    return normalizePurchaseOrderResponse(await response.json())
   }
 
   await wait(120)
