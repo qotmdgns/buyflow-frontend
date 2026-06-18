@@ -54,20 +54,30 @@ export default function usePurchaseRequestCreate() {
   const [appliedKeyword, setAppliedKeyword] = useState("")
   const [appliedCategory, setAppliedCategory] = useState("전체 카테고리")
 
-  useEffect(() => {
+  const requesterName = useMemo(() => {
     if (!isAuthReady || !user) {
-      return
+      return ""
     }
 
-    const requesterName = user.name ?? user.userName ?? user.username ?? ""
-    const departmentName = user.department ?? user.departmentName ?? ""
-
-    setForm((currentForm) => ({
-      ...currentForm,
-      requester: currentForm.requester || requesterName,
-      department: currentForm.department || departmentName,
-    }))
+    return user.name ?? user.userName ?? user.username ?? ""
   }, [isAuthReady, user])
+
+  const departmentName = useMemo(() => {
+    if (!isAuthReady || !user) {
+      return ""
+    }
+
+    return user.department ?? user.departmentName ?? ""
+  }, [isAuthReady, user])
+
+  const formWithLoginUser = useMemo(
+    () => ({
+      ...form,
+      requester: form.requester || requesterName,
+      department: form.department || departmentName,
+    }),
+    [form, requesterName, departmentName],
+  )
 
   useEffect(() => {
     fetchPurchaseRequestProducts()
@@ -233,12 +243,14 @@ export default function usePurchaseRequestCreate() {
       return
     }
 
+    const currentForm = formWithLoginUser
+
     const requiredFields = [
-      { label: "요청자", value: form.requester },
-      { label: "요청 부서", value: form.department },
-      { label: "요청일", value: form.requestDate },
-      { label: "요청 제목", value: form.title },
-      { label: "요청 사유", value: form.reason },
+      { label: "요청자", value: currentForm.requester },
+      { label: "요청 부서", value: currentForm.department },
+      { label: "요청일", value: currentForm.requestDate },
+      { label: "요청 제목", value: currentForm.title },
+      { label: "요청 사유", value: currentForm.reason },
     ]
 
     const emptyField = requiredFields.find(
@@ -260,17 +272,15 @@ export default function usePurchaseRequestCreate() {
 
     try {
       const createdRequest = await createPurchaseRequest({
-        requestNumber: form.requestNumber,
-        requestorId,
-        requester: form.requester,
-        department: form.department,
-        requestDate: form.requestDate,
-        expectedDate: form.expectedDate,
-        title: form.title,
-        urgency: form.urgency,
-        priority: form.urgency === "긴급" ? "URGENT" : "NORMAL",
-        status: "PENDING_APPROVAL",
-        reason: form.reason,
+        requestNumber: currentForm.requestNumber,
+        requester: currentForm.requester,
+        department: currentForm.department,
+        requestDate: currentForm.requestDate,
+        expectedDate: currentForm.expectedDate,
+        title: currentForm.title,
+        urgency: currentForm.urgency,
+        priority: currentForm.urgency === "긴급" ? "URGENT" : "NORMAL",
+        reason: currentForm.reason,
         items: requestItems.map((item) => ({
           productId: item.productId ?? item.id,
           requestQuantity: Number(item.quantity ?? item.requestQuantity ?? 1),
@@ -293,7 +303,7 @@ export default function usePurchaseRequestCreate() {
   }
 
   return {
-    form,
+    form: formWithLoginUser,
     attachment,
     requestItems,
     totalAmount,
