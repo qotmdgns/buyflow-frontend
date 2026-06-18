@@ -1,6 +1,7 @@
 "use client"
 
-import { Download, FileText } from "lucide-react"
+import Link from "next/link"
+import { Download, FileText, Pencil } from "lucide-react"
 import usePurchaseRequestDetail from "@/features/purchase-request/hooks/usePurchaseRequestDetail"
 import { formatWon } from "@/features/purchase-request/utils/purchaseRequestUtils"
 
@@ -16,6 +17,8 @@ const PRIORITY_CLASS_NAMES = {
   일반: "border-slate-200 bg-slate-50 text-slate-500",
   긴급: "border-rose-200 bg-rose-50 text-rose-500",
 }
+
+const EDITABLE_STATUS_LABELS = new Set(["임시 저장", "승인 대기", "반려"])
 
 function StatusBadge({ status }) {
   return (
@@ -319,20 +322,34 @@ export default function PurchaseRequestDetail({ requestId }) {
     return <ErrorState error={error} onReload={reload} />
   }
 
+  const canEdit = EDITABLE_STATUS_LABELS.has(request.status)
+
   return (
     <div className="w-full">
-      <header className="mb-3">
-        <div className="flex flex-wrap items-center gap-2">
-          <h1 className="text-[22px] font-bold tracking-tight text-slate-900">
-            구매 요청 상세
-          </h1>
+      <header className="mb-3 flex flex-wrap items-start justify-between gap-3">
+        <div>
+          <div className="flex flex-wrap items-center gap-2">
+            <h1 className="text-[22px] font-bold tracking-tight text-slate-900">
+              구매 요청 상세
+            </h1>
 
-          <StatusBadge status={request.status} />
+            <StatusBadge status={request.status} />
+          </div>
+
+          <p className="mt-1 text-[13px] text-slate-400">
+            요청 번호: {request.requestNumber}
+          </p>
         </div>
 
-        <p className="mt-1 text-[13px] text-slate-400">
-          요청 번호: {request.requestNumber}
-        </p>
+        {canEdit && (
+          <Link
+            href={`/purchase-requests/${request.id}/edit`}
+            className="inline-flex h-9 items-center gap-1.5 rounded-md bg-blue-600 px-3 text-[13px] font-semibold text-white transition hover:bg-blue-700"
+          >
+            <Pencil size={13} />
+            수정
+          </Link>
+        )}
       </header>
 
       <PurchaseRequestBasicInformation request={request} />
