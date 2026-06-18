@@ -224,6 +224,15 @@ export default function usePurchaseRequestCreate() {
       return
     }
 
+    const requestorId = getCurrentRequestorId(user)
+
+    if (!requestorId) {
+      window.alert(
+        "로그인 사용자 ID를 확인할 수 없습니다. 다시 로그인해 주세요.",
+      )
+      return
+    }
+
     const requiredFields = [
       { label: "요청자", value: form.requester },
       { label: "요청 부서", value: form.department },
@@ -249,23 +258,10 @@ export default function usePurchaseRequestCreate() {
     submittingRef.current = true
     setIsSubmitting(true)
 
-    const requestorId = getCurrentRequestorId(user)
-
-    if (!requestorId) {
-      window.alert(
-        "로그인 사용자 ID를 확인할 수 없습니다. 다시 로그인해 주세요.",
-      )
-      return
-    }
-
-    submittingRef.current = true
-    setIsSubmitting(true)
-
     try {
-      // TODO: 백엔드 API 연동 시 실제 승인 요청 API를 호출합니다.
       const createdRequest = await createPurchaseRequest({
         requestNumber: form.requestNumber,
-        requestorId: Number(user?.dbUserId ?? user?.userId ?? 1),
+        requestorId,
         requester: form.requester,
         department: form.department,
         requestDate: form.requestDate,
@@ -286,7 +282,6 @@ export default function usePurchaseRequestCreate() {
       })
 
       window.alert("승인 요청을 전송했습니다.")
-
       router.push(`/purchase-requests/${createdRequest.id}`)
     } catch (error) {
       console.error("승인 요청 처리 중 오류가 발생했습니다.", error)

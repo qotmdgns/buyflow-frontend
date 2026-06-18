@@ -39,8 +39,8 @@ export function AuthProvider({ children }) {
       isLoggedIn: Boolean(authState.user),
       isAuthReady: authState.isAuthReady,
 
-      login(values) {
-        const nextUser = loginRequest(values)
+      async login(values) {
+        const nextUser = await loginRequest(values)
 
         setAuthState({
           user: nextUser,
