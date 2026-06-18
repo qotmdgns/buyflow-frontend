@@ -48,6 +48,7 @@ export const WAREHOUSE_TABLE_HEADERS = [
   "담당자",
   "연락처",
   "등록일",
+  "수정일",
 ]
 
 export function buildWarehouseAddress(baseAddress, detailAddress) {
@@ -131,6 +132,7 @@ export function downloadWarehouseCsv(warehouses) {
     warehouse.manager,
     warehouse.phone,
     warehouse.registeredAt,
+    warehouse.updatedAt,
   ])
   const csv = [header, ...rows]
     .map((row) => row.map(escapeCsvCell).join(","))
