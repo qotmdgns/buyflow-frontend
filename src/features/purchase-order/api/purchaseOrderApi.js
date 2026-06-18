@@ -82,7 +82,7 @@ function createRecord(payload, id, attachment, previousOrder = null) {
   )
 
   const warehouse = mockPurchaseOrderWarehouses.find(
-    (item) => item.id === Number(payload.warehouseId),
+    (item) => item.id === Number(payload.warehouseCode),
   )
 
   if (!request || !supplier || !warehouse) {
@@ -102,14 +102,14 @@ function createRecord(payload, id, attachment, previousOrder = null) {
     supplierName: supplier.name,
     supplierManagerName: supplier.managerName,
     supplierContact: supplier.contact,
-    orderManager: payload.orderManager.trim(),
-    orderedAt: previousOrder?.orderedAt ?? payload.orderedAt,
+    orderManager: payload.userName.trim(),
+    orderedAt: previousOrder?.createdBy ?? payload.createdBy,
     expectedInboundFrom: payload.expectedInboundFrom,
     expectedInboundTo: payload.expectedInboundTo,
-    warehouseId: warehouse.id,
-    warehouseName: warehouse.name,
+    warehouseCode: warehouse.warehouseCode,
+    warehouseName: warehouse.warehouseName,
     memo: payload.memo.trim(),
-    status: payload.status,
+    status: payload.orderStatus,
     cancelReason: previousOrder?.cancelReason ?? "",
     canceledAt: previousOrder?.canceledAt ?? "",
     attachments: attachment
@@ -331,7 +331,7 @@ export async function updatePurchaseOrder(orderId, payload, attachment = null) {
         ...previousOrder,
         expectedInboundFrom: payload.expectedInboundFrom,
         expectedInboundTo: payload.expectedInboundTo,
-        warehouseId: payload.warehouseId,
+        warehouseCode: payload.warehouseCode,
         memo: payload.memo,
         status: previousOrder.status,
         items: previousOrder.items,

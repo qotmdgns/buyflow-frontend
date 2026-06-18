@@ -248,12 +248,12 @@ export async function fetchWarehouseFilterOptions() {
   return response.json()
 }
 
-export async function fetchWarehouseById(warehouseId) {
+export async function fetchWarehouseById(warehouseCode) {
   if (USE_MOCK) {
     await wait(100)
 
     const warehouse = warehouseDatabase.find(
-      (item) => item.id === Number(warehouseId),
+      (item) => item.id === Number(warehouseCode),
     )
 
     if (!warehouse) {
@@ -264,7 +264,7 @@ export async function fetchWarehouseById(warehouseId) {
   }
 
   const response = await fetch(
-    `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/warehouses/${warehouseId}`,
+    `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/warehouses/${warehouseCode}`,
     { cache: "no-store" },
   )
 
@@ -326,12 +326,12 @@ export async function createWarehouse(payload) {
   return createWarehouseRecord(payload, payload.code.trim().toUpperCase())
 }
 
-export async function updateWarehouse(warehouseId, payload) {
+export async function updateWarehouse(warehouseCode, payload) {
   if (USE_MOCK) {
     await wait(200)
 
     const targetIndex = warehouseDatabase.findIndex(
-      (warehouse) => warehouse.id === Number(warehouseId),
+      (warehouse) => warehouse.id === Number(warehouseCode),
     )
 
     if (targetIndex === -1) {
@@ -342,7 +342,7 @@ export async function updateWarehouse(warehouseId, payload) {
 
     const duplicated = warehouseDatabase.some(
       (warehouse) =>
-        warehouse.id !== Number(warehouseId) &&
+        warehouse.id !== Number(warehouseCode) &&
         warehouse.code.toUpperCase() === normalizedCode,
     )
 
@@ -354,19 +354,19 @@ export async function updateWarehouse(warehouseId, payload) {
 
     const updatedWarehouse = createWarehouseRecord(
       payload,
-      Number(warehouseId),
+      Number(warehouseCode),
       previousWarehouse.registeredAt,
     )
 
     warehouseDatabase = warehouseDatabase.map((warehouse) =>
-      warehouse.id === Number(warehouseId) ? updatedWarehouse : warehouse,
+      warehouse.id === Number(warehouseCode) ? updatedWarehouse : warehouse,
     )
 
     return updatedWarehouse
   }
 
   const response = await fetch(
-    `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/warehouses/${warehouseId}`,
+    `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/warehouses/${warehouseCode}`,
     {
       method: "PATCH",
       headers: {
@@ -386,15 +386,15 @@ export async function updateWarehouse(warehouseId, payload) {
     return toFrontendWarehouse(data)
   }
 
-  return createWarehouseRecord(payload, warehouseId)
+  return createWarehouseRecord(payload, warehouseCode)
 }
 
-export async function deleteWarehouse(warehouseId) {
+export async function deleteWarehouse(warehouseCode) {
   if (USE_MOCK) {
     await wait(150)
 
     const exists = warehouseDatabase.some(
-      (warehouse) => warehouse.id === Number(warehouseId),
+      (warehouse) => warehouse.id === Number(warehouseCode),
     )
 
     if (!exists) {
@@ -402,14 +402,14 @@ export async function deleteWarehouse(warehouseId) {
     }
 
     warehouseDatabase = warehouseDatabase.filter(
-      (warehouse) => warehouse.id !== Number(warehouseId),
+      (warehouse) => warehouse.id !== Number(warehouseCode),
     )
 
     return
   }
 
   const response = await fetch(
-    `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/warehouses/${warehouseId}`,
+    `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/warehouses/${warehouseCode}`,
     {
       method: "DELETE",
     },

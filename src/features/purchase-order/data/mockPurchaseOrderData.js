@@ -136,7 +136,7 @@ function createOrder({
   id,
   requestId,
   supplierId,
-  warehouseId,
+  warehouseCode,
   status,
   orderedAt,
 }) {
@@ -149,7 +149,7 @@ function createOrder({
   )
 
   const warehouse = mockPurchaseOrderWarehouses.find(
-    (item) => item.id === warehouseId,
+    (item) => item.id === warehouseCode,
   )
 
   const items = createItems(requestId)
@@ -168,7 +168,7 @@ function createOrder({
     orderedAt,
     expectedInboundFrom: "2026-06-18",
     expectedInboundTo: "2026-06-20",
-    warehouseId,
+    warehouseCode,
     warehouseName: warehouse.name,
     memo: "",
     status,
@@ -185,7 +185,7 @@ export const mockPurchaseOrders = [
     id: 1,
     requestId: 1,
     supplierId: 1,
-    warehouseId: 1,
+    warehouseCode: 1,
     status: "DRAFT",
     orderedAt: "2026-06-11",
   }),
@@ -193,7 +193,7 @@ export const mockPurchaseOrders = [
     id: 2,
     requestId: 2,
     supplierId: 2,
-    warehouseId: 3,
+    warehouseCode: 3,
     status: "CONFIRMED",
     orderedAt: "2026-06-10",
   }),

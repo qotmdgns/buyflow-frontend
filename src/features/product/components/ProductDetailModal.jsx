@@ -76,9 +76,9 @@ function getWarehouseName(setting) {
 
   return (
     warehouseOptions.find(
-      (warehouse) => warehouse.value === setting.warehouseId,
+      (warehouse) => warehouse.value === setting.warehouseCode,
     )?.label ??
-    setting.warehouseId ??
+    setting.warehouseCode ??
     "-"
   )
 }
@@ -118,7 +118,7 @@ function WarehouseSettingTable({ settings }) {
 
               return (
                 <tr
-                  key={`${setting.warehouseId ?? "warehouse"}-${index}`}
+                  key={`${setting.warehouseCode ?? "warehouse"}-${index}`}
                   className="border-t border-slate-100 text-slate-600"
                 >
                   <td className="min-w-[170px] px-3 py-2.5 font-medium text-slate-700">

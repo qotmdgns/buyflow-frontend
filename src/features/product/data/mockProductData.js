@@ -201,7 +201,7 @@ export const mockProducts = Array.from({ length: 128 }, (_, index) => {
     // 추후 Oracle DB 연동 시에는 품목별 창고 재고 테이블에서 조회
     warehouseSettings: [
       {
-        warehouseId: "WH-001",
+        warehouseCode: "WH-001",
         warehouseName: "인천 메인 물류센터",
         locationCode: `A-${String((index % 12) + 1).padStart(2, "0")}-${String(
           (index % 20) + 1,
