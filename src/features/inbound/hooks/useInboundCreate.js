@@ -50,7 +50,7 @@ export default function useInboundCreate(initialInboundId = "") {
         }))
 
         const initialOrder = data.eligibleOrders.find(
-          (order) => order.id === Number(initialInboundId),
+          (order) => order.orderId === Number(initialInboundId),
         )
 
         if (initialOrder) {
@@ -79,7 +79,7 @@ export default function useInboundCreate(initialInboundId = "") {
   const selectedOrder = useMemo(
     () =>
       options.eligibleOrders.find(
-        (order) => order.id === Number(form.targetInboundId),
+        (order) => order.orderId === Number(form.targetInboundId),
       ) ?? null,
     [form.targetInboundId, options.eligibleOrders],
   )
@@ -89,7 +89,7 @@ export default function useInboundCreate(initialInboundId = "") {
   function applySelectedOrder(order) {
     setForm((currentForm) => ({
       ...currentForm,
-      targetInboundId: String(order.id),
+      targetInboundId: String(order.orderId),
       orderNumber: order.orderNumber,
       supplierName: order.supplierName,
       warehouseName: order.warehouseName,

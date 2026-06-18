@@ -48,7 +48,7 @@ function includesKeyword(value, keyword) {
 function nextId() {
   return (
     purchaseOrderDatabase.reduce(
-      (maximumId, order) => Math.max(maximumId, Number(order.id)),
+      (maximumId, order) => Math.max(maximumId, Number(order.orderId)),
       0,
     ) + 1
   )
@@ -345,7 +345,7 @@ export async function updatePurchaseOrder(orderId, payload, attachment = null) {
   )
 
   purchaseOrderDatabase = purchaseOrderDatabase.map((order) =>
-    order.id === Number(orderId) ? updatedOrder : order,
+    order.orderId === Number(orderId) ? updatedOrder : order,
   )
 
   return clone(updatedOrder)
@@ -391,7 +391,7 @@ export async function cancelPurchaseOrder(orderId, cancelReason) {
   }
 
   purchaseOrderDatabase = purchaseOrderDatabase.map((order) =>
-    order.id === Number(orderId) ? canceledOrder : order,
+    order.orderId === Number(orderId) ? canceledOrder : order,
   )
 
   return clone(canceledOrder)
