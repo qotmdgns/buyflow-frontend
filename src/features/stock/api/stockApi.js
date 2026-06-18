@@ -226,10 +226,10 @@ export async function fetchStockHistories(params = {}) {
 
   const query = buildQuery(params)
 
-  const response = await fetch(
-    `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/stock-histories?${query.toString()}`,
-    { cache: "no-store" },
-  )
+const response = await fetch(
+  `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/stock-history?${query.toString()}`,
+  { cache: "no-store" },
+)
 
   if (!response.ok) {
     throw new Error("재고 이력을 불러오지 못했습니다.")
