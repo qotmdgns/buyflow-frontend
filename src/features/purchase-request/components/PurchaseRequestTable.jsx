@@ -10,11 +10,11 @@ import {
 } from "@/features/purchase-request/utils/purchaseRequestManagementUtils"
 
 const statusStyles = {
-  "임시 저장": "border-slate-200 bg-slate-50 text-slate-500",
   "승인 대기": "border-slate-200 bg-white text-slate-600",
   "승인 완료": "border-blue-200 bg-blue-50 text-blue-600",
   반려: "border-rose-200 bg-rose-50 text-rose-500",
   "발주 완료": "border-slate-200 bg-slate-50 text-slate-700",
+  "요청 취소": "border-slate-200 bg-slate-100 text-slate-500",
 }
 
 function PriorityBadge({ priority }) {
@@ -68,6 +68,7 @@ export default function PurchaseRequestTable({
   allCurrentRowsSelected,
   onToggleAll,
   onToggleRow,
+  onCancelRequest,
 }) {
   const router = useRouter()
 
@@ -212,21 +213,22 @@ export default function PurchaseRequestTable({
                   <StatusBadge status={request.status} />
                 </td>
 
-                <td className="px-3 py-2.5 text-slate-400">
-                  <button
-                    type="button"
-                    onClick={(event) => {
-                      event.stopPropagation()
-
-                      window.alert(
-                        `${request.requestNumber} 관리 메뉴는 추후 연결합니다.`,
-                      )
-                    }}
-                    className="flex h-7 w-7 items-center justify-center rounded-md hover:bg-slate-100 hover:text-slate-700"
-                    aria-label={`${request.requestNumber} 관리 메뉴`}
-                  >
-                    <MoreHorizontal size={14} />
-                  </button>
+                <td className="px-3 py-2.5">
+                  {request.status === "승인 대기" ? (
+                    <button
+                      type="button"
+                      onClick={(event) => {
+                        event.stopPropagation()
+                        onCancelRequest?.(request)
+                      }}
+                      className="whitespace-nowrap rounded-md border border-rose-200 bg-white px-2.5 py-1.5 text-[12px] font-semibold text-rose-500 transition hover:bg-rose-50"
+                      aria-label={`${request.requestNumber} 요청 취소`}
+                    >
+                      요청 취소
+                    </button>
+                  ) : (
+                    <span className="text-[12px] text-slate-300">-</span>
+                  )}
                 </td>
               </tr>
             ))}

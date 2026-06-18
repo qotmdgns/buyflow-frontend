@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react"
 import {
+  cancelPurchaseRequest,
   fetchPurchaseRequestFilterOptions,
   fetchPurchaseRequests,
   fetchPurchaseRequestSummary,
@@ -14,11 +15,11 @@ import {
 
 const DEFAULT_SUMMARY = {
   total: 0,
-  draft: 0,
   pending: 0,
   approved: 0,
   rejected: 0,
   ordered: 0,
+  canceled: 0,
 }
 
 export default function usePurchaseRequestManagement() {
@@ -45,6 +46,7 @@ export default function usePurchaseRequestManagement() {
   const [selectedIds, setSelectedIds] = useState(new Set())
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState("")
+  const [refreshkey, setRefreshKey] = useState(0)
 
   useEffect(() => {
     let ignore = false
@@ -108,7 +110,7 @@ export default function usePurchaseRequestManagement() {
     return () => {
       ignore = true
     }
-  }, [appliedFilters, pagination.page, pageSize])
+  }, [appliedFilters, pagination.page, pageSize, refreshkey])
 
   const allCurrentRowsSelected =
     requests.length > 0 &&
@@ -185,6 +187,15 @@ export default function usePurchaseRequestManagement() {
     return data.items
   }
 
+  async function cancelRequest(requestId) {
+    await cancelPurchaseRequest(requestId)
+
+    const nextSummary = await fetchPurchaseRequestSummary()
+    setSummary(nextSummary)
+
+    setRefreshKey((currentKey) => currentKey + 1)
+  }
+
   function toggleAllRows() {
     if (allCurrentRowsSelected) {
       setSelectedIds(new Set())
@@ -227,6 +238,7 @@ export default function usePurchaseRequestManagement() {
     movePage,
     changePageSize,
     exportRequests,
+    cancelRequest,
     toggleAllRows,
     toggleRow,
   }
