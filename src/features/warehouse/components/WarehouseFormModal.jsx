@@ -221,7 +221,7 @@ export default function WarehouseFormModal({
                 <FieldLabel required>창고 코드</FieldLabel>
 
                 <input
-                  value={form.code}
+                  value={form.code || ""}
                   onChange={(event) => updateForm("code", event.target.value)}
                   placeholder="WH-XXXX"
                   className={INPUT_CLASS_NAME}
@@ -240,7 +240,7 @@ export default function WarehouseFormModal({
                   />
 
                   <input
-                    value={form.name}
+                    value={form.name || ""}
                     onChange={(event) => updateForm("name", event.target.value)}
                     placeholder="창고 이름을 입력하세요"
                     className={`${INPUT_CLASS_NAME} pl-9`}
@@ -254,7 +254,7 @@ export default function WarehouseFormModal({
                 <FieldLabel>창고 유형</FieldLabel>
 
                 <select
-                  value={form.type}
+                  value={form.type || ""}
                   onChange={(event) => updateForm("type", event.target.value)}
                   className={INPUT_CLASS_NAME}
                 >
@@ -270,7 +270,7 @@ export default function WarehouseFormModal({
                 <FieldLabel>사용 여부</FieldLabel>
 
                 <select
-                  value={form.activeStatus}
+                  value={form.activeStatus || ""}
                   onChange={(event) =>
                     updateForm("activeStatus", event.target.value)
                   }
@@ -288,7 +288,7 @@ export default function WarehouseFormModal({
               <div className="space-y-2">
                 <div className="grid grid-cols-[1fr_86px] gap-2">
                   <input
-                    value={form.zipcode}
+                    value={form.zipcode || ""}
                     onChange={(event) =>
                       updateForm(
                         "zipcode",
@@ -319,7 +319,7 @@ export default function WarehouseFormModal({
                   />
 
                   <input
-                    value={form.baseAddress}
+                    value={form.baseAddress || ""}
                     onClick={findAddress}
                     onChange={(event) =>
                       updateForm("baseAddress", event.target.value)
@@ -334,7 +334,7 @@ export default function WarehouseFormModal({
 
                 <input
                   ref={detailAddressRef}
-                  value={form.detailAddress}
+                  value={form.detailAddres || ""}
                   onChange={(event) =>
                     updateForm("detailAddress", event.target.value)
                   }
@@ -377,7 +377,7 @@ export default function WarehouseFormModal({
                   />
 
                   <input
-                    value={form.phone}
+                    value={form.phone || ""}
                     onChange={(event) =>
                       updateForm("phone", event.target.value)
                     }

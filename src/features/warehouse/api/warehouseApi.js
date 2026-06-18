@@ -4,7 +4,8 @@ import {
 } from "@/features/warehouse/data/mockWarehouseData"
 import { buildWarehouseAddress } from "@/features/warehouse/utils/warehouseManagementUtils"
 
-const USE_MOCK = process.env.NEXT_PUBLIC_USE_WAREHOUSE_MOCK !== "false"
+const USE_MOCK = process.env.
+NEXT_PUBLIC_USE_WAREHOUSE_MOCK=false
 
 let warehouseDatabase = mockWarehouses.map((warehouse) => ({ ...warehouse }))
 
@@ -94,8 +95,9 @@ async function readJsonOrNull(response) {
     return null
   }
 
-  return JSON.parse(text)
-}
+    return JSON.parse(text)
+  }
+
 
 function createWarehouseRecord(payload, id, registeredAt = getTodayString()) {
   const zipcode = payload.zipcode.trim()
@@ -218,7 +220,7 @@ export async function fetchWarehouses(params = {}) {
   }
 
   const response = await fetch(
-    `${process.env.NEXT_PUBLIC_API_BASE_URL}/warehouses?${query.toString()}`,
+    `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/warehouses` + (query.toString() ? `?${query.toString()}` : ""),
     { cache: "no-store" },
   )
 
@@ -301,7 +303,7 @@ export async function createWarehouse(payload) {
   }
 
   const response = await fetch(
-    `${process.env.NEXT_PUBLIC_API_BASE_URL}/warehouses`,
+    `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/warehouses`,
     {
       method: "POST",
       headers: {
@@ -364,7 +366,7 @@ export async function updateWarehouse(warehouseId, payload) {
   }
 
   const response = await fetch(
-    `${process.env.NEXT_PUBLIC_API_BASE_URL}/warehouses/${warehouseId}`,
+    `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/warehouses/${warehouseId}`,
     {
       method: "PATCH",
       headers: {
@@ -407,7 +409,7 @@ export async function deleteWarehouse(warehouseId) {
   }
 
   const response = await fetch(
-    `${process.env.NEXT_PUBLIC_API_BASE_URL}/warehouses/${warehouseId}`,
+    `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/warehouses/${warehouseId}`,
     {
       method: "DELETE",
     },
