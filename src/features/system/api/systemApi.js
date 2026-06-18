@@ -1,3 +1,4 @@
+import { apiFetch } from "@/lib/api/fetchClient"
 import {
   mockDepartments,
   mockRolePermissions,
@@ -25,6 +26,38 @@ function clonePermissionGroups(groups) {
     ...group,
     permissions: group.permissions.map((permission) => ({ ...permission })),
   }))
+}
+
+// ─────────────────────────────────────────────────────────────
+// [추가] 백엔드(코드 배열) ↔ 화면(groups 구조) 변환 어댑터
+// 백엔드는 권한을 ["dashboard.read", ...] 코드 배열로 주고받지만,
+// 화면(RolePermissionPanel)은 그룹/체크박스 구조(groups)를 쓴다.
+// ROLE_ADMIN 템플릿이 모든 권한을 포함하므로 이를 골격으로 사용한다.
+// ─────────────────────────────────────────────────────────────
+function buildGroupsFromCodes(permissionCodes) {
+  const codeSet = new Set(permissionCodes ?? [])
+
+  return clonePermissionGroups(mockRolePermissions.ROLE_ADMIN).map((group) => ({
+    ...group,
+    permissions: group.permissions.map((permission) => ({
+      ...permission,
+      checked: codeSet.has(permission.key),
+    })),
+  }))
+}
+
+function extractCheckedCodes(groups) {
+  const codes = []
+
+  groups.forEach((group) => {
+    group.permissions.forEach((permission) => {
+      if (permission.checked) {
+        codes.push(permission.key)
+      }
+    })
+  })
+
+  return codes
 }
 
 function includesKeyword(value, keyword) {
@@ -278,57 +311,28 @@ export async function updateUser(userId, payload) {
   return response.json()
 }
 
+// ─────────────────────────────────────────────────────────────
+// 권한 관리: 항상 실제 백엔드(Oracle DB) 사용
+//   GET /api/roles/{roleCode}/permissions  -> 권한 코드 배열
+//   PUT /api/roles/{roleCode}/permissions  -> body { permissionCodes: [...] }
+// apiFetch가 JWT 토큰 첨부 + ApiResponse 언래핑(data 반환)을 처리한다.
+// roleId 는 'ROLE_ADMIN' 같은 역할 코드이며 DB의 ROLE_CODE 와 일치한다.
+// ─────────────────────────────────────────────────────────────
 export async function fetchRolePermissions(roleId) {
-  if (USE_MOCK) {
-    await wait(120)
+  const permissionCodes = await apiFetch(`/api/roles/${roleId}/permissions`, {
+    method: "GET",
+  })
 
-    const permissions = rolePermissionDatabase[roleId]
-
-    if (!permissions) {
-      throw new Error("권한 정보를 찾을 수 없습니다.")
-    }
-
-    return clonePermissionGroups(permissions)
-  }
-
-  const response = await fetch(
-    `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/system/roles/${roleId}/permissions`,
-    { cache: "no-store" },
-  )
-
-  if (!response.ok) {
-    throw new Error("권한 정보를 불러오지 못했습니다.")
-  }
-
-  return response.json()
+  return buildGroupsFromCodes(permissionCodes)
 }
 
 export async function updateRolePermissions(roleId, groups) {
-  if (USE_MOCK) {
-    await wait(180)
+  const permissionCodes = extractCheckedCodes(groups)
 
-    rolePermissionDatabase = {
-      ...rolePermissionDatabase,
-      [roleId]: clonePermissionGroups(groups),
-    }
+  const savedCodes = await apiFetch(`/api/roles/${roleId}/permissions`, {
+    method: "PUT",
+    body: JSON.stringify({ permissionCodes }),
+  })
 
-    return clonePermissionGroups(rolePermissionDatabase[roleId])
-  }
-
-  const response = await fetch(
-    `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/system/roles/${roleId}/permissions`,
-    {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ groups }),
-    },
-  )
-
-  if (!response.ok) {
-    throw new Error("권한 설정을 저장하지 못했습니다.")
-  }
-
-  return response.json()
+  return buildGroupsFromCodes(savedCodes)
 }
