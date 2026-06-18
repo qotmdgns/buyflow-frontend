@@ -252,6 +252,7 @@ function normalizePurchaseRequestDetailResponse(data) {
 
     return {
       id: item.id ?? item.requestItemId ?? index + 1,
+      productId: item.productId ?? item.product?.productId ?? null,
       itemCode: item.itemCode ?? item.code ?? "",
       itemName: item.itemName ?? item.name ?? "",
       category: item.category ?? item.categoryName ?? "",
@@ -347,6 +348,54 @@ export async function createPurchaseRequest(payload) {
 
   if (!response.ok) {
     throw new Error("구매 요청 등록에 실패했습니다.")
+  }
+
+  return normalizePurchaseRequestDetailResponse(await response.json())
+}
+
+async function readErrorMessage(response, fallbackMessage) {
+  try {
+    const data = await response.json()
+
+    return data.message ?? data.error ?? fallbackMessage
+  } catch {
+    return fallbackMessage
+  }
+}
+
+export async function updatePurchaseRequest(requestId, payload) {
+  if (!requestId) {
+    throw new Error("구매 요청 ID가 없습니다.")
+  }
+
+  const response = await fetch(
+    createApiUrl(`/api/purchase-requests/${encodeURIComponent(requestId)}`),
+    {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(payload),
+    },
+  )
+
+  if (response.status === 404) {
+    throw new Error("존재하지 않는 구매 요청입니다.")
+  }
+
+  if (response.status === 409) {
+    throw new Error(
+      await readErrorMessage(
+        response,
+        "현재 상태에서는 구매 요청을 수정할 수 없습니다.",
+      ),
+    )
+  }
+
+  if (!response.ok) {
+    throw new Error(
+      await readErrorMessage(response, "구매 요청 수정에 실패했습니다."),
+    )
   }
 
   return normalizePurchaseRequestDetailResponse(await response.json())
