@@ -58,34 +58,30 @@ export default function usePurchaseOrderCreate() {
     }))
   }
 
-  // ⭕ 2. 공급업체 자동완성 변수명 교정 (manager)
-  function changeSupplier(supplierCode) {
+  function changeSupplier(supplierId) {
     const supplier = options.suppliers.find(
-      (item) => item.supplierCode === supplierCode,
+      (item) => Number(item.supplierId || item.id) === Number(supplierId)
     )
 
     setForm((currentForm) => ({
       ...currentForm,
-      supplierCode: supplier ? String(supplier.supplierCode) : "",
-      supplierName: supplier?.supplierName ?? "",
-      manager: supplier?.manager ?? supplier?.supplierManagerName ?? supplier?.name ?? "", 
+      supplierId: supplier ? String(supplier.supplierId || supplier.id) : "",
+      supplierName: supplier?.supplierName ?? supplier?.name ?? "",
+      manager: supplier?.manager ?? supplier?.supplierManagerName ?? "", 
       supplierContact: supplier?.supplierContact ?? supplier?.contact ?? "",
     }))
   }
 
-  // ⭕ 3. 구매 요청 자동완성 변수명 교정 (requestTitle)
   function applyPurchaseRequest(requestId) {
     const request = options.approvedPurchaseRequests.find(
-      (item) => item.id === Number(requestId),
+      (item) => Number(item.id || item.requestId) === Number(requestId)
     )
 
-    if (!request) {
-      return
-    }
+    if (!request) return;
 
     setForm((currentForm) => ({
       ...currentForm,
-      requestId: String(request.id),
+      requestId: String(request.id || request.requestId),
       requestNumber: request.requestNumber,
       requestTitle: request.requestTitle || request.title || "",
     }))
@@ -165,11 +161,7 @@ export default function usePurchaseOrderCreate() {
 
   // ⭕ 4. [대망의 변환 핵심] 백엔드 DTO 규격 모양으로 완벽 포장해서 쏘는 가공 라인
   async function saveOrder(status) {
-    const nextForm = {
-      ...form,
-      status,
-    }
-
+    const nextForm = {...form, status }
     const nextErrors = validatePurchaseOrderForm(nextForm, items)
     if (Object.keys(nextErrors).length) {
       setErrors(nextErrors)
@@ -181,7 +173,7 @@ export default function usePurchaseOrderCreate() {
 
     try {
       const bffRequestPayload = {
-        supplierId: Number(form.supplierCode),    
+        supplierId: Number(form.supplierId),    
         createdBy: Number(form.createdBy || 1),  
         dueDate: form.expectedInboundTo ? `${form.expectedInboundTo}T23:59:59` : null, 
         orderStatus: status,                     

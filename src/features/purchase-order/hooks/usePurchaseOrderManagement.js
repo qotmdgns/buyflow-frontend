@@ -129,7 +129,7 @@ export default function usePurchaseOrderManagement() {
   }
 
   function openDetail(order) {
-    setSelectedOrderId(order.odrerId)
+    setSelectedOrderId(order.orderId || order.id)
   }
 
   function closeDetail() {
