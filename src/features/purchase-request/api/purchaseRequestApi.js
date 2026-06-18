@@ -262,6 +262,9 @@ function normalizePurchaseRequestDetailResponse(data) {
       estimatedAmount: Number(
         item.estimatedAmount ?? estimatedUnitPrice * requestQuantity,
       ),
+      remark: item.remark ?? "",
+      createdAt: item.createdAt ?? "",
+      updatedAt: item.updatedAt ?? "",
     }
   })
 
@@ -286,6 +289,8 @@ function normalizePurchaseRequestDetailResponse(data) {
     department: data.department ?? data.departmentName ?? "",
     requestedAt: data.requestedAt ?? data.requestDate ?? "",
     desiredInboundAt: data.desiredInboundAt ?? data.expectedDate ?? "",
+    createdAt: data.createdAt ?? data.requestedAt ?? data.requestDate ?? "",
+    updatedAt: data.updatedAt ?? "",
     priority:
       PURCHASE_REQUEST_PRIORITY_LABELS[data.priority] ?? data.priority ?? "",
     status: PURCHASE_REQUEST_STATUS_LABELS[data.status] ?? data.status ?? "",

@@ -78,7 +78,13 @@ function RequestInfoCard({ approval }) {
           {approval.requestDepartment.name}
         </InformationItem>
 
-        <InformationItem label="요청일">{approval.requestedAt}</InformationItem>
+        <InformationItem label="등록일">
+          {approval.createdAt || approval.requestedAt || "-"}
+        </InformationItem>
+
+        <InformationItem label="수정일">
+          {approval.updatedAt || "-"}
+        </InformationItem>
 
         <InformationItem label="희망 입고일">
           {approval.desiredInboundAt}
@@ -110,7 +116,7 @@ function ItemTableCard({ items }) {
   return (
     <SectionCard title="구매 요청 품목">
       <div className="mt-4 overflow-x-auto rounded-md border border-slate-100">
-        <table className="w-full min-w-[1150px] text-left text-[12px]">
+        <table className="w-full min-w-[1350px] text-left text-[12px]">
           <thead className="bg-slate-50 text-slate-500">
             <tr>
               {[
@@ -124,6 +130,8 @@ function ItemTableCard({ items }) {
                 "예상 단가",
                 "예상 금액",
                 "비고",
+                "품목 등록일",
+                "품목 수정일",
               ].map((heading) => (
                 <th
                   key={heading}
@@ -175,6 +183,14 @@ function ItemTableCard({ items }) {
 
                 <td className="min-w-52 px-3 py-3 text-slate-500">
                   {item.remark || "-"}
+                </td>
+
+                <td className="whitespace-nowrap px-3 py-3 text-slate-500">
+                  {item.createdAt || "-"}
+                </td>
+
+                <td className="whitespace-nowrap px-3 py-3 text-slate-500">
+                  {item.updatedAt || "-"}
                 </td>
               </tr>
             ))}
