@@ -206,11 +206,17 @@ export async function fetchPurchaseRequestSummary() {
 }
 
 const PURCHASE_REQUEST_STATUS_LABELS = {
-  DRAFT: "임시 저장",
+  DRAFT: "승인 대기",
   PENDING: "승인 대기",
+  PENDING_APPROVAL: "승인 대기",
+  WAITING: "승인 대기",
+  REQUESTED: "승인 대기",
   APPROVED: "승인 완료",
   REJECTED: "반려",
   ORDERED: "발주 완료",
+  CANCELED: "요청 취소",
+  CANCELLED: "요청 취소",
+  CANCEL_REQUESTED: "요청 취소",
 }
 
 const PURCHASE_REQUEST_PRIORITY_LABELS = {
@@ -395,6 +401,42 @@ export async function updatePurchaseRequest(requestId, payload) {
   if (!response.ok) {
     throw new Error(
       await readErrorMessage(response, "구매 요청 수정에 실패했습니다."),
+    )
+  }
+
+  return normalizePurchaseRequestDetailResponse(await response.json())
+}
+
+export async function cancelPurchaseRequest(requestId) {
+  if (!requestId) {
+    throw new Error("구매 요청 ID가 없습니다.")
+  }
+
+  const response = await fetch(
+    createApiUrl(
+      `/api/purchase-requests/${encodeURIComponent(requestId)}/cancel`,
+    ),
+    {
+      method: "PATCH",
+    },
+  )
+
+  if (response.status === 404) {
+    throw new Error("존재하지 않는 구매 요청입니다.")
+  }
+
+  if (response.status === 409) {
+    throw new Error(
+      await readErrorMessage(
+        response,
+        "승인 대기 상태의 구매 요청만 취소할 수 있습니다.",
+      ),
+    )
+  }
+
+  if (!response.ok) {
+    throw new Error(
+      await readErrorMessage(response, "구매 요청 취소에 실패했습니다."),
     )
   }
 

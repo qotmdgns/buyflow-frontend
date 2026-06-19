@@ -13,7 +13,14 @@ export const DEFAULT_PURCHASE_REQUEST_FILTERS = {
 
 export const DEFAULT_PURCHASE_REQUEST_FILTER_OPTIONS = {
   departments: ["전체 부서"],
-  statuses: ["전체", "승인 대기", "승인 완료", "반려", "발주 완료"],
+  statuses: [
+    "전체",
+    "승인 대기",
+    "승인 완료",
+    "반려",
+    "발주 완료",
+    "요청 취소",
+  ],
   priorities: ["전체", "일반", "긴급"],
 }
 

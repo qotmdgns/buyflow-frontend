@@ -4,6 +4,7 @@ import {
 } from "@/features/inspection/data/mockInspectionData"
 
 import {
+  DEFAULT_INSPECTION_FILTER_OPTIONS,
   getTodayString,
   INSPECTION_SUMMARY_FILTERS,
   isInspectionOverdue,
@@ -15,7 +16,11 @@ import {
   saveMockInspectionResult,
 } from "@/features/inspection/data/mockInspectionDetailData"
 
-const USE_MOCK = process.env.NEXT_PUBLIC_USE_INSPECTION_MOCK !== "false"
+import { apiFetch } from "@/lib/api/fetchClient"
+
+const USE_MOCK = process.env.NEXT_PUBLIC_USE_INSPECTION_MOCK === "true"
+
+const INSPECTION_API_BASE = "/api/inspections"
 
 function wait(milliseconds) {
   return new Promise((resolve) => setTimeout(resolve, milliseconds))
@@ -179,20 +184,139 @@ function createQueryString(params = {}) {
   return query.toString()
 }
 
-function normalizeInspectionListResponse(data) {
-  if (Array.isArray(data.items) && data.pagination) {
-    return data
+function normalizeInspectionListResponse(data = {}) {
+  const items = Array.isArray(data.items)
+    ? data.items
+    : Array.isArray(data.content)
+      ? data.content
+      : []
+
+  if (data.pagination) {
+    return {
+      items: items.map(normalizeInspectionDetailResponse),
+      pagination: data.pagination,
+    }
   }
 
   return {
-    items: data.content ?? [],
+    items: items.map(normalizeInspectionDetailResponse),
 
     pagination: {
-      page: (data.number ?? 0) + 1,
+      page: data.page ?? (data.number ?? 0) + 1,
       size: data.size ?? 15,
       totalElements: data.totalElements ?? 0,
       totalPages: Math.max(data.totalPages ?? 1, 1),
     },
+  }
+}
+
+function normalizeInspectionFilterOptions(data = {}) {
+  return {
+    suppliers: Array.isArray(data.suppliers)
+      ? data.suppliers
+      : DEFAULT_INSPECTION_FILTER_OPTIONS.suppliers,
+
+    warehouses: Array.isArray(data.warehouses)
+      ? data.warehouses
+      : DEFAULT_INSPECTION_FILTER_OPTIONS.warehouses,
+
+    priorities: Array.isArray(data.priorities)
+      ? data.priorities
+      : DEFAULT_INSPECTION_FILTER_OPTIONS.priorities,
+
+    inspectionTypes: Array.isArray(data.inspectionTypes)
+      ? data.inspectionTypes
+      : [],
+
+    inspectionResults: Array.isArray(data.inspectionResults)
+      ? data.inspectionResults
+      : [],
+
+    dispositions: Array.isArray(data.dispositions) ? data.dispositions : [],
+  }
+}
+
+function normalizeNumber(value, fallback = 0) {
+  const numberValue = Number(value)
+
+  if (!Number.isFinite(numberValue)) {
+    return fallback
+  }
+
+  return numberValue
+}
+
+function normalizeInspectionItemResponse(item = {}) {
+  const receivedQuantity = normalizeNumber(item.receivedQuantity)
+
+  return {
+    id: item.id ?? item.receiptItemId,
+    receiptItemId: item.receiptItemId ?? item.id,
+
+    itemCode: item.itemCode ?? "-",
+    itemName: item.itemName ?? "-",
+    category: item.category ?? "-",
+    specification: item.specification ?? "-",
+    unit: item.unit ?? "-",
+    lotNumber: item.lotNumber ?? "-",
+
+    receivedQuantity,
+    acceptedQuantity:
+      item.acceptedQuantity == null
+        ? receivedQuantity
+        : normalizeNumber(item.acceptedQuantity),
+
+    defectiveQuantity:
+      item.defectiveQuantity == null
+        ? 0
+        : normalizeNumber(item.defectiveQuantity),
+
+    defectReason: item.defectReason ?? "",
+    disposition: item.disposition ?? "NONE",
+  }
+}
+
+function normalizeInspectionDetailResponse(data = {}) {
+  const items = Array.isArray(data.items)
+    ? data.items.map(normalizeInspectionItemResponse)
+    : []
+
+  const totalReceivedQuantity =
+    data.totalReceivedQuantity ??
+    items.reduce(
+      (total, item) => total + normalizeNumber(item.receivedQuantity),
+      0,
+    )
+
+  return {
+    id: data.id,
+    inspectionNumber: data.inspectionNumber ?? "-",
+    inboundNumber: data.inboundNumber ?? "-",
+    orderNumber: data.orderNumber ?? "-",
+    supplierName: data.supplierName ?? "-",
+    warehouseName: data.warehouseName ?? "-",
+    receivedAt: data.receivedAt ?? "",
+    inspectionDueAt: data.inspectionDueAt ?? "",
+    priority: data.priority ?? "일반",
+    status: data.status ?? data.inspectionResult?.status ?? "PENDING",
+    receivedBy: data.receivedBy ?? "-",
+
+    itemCount: data.itemCount ?? items.length,
+    totalReceivedQuantity,
+
+    items,
+
+    inspectionResult: data.inspectionResult
+      ? {
+          status: data.inspectionResult.status ?? data.status ?? "PENDING",
+          inspectorName: data.inspectionResult.inspectorName ?? "",
+          inspectedAt: data.inspectionResult.inspectedAt ?? "",
+          note: data.inspectionResult.note ?? "",
+          items: Array.isArray(data.inspectionResult.items)
+            ? data.inspectionResult.items.map(normalizeInspectionItemResponse)
+            : items,
+        }
+      : null,
   }
 }
 
@@ -206,18 +330,42 @@ export async function fetchPendingInspections(params = {}) {
   const query = createQueryString(params)
 
   const path = query
-    ? `/api/inspections/pending?${query}`
-    : "/api/inspections/pending"
+    ? `${INSPECTION_API_BASE}/pending?${query}`
+    : `${INSPECTION_API_BASE}/pending`
 
-  const response = await fetch(createApiUrl(path), {
+  const data = await apiFetch(path, {
     cache: "no-store",
   })
 
-  if (!response.ok) {
-    throw new Error("검수 대기 목록을 불러오지 못했습니다.")
+  return normalizeInspectionListResponse(data)
+}
+
+export async function fetchCompletedInspections(params = {}) {
+  if (USE_MOCK) {
+    await wait(150)
+
+    return {
+      items: [],
+      pagination: {
+        page: 1,
+        size: 15,
+        totalElements: 0,
+        totalPages: 1,
+      },
+    }
   }
 
-  return normalizeInspectionListResponse(await response.json())
+  const query = createQueryString(params)
+
+  const path = query
+    ? `${INSPECTION_API_BASE}/completed?${query}`
+    : `${INSPECTION_API_BASE}/completed`
+
+  const data = await apiFetch(path, {
+    cache: "no-store",
+  })
+
+  return normalizeInspectionListResponse(data)
 }
 
 export async function fetchInspectionFilterOptions() {
@@ -225,18 +373,11 @@ export async function fetchInspectionFilterOptions() {
     return inspectionFilterOptions
   }
 
-  const response = await fetch(
-    createApiUrl("/api/inspections/pending/filter-options"),
-    {
-      cache: "no-store",
-    },
-  )
+  const data = await apiFetch(`${INSPECTION_API_BASE}/pending/filter-options`, {
+    cache: "no-store",
+  })
 
-  if (!response.ok) {
-    throw new Error("검수 검색 조건을 불러오지 못했습니다.")
-  }
-
-  return response.json()
+  return normalizeInspectionFilterOptions(data)
 }
 
 export async function fetchPendingInspectionSummary() {
@@ -244,122 +385,35 @@ export async function fetchPendingInspectionSummary() {
     return getMockPendingInspectionSummary()
   }
 
-  const response = await fetch(
-    createApiUrl("/api/inspections/pending/summary"),
-    {
-      cache: "no-store",
-    },
-  )
-
-  if (!response.ok) {
-    throw new Error("검수 대기 현황을 불러오지 못했습니다.")
-  }
-
-  return response.json()
-}
-
-function normalizeNullableNumber(value) {
-  if (value === null || value === undefined || value === "") {
-    return null
-  }
-
-  return Number(value)
-}
-
-function normalizeInspectionDetailResponse(data) {
-  const rawResult = data.inspectionResult ?? data.result ?? null
-
-  const rawItems = rawResult?.items ?? data.items ?? data.inspectionItems ?? []
-
-  const items = rawItems.map((item, index) => {
-    const receiptItemId =
-      item.receiptItemId ?? item.id ?? item.inspectionItemId ?? index + 1
-
-    return {
-      id: receiptItemId,
-
-      receiptItemId,
-
-      itemCode: item.itemCode ?? item.code ?? "",
-
-      itemName: item.itemName ?? item.name ?? "",
-
-      category: item.category ?? item.categoryName ?? "",
-
-      specification: item.specification ?? item.spec ?? "",
-
-      unit: item.unit ?? "",
-
-      lotNumber: item.lotNumber ?? item.lotNo ?? "",
-
-      receivedQuantity: Number(
-        item.receivedQuantity ?? item.receiptQty ?? item.quantity ?? 0,
-      ),
-
-      acceptedQuantity: normalizeNullableNumber(
-        item.acceptedQuantity ?? item.acceptedQty,
-      ),
-
-      defectiveQuantity: normalizeNullableNumber(
-        item.defectiveQuantity ?? item.defectQuantity ?? item.defectQty,
-      ),
-
-      defectReason: item.defectReason ?? "",
-
-      disposition: item.disposition ?? "NONE",
-    }
+  const data = await apiFetch(`${INSPECTION_API_BASE}/pending/summary`, {
+    cache: "no-store",
   })
 
-  const totalReceivedQuantity = items.reduce(
-    (total, item) => total + Number(item.receivedQuantity ?? 0),
+  return {
+    total: Number(data.total ?? data.totalCount ?? data.pendingCount ?? 0),
+    receivedToday: Number(data.receivedToday ?? 0),
+    urgent: Number(data.urgent ?? 0),
+    overdue: Number(data.overdue ?? 0),
+  }
+}
 
-    0,
-  )
+export async function fetchCompletedInspectionSummary() {
+  if (USE_MOCK) {
+    return {
+      total: 0,
+      pass: 0,
+      defect: 0,
+    }
+  }
+
+  const data = await apiFetch(`${INSPECTION_API_BASE}/completed/summary`, {
+    cache: "no-store",
+  })
 
   return {
-    id: data.id ?? data.inspectionId,
-
-    inspectionNumber: data.inspectionNumber ?? "",
-
-    inboundNumber: data.inboundNumber ?? "",
-
-    orderNumber: data.orderNumber ?? "",
-
-    supplierName: data.supplierName ?? "",
-
-    warehouseName: data.warehouseName ?? "",
-
-    receivedAt: data.receivedAt ?? "",
-
-    inspectionDueAt: data.inspectionDueAt ?? "",
-
-    priority: data.priority ?? "일반",
-
-    status: data.status ?? rawResult?.status ?? "PENDING",
-
-    receivedBy: data.receivedBy ?? "",
-
-    itemCount: Number(data.itemCount ?? items.length),
-
-    totalReceivedQuantity: Number(
-      data.totalReceivedQuantity ?? totalReceivedQuantity,
-    ),
-
-    items,
-
-    inspectionResult: rawResult
-      ? {
-          status: rawResult.status ?? data.status,
-
-          inspectorName: rawResult.inspectorName ?? "",
-
-          inspectedAt: rawResult.inspectedAt ?? "",
-
-          note: rawResult.note ?? "",
-
-          items,
-        }
-      : null,
+    total: Number(data.total ?? data.totalCount ?? 0),
+    pass: Number(data.pass ?? data.passCount ?? 0),
+    defect: Number(data.defect ?? data.defectCount ?? 0),
   }
 }
 
@@ -380,23 +434,14 @@ export async function fetchInspectionDetail(inspectionId) {
     return normalizeInspectionDetailResponse(mockDetail)
   }
 
-  const response = await fetch(
-    createApiUrl(`/api/inspections/${encodeURIComponent(inspectionId)}`),
-
+  const data = await apiFetch(
+    `${INSPECTION_API_BASE}/${encodeURIComponent(inspectionId)}`,
     {
       cache: "no-store",
     },
   )
 
-  if (response.status === 404) {
-    throw new Error("존재하지 않는 검수 대기 건입니다.")
-  }
-
-  if (!response.ok) {
-    throw new Error("검수 상세 정보를 불러오지 못했습니다.")
-  }
-
-  return normalizeInspectionDetailResponse(await response.json())
+  return normalizeInspectionDetailResponse(data)
 }
 
 export async function submitInspectionResult(inspectionId, payload) {
@@ -416,22 +461,13 @@ export async function submitInspectionResult(inspectionId, payload) {
     return normalizeInspectionDetailResponse(savedInspection)
   }
 
-  const response = await fetch(
-    createApiUrl(`/api/inspections/${encodeURIComponent(inspectionId)}/result`),
+  await apiFetch(
+    `${INSPECTION_API_BASE}/${encodeURIComponent(inspectionId)}/result`,
     {
       method: "POST",
-
-      headers: {
-        "Content-Type": "application/json",
-      },
-
       body: JSON.stringify(payload),
     },
   )
-
-  if (!response.ok) {
-    throw new Error("검수 결과를 저장하지 못했습니다.")
-  }
 
   return fetchInspectionDetail(inspectionId)
 }

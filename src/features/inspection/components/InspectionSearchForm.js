@@ -11,10 +11,15 @@ function FieldLabel({ children }) {
   )
 }
 
-function SelectField({ value, options, onChange }) {
+function SelectField({ value, options = [], onChange }) {
+  const safeOptions =
+    Array.isArray(options) && options.length > 0
+      ? options
+      : [value].filter(Boolean)
+
   return (
     <select value={value} onChange={onChange} className={INPUT_CLASS_NAME}>
-      {options.map((option) => (
+      {safeOptions.map((option) => (
         <option key={option} value={option}>
           {option}
         </option>
@@ -51,6 +56,7 @@ export default function InspectionSearchForm({
   onChange,
   onSearch,
   onReset,
+  inspectionNumberLabel = "검수 대기 번호",
 }) {
   return (
     <form
@@ -59,7 +65,7 @@ export default function InspectionSearchForm({
     >
       <div className="grid gap-x-3 gap-y-2.5 md:grid-cols-2 xl:grid-cols-4">
         <label>
-          <FieldLabel>검수 대기 번호</FieldLabel>
+          <FieldLabel>{inspectionNumberLabel}</FieldLabel>
 
           <input
             value={filters.inspectionNumber}

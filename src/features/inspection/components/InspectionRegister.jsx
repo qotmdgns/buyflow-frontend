@@ -368,7 +368,7 @@ export default function InspectionRegister({ inspectionId }) {
 
     window.alert("검수 결과가 등록되었습니다.")
 
-    router.push(`/inspections/${inspectionId}`)
+    router.push("/inspections/completed")
   }
 
   if (loading) {

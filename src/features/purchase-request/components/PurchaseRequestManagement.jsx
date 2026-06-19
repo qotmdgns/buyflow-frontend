@@ -27,6 +27,7 @@ export default function PurchaseRequestManagement() {
     selectSummaryStatus,
     movePage,
     exportRequests,
+    cancelRequest,
     toggleAllRows,
     toggleRow,
   } = usePurchaseRequestManagement()
@@ -38,6 +39,24 @@ export default function PurchaseRequestManagement() {
     } catch (error) {
       console.error("구매 요청 목록 다운로드 중 오류가 발생했습니다.", error)
       window.alert("구매 요청 목록을 다운로드하지 못했습니다.")
+    }
+  }
+
+  async function handleCancelRequest(request) {
+    const confirmed = window.confirm(
+      `${request.requestNumber} 구매 요청을 취소하시겠습니까?`,
+    )
+
+    if (!confirmed) {
+      return
+    }
+
+    try {
+      await cancelRequest(request.id)
+      window.alert("구매 요청을 취소했습니다.")
+    } catch (error) {
+      console.error("구매 요청 취소 중 오류가 발생했습니다.", error)
+      window.alert(error.message || "구매 요청 취소에 실패했습니다.")
     }
   }
 
@@ -103,6 +122,7 @@ export default function PurchaseRequestManagement() {
             allCurrentRowsSelected={allCurrentRowsSelected}
             onToggleAll={toggleAllRows}
             onToggleRow={toggleRow}
+            onCancelRequest={handleCancelRequest}
           />
 
           <PurchaseRequestPagination

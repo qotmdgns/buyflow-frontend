@@ -20,6 +20,9 @@ export const DEFAULT_INSPECTION_FILTER_OPTIONS = {
   suppliers: ["전체 공급업체"],
   warehouses: ["전체 창고"],
   priorities: ["전체", "일반", "긴급"],
+  inspectionTypes: ["전체", "입고검수", "품질검수", "출하검수"],
+  inspectionResults: ["전체", "합격", "불합격", "부분합격", "검수대기"],
+  dispositions: ["입고", "반품", "폐기", "재검수"],
 }
 
 export const DEFAULT_INSPECTION_PAGINATION = {
@@ -75,6 +78,16 @@ export function getInspectionStatusMeta(status) {
 
     REJECTED: {
       label: "불합격",
+      badgeClassName: "border-rose-200 bg-rose-50 text-rose-500",
+    },
+
+    PASS: {
+      label: "검수 완료",
+      badgeClassName: "border-emerald-200 bg-emerald-50 text-emerald-600",
+    },
+
+    DEFECT: {
+      label: "불량 발생",
       badgeClassName: "border-rose-200 bg-rose-50 text-rose-500",
     },
   }
@@ -160,3 +173,37 @@ export function getInspectionItemResultMeta(item) {
     badgeClassName: "border-orange-200 bg-orange-50 text-orange-600",
   }
 }
+
+export const COMPLETED_INSPECTION_RESULT_FILTERS = {
+  ALL: "ALL",
+  PASS: "PASS",
+  DEFECT: "DEFECT",
+}
+
+export const DEFAULT_COMPLETED_INSPECTION_FILTERS = {
+  inspectionNumber: "",
+  inboundNumber: "",
+  orderNumber: "",
+  supplierName: "전체 공급업체",
+  warehouseName: "전체 창고",
+  priority: "전체",
+  receivedFrom: "",
+  receivedTo: "",
+  inspectionResult: "ALL",
+}
+
+export const COMPLETED_INSPECTION_TABLE_HEADERS = [
+  "검수 번호",
+  "입고 번호",
+  "발주 번호",
+  "공급업체",
+  "입고 창고",
+  "입고일",
+  "검수 일시",
+  "품목 수",
+  "입고 수량",
+  "합격 수량",
+  "불량 수량",
+  "상태",
+  "관리",
+]

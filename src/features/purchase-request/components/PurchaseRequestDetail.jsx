@@ -6,11 +6,11 @@ import usePurchaseRequestDetail from "@/features/purchase-request/hooks/usePurch
 import { formatWon } from "@/features/purchase-request/utils/purchaseRequestUtils"
 
 const STATUS_CLASS_NAMES = {
-  "임시 저장": "border-slate-200 bg-slate-50 text-slate-500",
   "승인 대기": "border-amber-200 bg-amber-50 text-amber-600",
   "승인 완료": "border-blue-200 bg-blue-50 text-blue-600",
   반려: "border-rose-200 bg-rose-50 text-rose-500",
   "발주 완료": "border-slate-200 bg-slate-100 text-slate-700",
+  "요청 취소": "border-slate-200 bg-slate-100 text-slate-500",
 }
 
 const PRIORITY_CLASS_NAMES = {
@@ -18,7 +18,7 @@ const PRIORITY_CLASS_NAMES = {
   긴급: "border-rose-200 bg-rose-50 text-rose-500",
 }
 
-const EDITABLE_STATUS_LABELS = new Set(["임시 저장", "승인 대기", "반려"])
+const EDITABLE_STATUS_LABELS = new Set(["승인 대기", "반려"])
 
 function StatusBadge({ status }) {
   return (

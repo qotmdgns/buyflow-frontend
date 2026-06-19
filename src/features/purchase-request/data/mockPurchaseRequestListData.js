@@ -74,7 +74,7 @@ const seedRequests = [
     itemCount: 3,
     totalAmount: 5600000,
     priority: "일반",
-    status: "임시 저장",
+    status: "승인 대기",
   },
   {
     title: "노후 PC 및 모니터 교체 사업",
@@ -112,8 +112,7 @@ const seedRequests = [
 ]
 
 const remainingStatusAllocation = [
-  ...Array(3).fill("임시 저장"),
-  ...Array(10).fill("승인 대기"),
+  ...Array(13).fill("승인 대기"),
   ...Array(78).fill("승인 완료"),
   ...Array(5).fill("반려"),
   ...Array(18).fill("발주 완료"),
@@ -208,11 +207,11 @@ export const purchaseRequestFilterOptions = {
   departments: ["전체 부서", ...departments],
   statuses: [
     "전체",
-    "임시 저장",
     "승인 대기",
     "승인 완료",
     "반려",
     "발주 완료",
+    "요청 취소",
   ],
   priorities: ["전체", "일반", "긴급"],
 }
