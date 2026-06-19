@@ -46,7 +46,8 @@ function toFrontendPurchaseOrder(data) {
     supplierName: data.supplierName || "-",
     
     // 백엔드 userName을 프론트 그리드용 orderManager로 매핑
-    orderManager: data.userName || data.orderManager || "-", 
+    orderManager: data.userName || "-",
+    orderManagerPhone: data.userPhone || "-",
     
     orderedAt: data.createdAt ? String(data.createdAt).slice(0, 10) : "-",
     expectedInboundFrom: data.expectedInboundFrom || (data.dueDate ? String(data.dueDate).slice(0, 10) : "-"),
@@ -284,7 +285,9 @@ export async function fetchPurchaseOrderById(orderId) {
       throw new Error("발주 상세 정보를 불러오지 못했습니다.")
     }
 
-    return response.json()
+    const rawData = await response.json()
+    
+    return toFrontendPurchaseOrder(rawData)
   }
 
   await wait(100)

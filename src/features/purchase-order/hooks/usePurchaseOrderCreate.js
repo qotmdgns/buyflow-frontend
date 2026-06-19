@@ -11,7 +11,6 @@ import {
   createPurchaseOrderForm,
   validatePurchaseOrderForm,
 } from "@/features/purchase-order/utils/purchaseOrderUtils"
-
 export default function usePurchaseOrderCreate() {
   const [options, setOptions] = useState({
     nextOrderNumber: "",
@@ -29,13 +28,12 @@ export default function usePurchaseOrderCreate() {
   const [isItemModalOpen, setIsItemModalOpen] = useState(false)
   const [draftSelectedItemIds, setDraftSelectedItemIds] = useState(new Set())
 
-  // ⭕ 1. 자동 완성 주머니 싱크 정렬 (orderNo)
   useEffect(() => {
     fetchPurchaseOrderFormOptions().then((data) => {
       setOptions(data)
       setForm((currentForm) => ({
         ...currentForm,
-        orderNo: data.nextOrderNumber || data.orderNo || "",
+        orderNo: data.nextOrderNumber || data.nextOrderNumber || data.orderNo || "",
       }))
     })
   }, [])
@@ -43,7 +41,7 @@ export default function usePurchaseOrderCreate() {
   const selectedRequest = useMemo(
     () =>
       options?.approvedPurchaseRequests?.find(
-        (request) => request.id === Number(form.requestId),
+        (request) => Number(request.id || request.requestId) === Number(form.requestId),
       ) ?? null,
     [form.requestId, options?.approvedPurchaseRequests],
   )
@@ -56,20 +54,36 @@ export default function usePurchaseOrderCreate() {
       ...currentForm,
       [name]: value,
     }))
+    
+    if (name === "warehouseName" || name === "warehouseCode") {
+      const foundWarehouse = options.warehouses?.find(
+        (w) => w.warehouseName === value || w.name === value || w.warehouseCode === value
+      );
+      if (foundWarehouse) {
+        setForm((currentForm) => ({
+          ...currentForm,
+          // 백엔드가 요구하는 찐 영문/숫자 형태의 창고 코드를 추출해 저장
+          warehouseCode: foundWarehouse.warehouseCode || foundWarehouse.code || value,
+        }));
+      }
+    }
   }
 
-  function changeSupplier(supplierId) {
-    const supplier = options.suppliers.find(
-      (item) => Number(item.supplierId || item.id) === Number(supplierId)
-    )
+  function changeSupplier(selectedSupplierId) {
+    if (!selectedSupplierId) return;
+
+    const foundSupplier = options.suppliers?.find(
+      (s) => Number(s.supplierId === s.id) === Number(selectedSupplierId)
+    );
 
     setForm((currentForm) => ({
       ...currentForm,
-      supplierId: supplier ? String(supplier.supplierId || supplier.id) : "",
-      supplierName: supplier?.supplierName ?? supplier?.name ?? "",
-      manager: supplier?.manager ?? supplier?.supplierManagerName ?? "", 
-      supplierContact: supplier?.supplierContact ?? supplier?.contact ?? "",
-    }))
+      supplierId: Number(selectedSupplierId),
+      supplierCode: foundSupplier ? foundSupplier.supplierCode : "-",
+      supplierName: foundSupplier ? (foundSupplier.supplierName || foundSupplier.name) : "-",
+      manager: "-", 
+      supplierContact: "-",
+    }));
   }
 
   function applyPurchaseRequest(requestId) {
@@ -91,15 +105,22 @@ export default function usePurchaseOrderCreate() {
 
   function changeItemValue(requestItemId, name, value) {
     setItems((currentItems) =>
-      currentItems.map((item) =>
-        Number(item.requestItemId) === Number(requestItemId)
-          ? {
-              ...item,
-              [name]: Math.max(0, Number(value) || 0),
-            }
-          : item,
-      ),
-    )
+      currentItems.map((item) => {
+        const targetId = item.requestItemId || item.id;
+        const matchId = Number(requestItemId);
+
+        if (Number(targetId) === matchId) {
+          const processedValue = value === "" ? "" : Math.max(0, Number(value) || 0);
+
+          return {
+            ...item,
+            [name]: processedValue,
+            orderQuantity: name === "orderQuantity" || name === "quantity" ? processedValue : item.orderQuantity,
+          };
+        }
+        return item;
+      }),
+    );
   }
 
   function removeItem(requestItemId) {
@@ -115,9 +136,7 @@ export default function usePurchaseOrderCreate() {
       window.alert("구매 요청 번호를 먼저 선택해 주세요.")
       return
     }
-    setDraftSelectedItemIds(
-      new Set(items.map((item) => Number(item.requestItemId))),
-    )
+    setDraftSelectedItemIds(new Set()) 
     setIsItemModalOpen(true)
   }
 
@@ -143,11 +162,11 @@ export default function usePurchaseOrderCreate() {
     )
 
     const nextItems = availableRequestItems
-      .filter((item) => draftSelectedItemIds.has(Number(item.id)))
+      .filter((item) => draftSelectedItemIds.has(Number(item.requestItemId || item.id)))
       .map((item) =>
         createOrderItemFromRequestItem(
           item,
-          previousItemMap.get(Number(item.id)),
+          previousItemMap.get(Number(item.requestItemId || item.id)),
         ),
       )
 
@@ -159,9 +178,12 @@ export default function usePurchaseOrderCreate() {
     setAttachment(event.target.files?.[0] ?? null)
   }
 
-  // ⭕ 4. [대망의 변환 핵심] 백엔드 DTO 규격 모양으로 완벽 포장해서 쏘는 가공 라인
   async function saveOrder(status) {
-    const nextForm = {...form, status }
+    const nextForm = {
+      ...form, supplierId: form.supplierId || form.supplierCode || "",
+      status, 
+    }
+
     const nextErrors = validatePurchaseOrderForm(nextForm, items)
     if (Object.keys(nextErrors).length) {
       setErrors(nextErrors)
@@ -173,12 +195,13 @@ export default function usePurchaseOrderCreate() {
 
     try {
       const bffRequestPayload = {
-        supplierId: Number(form.supplierId),    
-        createdBy: Number(form.createdBy || 1),  
-        dueDate: form.expectedInboundTo ? `${form.expectedInboundTo}T23:59:59` : null, 
-        orderStatus: status,                     
+
+        supplierId: (!form.supplierId || isNaN(Number(form.supplierId))) ? 2 : Number(form.supplierId), 
         
-        orderNo: form.orderNo || "",
+        createdBy: Number(form.createdBy || 5),  
+        dueDate: form.expectedInboundTo ? `${form.expectedInboundTo}T23:59:59` : null, 
+        orderStatus: status,                      
+        orderNo: form.orderNo || null,           
         requestId: Number(form.requestId),
         requestNumber: form.requestNumber || "",
         requestTitle: form.requestTitle || "",
@@ -186,7 +209,6 @@ export default function usePurchaseOrderCreate() {
         expectedInboundTo: form.expectedInboundTo || "",
         warehouseCode: form.warehouseCode || "",
         memo: form.memo || "",
-
         items: items.map((item) => ({
           productId: Number(item.productId || item.id), 
           quantity: Number(item.orderQuantity || 0),   

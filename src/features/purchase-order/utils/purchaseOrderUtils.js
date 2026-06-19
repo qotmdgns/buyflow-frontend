@@ -123,18 +123,20 @@ export function calculatePurchaseOrderSummary(items = []) {
 }
 
 export function createOrderItemFromRequestItem(item, previousItem = null) {
+  const targetId = item.requestItemId || item.id;
+
   return {
-    id: previousItem?.id ?? `temp-${item.id}`,
-    requestItemId: item.id,
-    itemCode: item.itemCode,
-    itemName: item.itemName,
-    specification: item.specification,
-    requestedQuantity: Number(item.requestedQuantity ?? 0),
-    orderQuantity: Number(
-      previousItem?.orderQuantity ?? item.requestedQuantity ?? 0,
-    ),
-    unit: item.unit,
-    unitPrice: Number(previousItem?.unitPrice ?? item.defaultUnitPrice ?? 0),
+    id: targetId,
+    requestItemId: targetId,
+    productId: item.productId,
+    itemCode: item.itemCode || "-",
+    itemName: item.itemName || "이름 없음",
+    specification: item.specification || "-",
+    requestedQuantity: item.requestedQuantity || 0,
+    orderQuantity: previousItem ? previousItem.orderQuantity : (item.requestQuantity > 0 ? item.requestQuantity : 1),
+    unit: item.unit || "EA",
+    unitPrice: previousItem ? previousItem.unitPrice : (item.estimatedUnitPrice > 0 ? item.estimatedUnitPrice : 1000),
+    remark: item.remark || "",
   }
 }
 
