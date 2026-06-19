@@ -56,6 +56,7 @@ export default function InspectionSearchForm({
   onChange,
   onSearch,
   onReset,
+  inspectionNumberLabel = "검수 대기 번호",
 }) {
   return (
     <form
@@ -64,7 +65,7 @@ export default function InspectionSearchForm({
     >
       <div className="grid gap-x-3 gap-y-2.5 md:grid-cols-2 xl:grid-cols-4">
         <label>
-          <FieldLabel>검수 대기 번호</FieldLabel>
+          <FieldLabel>{inspectionNumberLabel}</FieldLabel>
 
           <input
             value={filters.inspectionNumber}

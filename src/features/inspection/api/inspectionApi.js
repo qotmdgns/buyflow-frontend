@@ -340,6 +340,34 @@ export async function fetchPendingInspections(params = {}) {
   return normalizeInspectionListResponse(data)
 }
 
+export async function fetchCompletedInspections(params = {}) {
+  if (USE_MOCK) {
+    await wait(150)
+
+    return {
+      items: [],
+      pagination: {
+        page: 1,
+        size: 15,
+        totalElements: 0,
+        totalPages: 1,
+      },
+    }
+  }
+
+  const query = createQueryString(params)
+
+  const path = query
+    ? `${INSPECTION_API_BASE}/completed?${query}`
+    : `${INSPECTION_API_BASE}/completed`
+
+  const data = await apiFetch(path, {
+    cache: "no-store",
+  })
+
+  return normalizeInspectionListResponse(data)
+}
+
 export async function fetchInspectionFilterOptions() {
   if (USE_MOCK) {
     return inspectionFilterOptions
@@ -366,6 +394,26 @@ export async function fetchPendingInspectionSummary() {
     receivedToday: Number(data.receivedToday ?? 0),
     urgent: Number(data.urgent ?? 0),
     overdue: Number(data.overdue ?? 0),
+  }
+}
+
+export async function fetchCompletedInspectionSummary() {
+  if (USE_MOCK) {
+    return {
+      total: 0,
+      pass: 0,
+      defect: 0,
+    }
+  }
+
+  const data = await apiFetch(`${INSPECTION_API_BASE}/completed/summary`, {
+    cache: "no-store",
+  })
+
+  return {
+    total: Number(data.total ?? data.totalCount ?? 0),
+    pass: Number(data.pass ?? data.passCount ?? 0),
+    defect: Number(data.defect ?? data.defectCount ?? 0),
   }
 }
 
