@@ -74,7 +74,7 @@ function matchesSummaryFilter(inspection, summaryFilter, today) {
 function filterMockPendingInspections(params = {}) {
   const {
     inspectionNumber = "",
-    inboundNumber = "",
+    receiptNumber = "",
     orderNumber = "",
     supplierName = "전체 공급업체",
     warehouseName = "전체 창고",
@@ -95,8 +95,8 @@ function filterMockPendingInspections(params = {}) {
       matchesSummaryFilter(inspection, summaryFilter, today) &&
       (!inspectionNumber ||
         includesKeyword(inspection.inspectionNumber, inspectionNumber)) &&
-      (!inboundNumber ||
-        includesKeyword(inspection.inboundNumber, inboundNumber)) &&
+      (!receiptNumber ||
+        includesKeyword(inspection.receiptNumber, receiptNumber)) &&
       (!orderNumber || includesKeyword(inspection.orderNumber, orderNumber)) &&
       (supplierName === "전체 공급업체" ||
         inspection.supplierName === supplierName) &&
@@ -291,7 +291,7 @@ function normalizeInspectionDetailResponse(data = {}) {
   return {
     id: data.id,
     inspectionNumber: data.inspectionNumber ?? "-",
-    inboundNumber: data.inboundNumber ?? "-",
+    receiptNumber: data.receiptNumber ?? "-",
     orderNumber: data.orderNumber ?? "-",
     supplierName: data.supplierName ?? "-",
     warehouseName: data.warehouseName ?? "-",

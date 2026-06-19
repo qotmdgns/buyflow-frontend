@@ -13,13 +13,13 @@ import {
 import { getDashboardData } from "@/features/dashboard/api/dashboardApi"
 import {
   InventoryStatusChart,
-  MonthlyInboundChart,
+  MonthlyReceiptChart,
 } from "@/features/dashboard/components/DashboardCharts"
 
 const summaryIcons = {
   delayedOrders: RefreshCcw,
   pendingApprovals: ClipboardCheck,
-  scheduledInbound: Truck,
+  scheduledReceipt: Truck,
   pendingInspections: Clock3,
   lowStock: AlertTriangle,
 }
@@ -299,7 +299,7 @@ export default async function DashboardPage() {
       </div>
 
       <div className="mt-3 grid gap-3 xl:grid-cols-[minmax(0,2fr)_minmax(280px,1fr)]">
-        <MonthlyInboundChart data={data.monthlyInbound} />
+        <MonthlyReceiptChart data={data.monthlyReceipt} />
 
         <InventoryStatusChart data={data.inventoryStatus} />
       </div>

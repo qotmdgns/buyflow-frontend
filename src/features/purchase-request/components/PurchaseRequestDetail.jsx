@@ -119,7 +119,7 @@ function PurchaseRequestBasicInformation({ request }) {
         </InformationItem>
 
         <InformationItem label="희망 입고일">
-          {request.desiredInboundAt}
+          {request.desiredReceiptAt}
         </InformationItem>
 
         <InformationItem label="우선순위">

@@ -2,10 +2,10 @@
 
 import { useEffect, useState } from "react"
 
-import { fetchInboundById } from "@/features/inbound/api/inboundApi"
+import { fetchReceiptById } from "@/features/receipt/api/ReceiptApi"
 
-export default function useInboundDetail(inboundId) {
-  const [inbound, setInbound] = useState(null)
+export default function useReceiptDetail(receiptId) {
+  const [receipt, setReceipt] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState("")
   const [reloadKey, setReloadKey] = useState(0)
@@ -13,19 +13,19 @@ export default function useInboundDetail(inboundId) {
   useEffect(() => {
     let ignore = false
 
-    async function loadInbound() {
+    async function loadReceipt() {
       setLoading(true)
       setError("")
 
       try {
-        const data = await fetchInboundById(inboundId)
+        const data = await fetchReceiptById(receiptId)
 
         if (!ignore) {
-          setInbound(data)
+          setReceipt(data)
         }
       } catch (requestError) {
         if (!ignore) {
-          setInbound(null)
+          setReceipt(null)
 
           setError(
             requestError.message || "입고 상세 정보를 불러오지 못했습니다.",
@@ -38,19 +38,19 @@ export default function useInboundDetail(inboundId) {
       }
     }
 
-    loadInbound()
+    loadReceipt()
 
     return () => {
       ignore = true
     }
-  }, [inboundId, reloadKey])
+  }, [receiptId, reloadKey])
 
   function reload() {
     setReloadKey((currentKey) => currentKey + 1)
   }
 
   return {
-    inbound,
+    receipt,
     loading,
     error,
     reload,

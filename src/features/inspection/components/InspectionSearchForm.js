@@ -81,8 +81,8 @@ export default function InspectionSearchForm({
           <FieldLabel>입고 번호</FieldLabel>
 
           <input
-            value={filters.inboundNumber}
-            onChange={(event) => onChange("inboundNumber", event.target.value)}
+            value={filters.receiptNumber}
+            onChange={(event) => onChange("receiptNumber", event.target.value)}
             placeholder="IN-YYYY-XXXX"
             className={INPUT_CLASS_NAME}
           />

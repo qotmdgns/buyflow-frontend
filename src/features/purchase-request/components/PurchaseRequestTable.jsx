@@ -194,7 +194,7 @@ export default function PurchaseRequestTable({
                 </td>
 
                 <td className="whitespace-nowrap px-3 py-2.5">
-                  {request.desiredInboundAt}
+                  {request.desiredReceiptAt}
                 </td>
 
                 <td className="whitespace-nowrap px-3 py-2.5 text-right">

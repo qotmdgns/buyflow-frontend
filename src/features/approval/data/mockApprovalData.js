@@ -19,7 +19,7 @@ export const mockApprovalDetails = {
     },
 
     requestedAt: "2026-06-01",
-    desiredInboundAt: "2026-06-15",
+    desiredReceiptAt: "2026-06-15",
 
     priority: "NORMAL",
     priorityLabel: "일반",

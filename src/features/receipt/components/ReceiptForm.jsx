@@ -2,7 +2,7 @@
 
 import { CircleAlert, FileUp, PackageCheck, Save } from "lucide-react"
 
-import { formatNumber } from "@/features/inbound/utils/inboundUtils"
+import { formatNumber } from "@/features/receipt/utils/ReceiptUtils"
 
 const INPUT_CLASS_NAME =
   "h-10 w-full rounded-md border border-slate-200 bg-white px-3 text-[13px] text-slate-700 outline-none transition placeholder:text-slate-300 focus:border-blue-400 focus:ring-2 focus:ring-blue-100 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-400"
@@ -24,7 +24,7 @@ function FieldError({ message }) {
   return <p className="mt-1 text-[12px] font-medium text-rose-500">{message}</p>
 }
 
-export default function InboundForm({
+export default function ReceiptForm({
   options,
   form,
   items,
@@ -89,7 +89,7 @@ export default function InboundForm({
             <FieldLabel>입고 번호</FieldLabel>
 
             <input
-              value={form.inboundNumber}
+              value={form.receiptNumber}
               disabled
               className={INPUT_CLASS_NAME}
             />
@@ -99,7 +99,7 @@ export default function InboundForm({
             <FieldLabel required>발주 번호</FieldLabel>
 
             <select
-              value={form.targetInboundId}
+              value={form.targetReceiptId}
               onChange={(event) => onChangeOrder(event.target.value)}
               className={INPUT_CLASS_NAME}
               disabled={loading}
@@ -114,7 +114,7 @@ export default function InboundForm({
               ))}
             </select>
 
-            <FieldError message={errors.targetInboundId} />
+            <FieldError message={errors.targetReceiptId} />
           </label>
 
           <label className="block">

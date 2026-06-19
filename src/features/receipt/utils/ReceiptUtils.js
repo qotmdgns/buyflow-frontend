@@ -1,4 +1,4 @@
-export const INBOUND_STATUS_META = {
+export const RECEIPT_STATUS_META = {
   EXPECTED: {
     label: "입고 예정",
     badgeClassName: "border-blue-200 bg-blue-50 text-blue-600",
@@ -17,13 +17,13 @@ export const INBOUND_STATUS_META = {
   },
 }
 
-export const INBOUND_TABS = [
+export const RECEIPT_TABS = [
   { key: "EXPECTED", label: "입고 예정" },
   { key: "PARTIAL", label: "부분 입고" },
   { key: "COMPLETED", label: "입고 완료" },
 ]
 
-export const DEFAULT_INBOUND_FILTERS = {
+export const DEFAULT_RECEIPT_FILTERS = {
   orderNumber: "",
   supplierKeyword: "",
   itemKeyword: "",
@@ -33,16 +33,16 @@ export const DEFAULT_INBOUND_FILTERS = {
   status: "전체 상태",
 }
 
-export const DEFAULT_INBOUND_PAGINATION = {
+export const DEFAULT_RECEIPT_PAGINATION = {
   page: 1,
   size: 10,
   totalElements: 0,
   totalPages: 1,
 }
 
-export function getInboundStatusMeta(status) {
+export function getReceiptStatusMeta(status) {
   return (
-    INBOUND_STATUS_META[status] ?? {
+    RECEIPT_STATUS_META[status] ?? {
       label: status || "-",
       badgeClassName: "border-slate-200 bg-slate-50 text-slate-500",
     }
@@ -94,7 +94,7 @@ function escapeCsvCell(value) {
   return text
 }
 
-export function downloadInboundCsv(inbounds) {
+export function downloadReceiptCsv(receipts) {
   const headers = [
     "발주 번호",
     "공급업체",
@@ -108,17 +108,17 @@ export function downloadInboundCsv(inbounds) {
     "상태",
   ]
 
-  const rows = inbounds.map((inbound) => [
-    inbound.orderNumber,
-    inbound.supplierName,
-    inbound.orderedAt,
-    inbound.expectedInboundAt,
-    inbound.warehouseName,
-    inbound.itemCount,
-    inbound.orderQuantity,
-    inbound.receivedQuantity,
-    inbound.remainingQuantity,
-    getInboundStatusMeta(inbound.status).label,
+  const rows = receipts.map((receipt) => [
+    receipt.orderNumber,
+    receipt.supplierName,
+    receipt.orderedAt,
+    receipt.expectedReceiptAt,
+    receipt.warehouseName,
+    receipt.itemCount,
+    receipt.orderQuantity,
+    receipt.receivedQuantity,
+    receipt.remainingQuantity,
+    getReceiptStatusMeta(receipt.status).label,
   ])
 
   const csv = [headers, ...rows]
@@ -133,16 +133,16 @@ export function downloadInboundCsv(inbounds) {
   const link = document.createElement("a")
 
   link.href = url
-  link.download = "inbound-list.csv"
+  link.download = "receipt-list.csv"
   document.body.appendChild(link)
   link.click()
   document.body.removeChild(link)
   URL.revokeObjectURL(url)
 }
 
-export const EMPTY_INBOUND_FORM = {
-  inboundNumber: "",
-  targetInboundId: "",
+export const EMPTY_RECEIPT_FORM = {
+  receiptNumber: "",
+  targetReceiptId: "",
   orderNumber: "",
   supplierName: "",
   warehouseName: "",
@@ -160,21 +160,21 @@ export function getTodayString() {
   return `${year}-${month}-${day}`
 }
 
-export function createInboundForm() {
+export function createReceiptForm() {
   return {
-    ...EMPTY_INBOUND_FORM,
+    ...EMPTY_RECEIPT_FORM,
     receivedAt: getTodayString(),
   }
 }
 
-export function createInboundReceiptItem(item) {
+export function createReceiptReceiptItem(item) {
   return {
     ...item,
     currentReceivedQuantity: 0,
   }
 }
 
-export function calculateInboundReceiptSummary(items = []) {
+export function calculateReceiptReceiptSummary(items = []) {
   return items.reduce(
     (summary, item) => {
       const currentReceivedQuantity = Number(item.currentReceivedQuantity ?? 0)
@@ -196,11 +196,11 @@ export function calculateInboundReceiptSummary(items = []) {
   )
 }
 
-export function validateInboundReceiptForm(form, items = []) {
+export function validateReceiptReceiptForm(form, items = []) {
   const errors = {}
 
-  if (!form.targetInboundId) {
-    errors.targetInboundId = "입고 처리할 발주를 선택하세요."
+  if (!form.targetReceiptId) {
+    errors.targetReceiptId = "입고 처리할 발주를 선택하세요."
   }
 
   if (!form.receivedAt) {

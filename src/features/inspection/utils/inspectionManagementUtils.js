@@ -7,7 +7,7 @@ export const INSPECTION_SUMMARY_FILTERS = {
 
 export const DEFAULT_INSPECTION_FILTERS = {
   inspectionNumber: "",
-  inboundNumber: "",
+  receiptNumber: "",
   orderNumber: "",
   supplierName: "전체 공급업체",
   warehouseName: "전체 창고",
@@ -182,7 +182,7 @@ export const COMPLETED_INSPECTION_RESULT_FILTERS = {
 
 export const DEFAULT_COMPLETED_INSPECTION_FILTERS = {
   inspectionNumber: "",
-  inboundNumber: "",
+  receiptNumber: "",
   orderNumber: "",
   supplierName: "전체 공급업체",
   warehouseName: "전체 창고",

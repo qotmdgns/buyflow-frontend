@@ -193,7 +193,7 @@ function toApprovalListItem(approval) {
     requester: approval.requester?.name ?? "",
     department: approval.requestDepartment?.name ?? "",
     requestedAt: approval.requestedAt,
-    desiredInboundAt: approval.desiredInboundAt,
+    desiredReceiptAt: approval.desiredReceiptAt,
     createdAt: approval.createdAt ?? approval.requestedAt ?? "",
     updatedAt: approval.updatedAt ?? "",
     totalAmount: calculateApprovalTotalAmount(approval.items),

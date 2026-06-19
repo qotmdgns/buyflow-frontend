@@ -307,7 +307,7 @@ export default function ApprovalListManagement() {
                       </td>
 
                       <td className="whitespace-nowrap px-3 py-3">
-                        {approval.desiredInboundAt}
+                        {approval.desiredReceiptAt}
                       </td>
 
                       <td className="whitespace-nowrap px-3 py-3 text-right font-semibold text-slate-700">

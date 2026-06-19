@@ -1,9 +1,9 @@
 import {
-  mockInbounds,
-  mockInboundWarehouses,
-} from "@/features/inbound/data/mockInboundData"
+  mockReceipts,
+  mockReceiptWarehouses,
+} from "@/features/receipt/data/mockReceiptData"
 
-const USE_MOCK = process.env.NEXT_PUBLIC_USE_INBOUND_MOCK !== "false"
+const USE_MOCK = process.env.NEXT_PUBLIC_USE_RECEIPT_MOCK !== "false"
 
 function wait(milliseconds) {
   return new Promise((resolve) => setTimeout(resolve, milliseconds))
@@ -39,31 +39,31 @@ function distributeQuantity(totalQuantity, itemCount, itemIndex) {
   return baseQuantity + (itemIndex < remainder ? 1 : 0)
 }
 
-function createDetailedInbound(inbound) {
-  const items = Array.from({ length: inbound.itemCount }, (_, index) => {
+function createDetailedReceipt(receipt) {
+  const items = Array.from({ length: receipt.itemCount }, (_, index) => {
     const orderQuantity = distributeQuantity(
-      inbound.orderQuantity,
-      inbound.itemCount,
+      receipt.orderQuantity,
+      receipt.itemCount,
       index,
     )
 
     const cumulativeReceivedQuantity = distributeQuantity(
-      inbound.receivedQuantity,
-      inbound.itemCount,
+      receipt.receivedQuantity,
+      receipt.itemCount,
       index,
     )
 
-    const primaryItemCode = inbound.itemCodes[0]
-    const primaryItemName = inbound.itemNames[0]
+    const primaryItemCode = receipt.itemCodes[0]
+    const primaryItemName = receipt.itemNames[0]
 
     return {
-      id: inbound.id * 1000 + index + 1,
-      orderItemId: inbound.id * 1000 + index + 1,
+      id: receipt.id * 1000 + index + 1,
+      orderItemId: receipt.id * 1000 + index + 1,
 
       itemCode:
         index === 0
           ? primaryItemCode
-          : `SKU-${String(inbound.id * 100 + index + 1).padStart(5, "0")}`,
+          : `SKU-${String(receipt.id * 100 + index + 1).padStart(5, "0")}`,
 
       itemName:
         index === 0
@@ -78,15 +78,15 @@ function createDetailedInbound(inbound) {
     }
   })
 
-  const histories = inbound.receivedQuantity
+  const histories = receipt.receivedQuantity
     ? [
         {
-          id: inbound.id * 100 + 1,
-          inboundNumber: `IN-2026-${String(inbound.id).padStart(4, "0")}-01`,
-          receivedAt: inbound.expectedInboundAt,
+          id: receipt.id * 100 + 1,
+          receiptNumber: `IN-2026-${String(receipt.id).padStart(4, "0")}-01`,
+          receivedAt: receipt.expectedReceiptAt,
           receiverName: "김철수",
           memo: "기존 입고 처리 이력",
-          totalReceivedQuantity: inbound.receivedQuantity,
+          totalReceivedQuantity: receipt.receivedQuantity,
 
           items: items
             .filter((item) => item.cumulativeReceivedQuantity > 0)
@@ -104,7 +104,7 @@ function createDetailedInbound(inbound) {
     : []
 
   return {
-    ...inbound,
+    ...receipt,
     itemCodes: items.map((item) => item.itemCode),
     itemNames: items.map((item) => item.itemName),
     items,
@@ -112,25 +112,25 @@ function createDetailedInbound(inbound) {
   }
 }
 
-let inboundDatabase = structuredClone(mockInbounds).map(createDetailedInbound)
+let receiptDatabase = structuredClone(mockReceipts).map(createDetailedReceipt)
 
-function matchesActiveTab(inbound, activeTab) {
+function matchesActiveTab(receipt, activeTab) {
   if (activeTab === "EXPECTED") {
-    return inbound.status === "EXPECTED" || inbound.status === "DELAYED"
+    return receipt.status === "EXPECTED" || receipt.status === "DELAYED"
   }
 
   if (activeTab === "PARTIAL") {
-    return inbound.status === "PARTIAL"
+    return receipt.status === "PARTIAL"
   }
 
   if (activeTab === "COMPLETED") {
-    return inbound.status === "COMPLETED"
+    return receipt.status === "COMPLETED"
   }
 
   return true
 }
 
-function filterInbounds(params) {
+function filterReceipts(params) {
   const {
     activeTab = "EXPECTED",
     orderNumber = "",
@@ -142,66 +142,66 @@ function filterInbounds(params) {
     status = "전체 상태",
   } = params
 
-  return inboundDatabase.filter((inbound) => {
+  return receiptDatabase.filter((receipt) => {
     const itemMatched =
       !itemKeyword ||
-      inbound.itemCodes.some((itemCode) =>
+      receipt.itemCodes.some((itemCode) =>
         includesKeyword(itemCode, itemKeyword),
       ) ||
-      inbound.itemNames.some((itemName) =>
+      receipt.itemNames.some((itemName) =>
         includesKeyword(itemName, itemKeyword),
       )
 
     const statusMatched =
       status === "전체 상태"
-        ? matchesActiveTab(inbound, activeTab)
-        : inbound.status === status
+        ? matchesActiveTab(receipt, activeTab)
+        : receipt.status === status
 
     return (
-      (!orderNumber || includesKeyword(inbound.orderNumber, orderNumber)) &&
+      (!orderNumber || includesKeyword(receipt.orderNumber, orderNumber)) &&
       (!supplierKeyword ||
-        includesKeyword(inbound.supplierName, supplierKeyword)) &&
+        includesKeyword(receipt.supplierName, supplierKeyword)) &&
       itemMatched &&
       (warehouseName === "전체 창고" ||
-        inbound.warehouseName === warehouseName) &&
-      (!expectedFrom || inbound.expectedInboundAt >= expectedFrom) &&
-      (!expectedTo || inbound.expectedInboundAt <= expectedTo) &&
+        receipt.warehouseName === warehouseName) &&
+      (!expectedFrom || receipt.expectedReceiptAt >= expectedFrom) &&
+      (!expectedTo || receipt.expectedReceiptAt <= expectedTo) &&
       statusMatched
     )
   })
 }
 
-function createNextInboundNumber() {
-  const historyCount = inboundDatabase.reduce(
-    (count, inbound) => count + inbound.histories.length,
+function createNextReceiptNumber() {
+  const historyCount = receiptDatabase.reduce(
+    (count, receipt) => count + receipt.histories.length,
     0,
   )
 
   return `IN-2026-${String(historyCount + 1).padStart(4, "0")}`
 }
 
-function createEligibleOrder(inbound) {
+function createEligibleOrder(receipt) {
   return {
-    id: inbound.id,
-    orderNumber: inbound.orderNumber,
-    supplierName: inbound.supplierName,
-    warehouseName: inbound.warehouseName,
-    expectedInboundAt: inbound.expectedInboundAt,
-    remainingQuantity: inbound.remainingQuantity,
-    status: inbound.status,
+    id: receipt.id,
+    orderNumber: receipt.orderNumber,
+    supplierName: receipt.supplierName,
+    warehouseName: receipt.warehouseName,
+    expectedReceiptAt: receipt.expectedReceiptAt,
+    remainingQuantity: receipt.remainingQuantity,
+    status: receipt.status,
 
-    items: inbound.items
+    items: receipt.items
       .filter((item) => item.remainingQuantity > 0)
       .map((item) => ({ ...item })),
   }
 }
 
-export async function fetchInbounds(params = {}) {
+export async function fetchReceipts(params = {}) {
   if (!USE_MOCK) {
     const query = new URLSearchParams(params)
 
     const response = await fetch(
-      createApiUrl(`/api/inbounds?${query.toString()}`),
+      createApiUrl(`/api/receipts?${query.toString()}`),
       { cache: "no-store" },
     )
 
@@ -215,14 +215,14 @@ export async function fetchInbounds(params = {}) {
   await wait(120)
 
   const { page = 1, size = 10 } = params
-  const filteredInbounds = filterInbounds(params)
-  const totalElements = filteredInbounds.length
+  const filteredReceipts = filterReceipts(params)
+  const totalElements = filteredReceipts.length
   const totalPages = Math.max(1, Math.ceil(totalElements / size))
   const safePage = Math.min(Math.max(Number(page), 1), totalPages)
   const offset = (safePage - 1) * size
 
   return {
-    items: clone(filteredInbounds.slice(offset, offset + size)),
+    items: clone(filteredReceipts.slice(offset, offset + size)),
     pagination: {
       page: safePage,
       size,
@@ -232,9 +232,9 @@ export async function fetchInbounds(params = {}) {
   }
 }
 
-export async function fetchInboundFilterOptions() {
+export async function fetchReceiptFilterOptions() {
   if (!USE_MOCK) {
-    const response = await fetch(createApiUrl("/api/inbounds/filter-options"), {
+    const response = await fetch(createApiUrl("/api/receipts/filter-options"), {
       cache: "no-store",
     })
 
@@ -246,14 +246,14 @@ export async function fetchInboundFilterOptions() {
   }
 
   return {
-    warehouses: ["전체 창고", ...mockInboundWarehouses],
+    warehouses: ["전체 창고", ...mockReceiptWarehouses],
     statuses: ["전체 상태", "EXPECTED", "DELAYED", "PARTIAL", "COMPLETED"],
   }
 }
 
-export async function fetchInboundSummary() {
+export async function fetchReceiptSummary() {
   if (!USE_MOCK) {
-    const response = await fetch(createApiUrl("/api/inbounds/summary"), {
+    const response = await fetch(createApiUrl("/api/receipts/summary"), {
       cache: "no-store",
     })
 
@@ -266,25 +266,25 @@ export async function fetchInboundSummary() {
 
   const today = new Date().toISOString().slice(0, 10)
 
-  const expectedCount = inboundDatabase.filter(
-    (inbound) => inbound.status === "EXPECTED" || inbound.status === "DELAYED",
+  const expectedCount = receiptDatabase.filter(
+    (receipt) => receipt.status === "EXPECTED" || receipt.status === "DELAYED",
   ).length
 
-  const delayedCount = inboundDatabase.filter(
-    (inbound) => inbound.status === "DELAYED",
+  const delayedCount = receiptDatabase.filter(
+    (receipt) => receipt.status === "DELAYED",
   ).length
 
-  const partialCount = inboundDatabase.filter(
-    (inbound) => inbound.status === "PARTIAL",
+  const partialCount = receiptDatabase.filter(
+    (receipt) => receipt.status === "PARTIAL",
   ).length
 
-  const completedCount = inboundDatabase.filter(
-    (inbound) => inbound.status === "COMPLETED",
+  const completedCount = receiptDatabase.filter(
+    (receipt) => receipt.status === "COMPLETED",
   ).length
 
-  const todayExpectedCount = inboundDatabase.filter(
-    (inbound) =>
-      inbound.expectedInboundAt === today && inbound.status === "EXPECTED",
+  const todayExpectedCount = receiptDatabase.filter(
+    (receipt) =>
+      receipt.expectedReceiptAt === today && receipt.status === "EXPECTED",
   ).length
 
   return {
@@ -301,9 +301,9 @@ export async function fetchInboundSummary() {
   }
 }
 
-export async function fetchInboundFormOptions() {
+export async function fetchReceiptFormOptions() {
   if (!USE_MOCK) {
-    const response = await fetch(createApiUrl("/api/inbounds/form-options"), {
+    const response = await fetch(createApiUrl("/api/receipts/form-options"), {
       cache: "no-store",
     })
 
@@ -317,23 +317,23 @@ export async function fetchInboundFormOptions() {
   await wait(100)
 
   return {
-    nextInboundNumber: createNextInboundNumber(),
+    nextReceiptNumber: createNextReceiptNumber(),
 
     eligibleOrders: clone(
-      inboundDatabase
+      receiptDatabase
         .filter(
-          (inbound) =>
-            ["EXPECTED", "DELAYED", "PARTIAL"].includes(inbound.status) &&
-            inbound.remainingQuantity > 0,
+          (receipt) =>
+            ["EXPECTED", "DELAYED", "PARTIAL"].includes(receipt.status) &&
+            receipt.remainingQuantity > 0,
         )
         .map(createEligibleOrder),
     ),
   }
 }
 
-export async function fetchInboundById(inboundId) {
+export async function fetchReceiptById(receiptId) {
   if (!USE_MOCK) {
-    const response = await fetch(createApiUrl(`/api/inbounds/${inboundId}`), {
+    const response = await fetch(createApiUrl(`/api/receipts/${receiptId}`), {
       cache: "no-store",
     })
 
@@ -346,18 +346,18 @@ export async function fetchInboundById(inboundId) {
 
   await wait(100)
 
-  const inbound = inboundDatabase.find((item) => item.id === Number(inboundId))
+  const receipt = receiptDatabase.find((item) => item.id === Number(receiptId))
 
-  if (!inbound) {
+  if (!receipt) {
     throw new Error("입고 정보를 찾을 수 없습니다.")
   }
 
-  return clone(inbound)
+  return clone(receipt)
 }
 
-export async function createInboundReceipt(payload, attachment = null) {
+export async function createReceiptReceipt(payload, attachment = null) {
   if (!USE_MOCK) {
-    const response = await fetch(createApiUrl("/api/inbounds"), {
+    const response = await fetch(createApiUrl("/api/receipts"), {
       method: "POST",
 
       headers: {
@@ -376,15 +376,15 @@ export async function createInboundReceipt(payload, attachment = null) {
 
   await wait(180)
 
-  const previousInbound = inboundDatabase.find(
-    (item) => item.id === Number(payload.targetInboundId),
+  const previousReceipt = receiptDatabase.find(
+    (item) => item.id === Number(payload.targetReceiptId),
   )
 
-  if (!previousInbound) {
+  if (!previousReceipt) {
     throw new Error("입고 처리할 발주 정보를 찾을 수 없습니다.")
   }
 
-  if (!["EXPECTED", "DELAYED", "PARTIAL"].includes(previousInbound.status)) {
+  if (!["EXPECTED", "DELAYED", "PARTIAL"].includes(previousReceipt.status)) {
     throw new Error("현재 상태에서는 추가 입고를 등록할 수 없습니다.")
   }
 
@@ -395,7 +395,7 @@ export async function createInboundReceipt(payload, attachment = null) {
     ]),
   )
 
-  const items = previousInbound.items.map((item) => {
+  const items = previousReceipt.items.map((item) => {
     const receivedQuantity =
       receiptQuantityMap.get(Number(item.orderItemId)) ?? 0
 
@@ -445,7 +445,7 @@ export async function createInboundReceipt(payload, attachment = null) {
 
   const latestReceipt = {
     id: Date.now(),
-    inboundNumber: payload.inboundNumber || createNextInboundNumber(),
+    receiptNumber: payload.receiptNumber || createNextReceiptNumber(),
     receivedAt: payload.receivedAt,
     receiverName: String(payload.receiverName ?? "").trim(),
     memo: String(payload.memo ?? "").trim(),
@@ -463,19 +463,19 @@ export async function createInboundReceipt(payload, attachment = null) {
       : [],
   }
 
-  const updatedInbound = {
-    ...previousInbound,
+  const updatedReceipt = {
+    ...previousReceipt,
     receivedQuantity,
     remainingQuantity,
     status: remainingQuantity === 0 ? "COMPLETED" : "PARTIAL",
     items,
-    histories: [...previousInbound.histories, latestReceipt],
+    histories: [...previousReceipt.histories, latestReceipt],
     latestReceipt,
   }
 
-  inboundDatabase = inboundDatabase.map((inbound) =>
-    inbound.id === updatedInbound.id ? updatedInbound : inbound,
+  receiptDatabase = receiptDatabase.map((receipt) =>
+    receipt.id === updatedReceipt.id ? updatedReceipt : receipt,
   )
 
-  return clone(updatedInbound)
+  return clone(updatedReceipt)
 }

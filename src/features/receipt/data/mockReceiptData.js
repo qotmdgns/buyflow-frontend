@@ -9,7 +9,7 @@ const suppliers = [
   "우림 상사",
 ]
 
-export const mockInboundWarehouses = [
+export const mockReceiptWarehouses = [
   "A-서브 물류 센터",
   "B-글로벌 창고",
   "C-로컬 체인 창고",
@@ -54,7 +54,7 @@ function createStatus(index) {
   return "EXPECTED"
 }
 
-function createExpectedInboundAt(index, status) {
+function createExpectedReceiptAt(index, status) {
   if (index <= 24) {
     return createDate(0)
   }
@@ -86,7 +86,7 @@ function createReceivedQuantity(status, orderQuantity, index) {
   return 0
 }
 
-function createInbound(index) {
+function createReceipt(index) {
   const status = createStatus(index)
   const itemCount = 3 + (index % 18)
   const orderQuantity = 100 + (index % 9) * 150
@@ -100,8 +100,8 @@ function createInbound(index) {
     orderNumber: `PO-2026-${String(index).padStart(4, "0")}`,
     supplierName: suppliers[index % suppliers.length],
     orderedAt: createDate(orderedAtOffset),
-    expectedInboundAt: createExpectedInboundAt(index, status),
-    warehouseName: mockInboundWarehouses[index % mockInboundWarehouses.length],
+    expectedReceiptAt: createExpectedReceiptAt(index, status),
+    warehouseName: mockReceiptWarehouses[index % mockReceiptWarehouses.length],
     itemCount,
     itemCodes: [primaryProduct.itemCode],
     itemNames: [primaryProduct.itemName],
@@ -112,6 +112,6 @@ function createInbound(index) {
   }
 }
 
-export const mockInbounds = Array.from({ length: 128 }, (_, index) =>
-  createInbound(index + 1),
+export const mockReceipts = Array.from({ length: 128 }, (_, index) =>
+  createReceipt(index + 1),
 )

@@ -7,8 +7,8 @@ export const DEFAULT_PURCHASE_REQUEST_FILTERS = {
   priority: "전체",
   requestedFrom: "",
   requestedTo: "",
-  desiredInboundFrom: "",
-  desiredInboundTo: "",
+  desiredReceiptFrom: "",
+  desiredReceiptTo: "",
 }
 
 export const DEFAULT_PURCHASE_REQUEST_FILTER_OPTIONS = {
@@ -108,7 +108,7 @@ export function downloadPurchaseRequestCsv(requests) {
     request.department,
     request.createdAt ?? request.requestedAt,
     request.updatedAt,
-    request.desiredInboundAt,
+    request.desiredReceiptAt,
     request.itemCount,
     request.totalAmount,
     request.priority,

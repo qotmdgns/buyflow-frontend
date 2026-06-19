@@ -99,7 +99,7 @@ function InspectionBasicInformation({ inspection }) {
         </InformationItem>
 
         <InformationItem label="입고 번호">
-          {inspection.inboundNumber}
+          {inspection.receiptNumber}
         </InformationItem>
 
         <InformationItem label="발주 번호">

@@ -31,8 +31,8 @@ function filterMockPurchaseRequests(params = {}) {
     priority = "전체",
     requestedFrom = "",
     requestedTo = "",
-    desiredInboundFrom = "",
-    desiredInboundTo = "",
+    desiredReceiptFrom = "",
+    desiredReceiptTo = "",
   } = params
 
   return mockPurchaseRequests.filter((request) => {
@@ -57,10 +57,10 @@ function filterMockPurchaseRequests(params = {}) {
       requestedTo,
     )
 
-    const matchesDesiredInboundAt = isWithinRange(
-      request.desiredInboundAt,
-      desiredInboundFrom,
-      desiredInboundTo,
+    const matchesDesiredReceiptAt = isWithinRange(
+      request.desiredReceiptAt,
+      desiredReceiptFrom,
+      desiredReceiptTo,
     )
 
     return (
@@ -71,7 +71,7 @@ function filterMockPurchaseRequests(params = {}) {
       matchesStatus &&
       matchesPriority &&
       matchesRequestedAt &&
-      matchesDesiredInboundAt
+      matchesDesiredReceiptAt
     )
   })
 }
@@ -295,7 +295,7 @@ function normalizePurchaseRequestDetailResponse(data) {
     requester: data.requester ?? data.requesterName ?? "",
     department: data.department ?? data.departmentName ?? "",
     requestedAt: data.requestedAt ?? data.requestDate ?? "",
-    desiredInboundAt: data.desiredInboundAt ?? data.expectedDate ?? "",
+    desiredReceiptAt: data.desiredReceiptAt ?? data.expectedDate ?? "",
     createdAt: data.createdAt ?? data.requestedAt ?? data.requestDate ?? "",
     updatedAt: data.updatedAt ?? "",
     priority:
