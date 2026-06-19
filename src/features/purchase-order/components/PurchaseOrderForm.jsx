@@ -38,7 +38,9 @@ export default function PurchaseOrderForm({
   mode, form, options, items, attachment, errors, submitError, submitting, summary,
   editable = true, editableCoreFields = true, isItemModalOpen = false,
   draftSelectedItemIds = new Set(), availableRequestItems = [],
-  onChange, onChangeSupplier, onApplyPurchaseRequest, onChangeItemValue, onRemoveItem,
+  
+  // 🚀 부모가 어떤 이름으로 던지든 둘 다 주머니에 쏙 챙겨둡니다!
+  onChange, changeSupplier, onChangeSupplier, onApplyPurchaseRequest, onChangeItemValue, onRemoveItem,
   onChangeAttachment, onCancel, onSave, openItemModal, closeItemModal, toggleDraftItem, confirmSelectedItems,
 }) {
   const isEditMode = mode === "edit"
@@ -101,35 +103,25 @@ export default function PurchaseOrderForm({
               <input value={form.requestTitle || ""} disabled className={INPUT_CLASS_NAME} />
             </label>
 
-            <label className="block">
+<label className="block">
               <FieldLabel required>공급업체</FieldLabel>
               <select 
-                value={form.supplierId || ""} 
-                onChange={(event) => onChangeSupplier(event.target.value)} 
+                onChange={(event) => {
+                  const val = event.target.value;
+                  if (typeof changeSupplier === "function") {
+                    changeSupplier(val);
+                  } else if (typeof onChangeSupplier === "function") {
+                    onChangeSupplier(val);
+                  }
+                }} 
                 disabled={!editableCoreFields} 
                 className={INPUT_CLASS_NAME}
               >
                 <option value="">공급업체 선택</option>
                 {options.suppliers?.map((supplier, index) => {
-                  if (typeof supplier === "string") {
-                    return (
-                      <option key={`supplier-opt-${index}`} value={supplier}>
-                        {supplier}
-                      </option>
-                    );
-                  }
-                  const sId = supplier.supplierId || supplier.id || index;
-
-                  const sName = 
-                  supplier.supplierName || 
-                  supplier.suppliername || 
-                  supplier.name || 
-                  supplier.nameKo || 
-                  supplier.supplierCode || 
-                  `공급업체(${sId})`;
-                  
+                  const sName = typeof supplier === "string" ? supplier : (supplier.supplierName || `공급업체(${index})`);
                   return (
-                    <option key={`supplier-opt-${sId}`} value={sId}>
+                    <option key={`supplier-opt-${index}`} value={sName}>
                       {sName}
                     </option>
                   )
@@ -252,7 +244,7 @@ export default function PurchaseOrderForm({
         <div className="flex justify-end border-t border-slate-100 px-5 py-4">
           <dl className="w-full max-w-xs space-y-2 text-[13px]">
             <div className="flex justify-between"><dt>공급가액</dt><dd>{formatWon(summary.supplyAmount)}</dd></div>
-            <div className="flex justify-between"><dt>부가세 (10%)\</dt><dd>{formatWon(summary.vatAmount)}</dd></div>
+            <div className="flex justify-between"><dt>부가세 (10%)</dt><dd>{formatWon(summary.vatAmount)}</dd></div>
             <div className="flex justify-between border-t pt-3"><dt className="font-bold">총 발주 금액</dt><dd className="text-[20px] font-bold text-blue-600">{formatWon(summary.totalAmount)}</dd></div>
           </dl>
         </div>
