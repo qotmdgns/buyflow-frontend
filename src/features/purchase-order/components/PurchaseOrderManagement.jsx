@@ -264,51 +264,51 @@ export default function PurchaseOrderManagement() {
                 </TableMessage>
               )}
 
-              {!loading &&
-                !error &&
-                orders.map((order) => (
-                  <tr
-                    key={order.orderId}
-                    onClick={() => openDetail(order)}
-                    className="cursor-pointer border-t border-slate-100 text-slate-600 transition hover:bg-blue-50/50"
-                  >
-                    <td className="whitespace-nowrap px-3 py-3 font-semibold text-blue-600">
-                      {order.orderNumber}
-                    </td>
+        {!loading &&
+          !error &&
+          orders.map((order) => (
+            <tr
+              key={order.orderId}
+              onClick={() => openDetail(order)}
+              className="cursor-pointer border-t border-slate-100 text-slate-600 transition hover:bg-blue-50/50"
+            >
+              <td className="whitespace-nowrap px-3 py-3 font-semibold text-blue-600">
+                {order.orderNo || order.orderNumber || "-"}
+              </td>
 
-                    <td className="whitespace-nowrap px-3 py-3">
-                      {order.requestNumber}
-                    </td>
+              <td className="whitespace-nowrap px-3 py-3">
+                {order.requestNo || order.requestNumber || "-"}
+              </td>
 
-                    <td className="whitespace-nowrap px-3 py-3 font-medium text-slate-700">
-                      {order.supplierName}
-                    </td>
+              <td className="whitespace-nowrap px-3 py-3 font-medium text-slate-700">
+                {order.supplierName || "-"}
+              </td>
 
-                    <td className="whitespace-nowrap px-3 py-3">
-                      {order.orderManager}
-                    </td>
+              <td className="whitespace-nowrap px-3 py-3">
+                {order.orderManager || order.userName || "-"}
+              </td>
 
-                    <td className="whitespace-nowrap px-3 py-3">
-                      {order.orderedAt}
-                    </td>
+              <td className="whitespace-nowrap px-3 py-3">
+                {order.createdAt ? order.createdAt.substring(0, 10) : "-"}
+              </td>
 
-                    <td className="whitespace-nowrap px-3 py-3">
-                      {order.expectedInboundFrom} ~ {order.expectedInboundTo}
-                    </td>
+              <td className="whitespace-nowrap px-3 py-3">
+                {order.expectedInboundFrom || "-"} ~ {order.expectedInboundTo || "-"}
+              </td>
 
-                    <td className="whitespace-nowrap px-3 py-3 text-right">
-                      {order.itemCount}건
-                    </td>
+              <td className="whitespace-nowrap px-3 py-3 text-right">
+                {order.itemCount || (order.items ? order.items.length : 0)}건
+              </td>
 
-                    <td className="whitespace-nowrap px-3 py-3 text-right font-semibold text-slate-800">
-                      {formatWon(order.totalAmount)}
-                    </td>
+              <td className="whitespace-nowrap px-3 py-3 text-right font-semibold text-slate-800">
+                {formatWon(order.totalAmount || 0)}
+              </td>
 
-                    <td className="whitespace-nowrap px-3 py-3">
-                      <StatusBadge status={order.status} />
-                    </td>
-                  </tr>
-                ))}
+              <td className="whitespace-nowrap px-3 py-3">
+                <StatusBadge status={order.orderStatus || order.status} />
+              </td>
+            </tr>
+          ))}
             </tbody>
           </table>
         </div>

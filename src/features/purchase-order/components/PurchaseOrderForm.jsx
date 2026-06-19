@@ -78,7 +78,11 @@ export default function PurchaseOrderForm({
           <div className="space-y-3">
             <label className="block">
               <FieldLabel>발주 번호</FieldLabel>
-              <input value={form.orderNo || ""} disabled className={INPUT_CLASS_NAME} />
+              <input 
+                  placeholder="[저장 시 시스템에서 자동 번호 부여]" 
+                  disabled 
+                  className="h-10 w-full rounded-md border border-slate-200 bg-slate-50 px-3 text-[13px] text-blue-500 font-semibold outline-none cursor-not-allowed placeholder:text-blue-500/70" 
+                />
             </label>
 
             <label className="block">
@@ -99,13 +103,39 @@ export default function PurchaseOrderForm({
 
             <label className="block">
               <FieldLabel required>공급업체</FieldLabel>
-              <select value={form.supplierCode || ""} onChange={(event) => onChangeSupplier(event.target.value)} disabled={!editableCoreFields} className={INPUT_CLASS_NAME}>
+              <select 
+                value={form.supplierId || ""} 
+                onChange={(event) => onChangeSupplier(event.target.value)} 
+                disabled={!editableCoreFields} 
+                className={INPUT_CLASS_NAME}
+              >
                 <option value="">공급업체 선택</option>
-                {options.suppliers.map((supplier, index) => (
-                  <option key={supplier.supplierCode || index} value={supplier.supplierCode}>{supplier.supplierName}</option>
-                ))}
+                {options.suppliers?.map((supplier, index) => {
+                  if (typeof supplier === "string") {
+                    return (
+                      <option key={`supplier-opt-${index}`} value={supplier}>
+                        {supplier}
+                      </option>
+                    );
+                  }
+                  const sId = supplier.supplierId || supplier.id || index;
+
+                  const sName = 
+                  supplier.supplierName || 
+                  supplier.suppliername || 
+                  supplier.name || 
+                  supplier.nameKo || 
+                  supplier.supplierCode || 
+                  `공급업체(${sId})`;
+                  
+                  return (
+                    <option key={`supplier-opt-${sId}`} value={sId}>
+                      {sName}
+                    </option>
+                  )
+                })}
               </select>
-              <FieldError message={errors.supplierCode} />
+              <FieldError message={errors.supplierName || errors.supplierCode} />
             </label>
 
             <label className="block">
