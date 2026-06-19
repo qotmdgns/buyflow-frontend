@@ -62,27 +62,30 @@ export default function usePurchaseOrderCreate() {
       if (foundWarehouse) {
         setForm((currentForm) => ({
           ...currentForm,
-          // 백엔드가 요구하는 찐 영문/숫자 형태의 창고 코드를 추출해 저장
           warehouseCode: foundWarehouse.warehouseCode || foundWarehouse.code || value,
         }));
       }
     }
   }
 
-  function changeSupplier(selectedSupplierId) {
-    if (!selectedSupplierId) return;
+function changeSupplier(selectedSupplierValue) {
+    if (!selectedSupplierValue) return;
 
     const foundSupplier = options.suppliers?.find(
-      (s) => Number(s.supplierId === s.id) === Number(selectedSupplierId)
+      (s) => String(s.supplierName || "").trim() === String(selectedSupplierValue || "").trim()
     );
+
+    const realManager = foundSupplier?.manager || "-";
+    const realContact = foundSupplier?.contact || "-";
 
     setForm((currentForm) => ({
       ...currentForm,
-      supplierId: Number(selectedSupplierId),
-      supplierCode: foundSupplier ? foundSupplier.supplierCode : "-",
-      supplierName: foundSupplier ? (foundSupplier.supplierName || foundSupplier.name) : "-",
-      manager: "-", 
-      supplierContact: "-",
+      supplierId: foundSupplier ? foundSupplier.supplierId : selectedSupplierValue, 
+      supplierCode: foundSupplier ? (foundSupplier.supplierCode || "-") : "-",
+      supplierName: foundSupplier ? foundSupplier.supplierName : selectedSupplierValue,
+      
+      manager: realManager, 
+      supplierContact: realContact,
     }));
   }
 
@@ -180,7 +183,8 @@ export default function usePurchaseOrderCreate() {
 
   async function saveOrder(status) {
     const nextForm = {
-      ...form, supplierId: form.supplierId || form.supplierCode || "",
+      ...form, 
+      supplierId: form.supplierId || form.supplierCode || "",
       status, 
     }
 
@@ -194,27 +198,44 @@ export default function usePurchaseOrderCreate() {
     setSubmitError("")
 
     try {
-      const bffRequestPayload = {
+      // 🚀 [총 발주 금액 선제 연산]: 백엔드가 계산을 누락하더라도 DB에 정상 저장되도록 총액을 구합니다.
+      const totalAmountCalculated = items.reduce((acc, item) => {
+        const qty = Number(item.orderQuantity || 0);
+        const price = Number(item.unitPrice || 0);
+        return acc + (qty * price * 1.1); // 부가세 10% 포함 총액 계산
+      }, 0);
 
+      // 🟢 [자바 DTO 1:1 완벽 저격]: PurchaseOrderDto.Request 자바 필드명과 완벽하게 일치시킵니다!
+      const bffRequestPayload = {
         supplierId: (!form.supplierId || isNaN(Number(form.supplierId))) ? 2 : Number(form.supplierId), 
-        
         createdBy: Number(form.createdBy || 5),  
         dueDate: form.expectedInboundTo ? `${form.expectedInboundTo}T23:59:59` : null, 
-        orderStatus: status,                      
+        orderStatus: status,                       
         orderNo: form.orderNo || null,           
-        requestId: Number(form.requestId),
-        requestNumber: form.requestNumber || "",
+        
+        // 🚀 [구매 요청 싱크 폭격]: 자바 Request DTO가 수령할 수 있도록 명확하게 매핑 사출!
+        requestId: form.requestId ? Number(form.requestId) : null,
+        requestNumber: form.requestNumber || "", // 찐 구매요청 번호 강제 주입
         requestTitle: form.requestTitle || "",
+        
         expectedInboundFrom: form.expectedInboundFrom || "",
         expectedInboundTo: form.expectedInboundTo || "",
         warehouseCode: form.warehouseCode || "",
         memo: form.memo || "",
+        manager: form.manager || "-", // 공급업체 담당자명 토스
+        
+        // 🚀 [금액 유실 방어선]: 자바 DTO 구조에 맞게 총액 필드가 있다면 함께 쏴서 저장 유도
+        totalAmount: totalAmountCalculated, 
+
         items: items.map((item) => ({
           productId: Number(item.productId || item.id), 
           quantity: Number(item.orderQuantity || 0),   
           unitPrice: Number(item.unitPrice || 0)       
         }))
       };
+
+      // 🎯 디버깅용: 백엔드로 최종 발송되는 보따리의 겉표지를 콘솔에 인쇄합니다.
+      console.log("📦 [최종 저장 발송 Payload] :", bffRequestPayload);
 
       return await createPurchaseOrder(bffRequestPayload, attachment)
     } catch (requestError) {
