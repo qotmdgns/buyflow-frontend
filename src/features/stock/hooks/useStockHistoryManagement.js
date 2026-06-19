@@ -1,10 +1,12 @@
 "use client"
 
 import { useEffect, useState } from "react"
+
 import {
   fetchStockFilterOptions,
   fetchStockHistories,
 } from "@/features/stock/api/stockApi"
+
 import {
   DEFAULT_HISTORY_FILTERS,
   DEFAULT_STOCK_FILTER_OPTIONS,
@@ -27,9 +29,8 @@ export default function useStockHistoryManagement(initialFilters = {}) {
     createInitialFilters(initialFilters),
   )
 
-  const [filterOptions, setFilterOptions] = useState(
-    DEFAULT_STOCK_FILTER_OPTIONS,
-  )
+const [filterOptions, setFilterOptions] =
+  useState(DEFAULT_STOCK_FILTER_OPTIONS)
 
   const [histories, setHistories] = useState([])
   const [pagination, setPagination] = useState(DEFAULT_PAGINATION)
@@ -41,17 +42,19 @@ export default function useStockHistoryManagement(initialFilters = {}) {
   useEffect(() => {
     let ignore = false
 
-    fetchStockFilterOptions()
-      .then((data) => {
-        if (!ignore) {
-          setFilterOptions(data)
-        }
-      })
-      .catch(() => {
-        if (!ignore) {
-          setFilterOptions(DEFAULT_STOCK_FILTER_OPTIONS)
-        }
-      })
+   fetchStockFilterOptions()
+  .then((data) => {
+    console.log("filter-options", data)
+
+    if (!ignore) {
+      setFilterOptions(data)
+    }
+  })
+.catch(() => {
+  if (!ignore) {
+    setFilterOptions(DEFAULT_STOCK_FILTER_OPTIONS)
+  }
+})
 
     return () => {
       ignore = true
