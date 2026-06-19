@@ -11,10 +11,15 @@ function FieldLabel({ children }) {
   )
 }
 
-function SelectField({ value, options, onChange }) {
+function SelectField({ value, options = [], onChange }) {
+  const safeOptions =
+    Array.isArray(options) && options.length > 0
+      ? options
+      : [value].filter(Boolean)
+
   return (
     <select value={value} onChange={onChange} className={INPUT_CLASS_NAME}>
-      {options.map((option) => (
+      {safeOptions.map((option) => (
         <option key={option} value={option}>
           {option}
         </option>

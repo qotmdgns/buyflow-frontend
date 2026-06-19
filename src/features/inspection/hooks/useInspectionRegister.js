@@ -7,12 +7,12 @@ import {
   submitInspectionResult,
 } from "@/features/inspection/api/inspectionApi"
 
-function createInitialForm(inspection) {
-  return {
-    inspectorName: "김철수 대리",
+import { useAuth } from "@/features/auth/context/AuthContext"
 
-    // 검수 일시는 프론트에서 만들지 않습니다.
-    // 저장 시 백엔드에서 서버 시간으로 기록합니다.
+function createInitialForm(inspection, inspectorName = "") {
+  return {
+    inspectorName: inspectorName || "검수 담당자",
+
     inspectedAt: inspection.inspectionResult?.inspectedAt ?? "",
 
     note: "",
@@ -66,17 +66,30 @@ function validateInspectionForm(form) {
   return ""
 }
 
+function getCurrentInspectorId(user) {
+  const rawUserId = user?.dbUserId ?? user?.userId ?? user?.id
+
+  const inspectorId = Number(rawUserId)
+
+  if (!Number.isFinite(inspectorId) || inspectorId <= 0) {
+    return null
+  }
+
+  return inspectorId
+}
+
+function getCurrentInspectorName(user) {
+  return user?.userName ?? user?.name ?? user?.username ?? ""
+}
+
 export default function useInspectionRegister(inspectionId) {
+  const { user, isAuthReady } = useAuth()
+
   const [inspection, setInspection] = useState(null)
-
   const [form, setForm] = useState(null)
-
   const [loading, setLoading] = useState(true)
-
   const [submitting, setSubmitting] = useState(false)
-
   const [error, setError] = useState("")
-
   const [actionError, setActionError] = useState("")
 
   useEffect(() => {
@@ -92,7 +105,9 @@ export default function useInspectionRegister(inspectionId) {
         if (!ignore) {
           setInspection(nextInspection)
 
-          setForm(createInitialForm(nextInspection))
+          setForm(
+            createInitialForm(nextInspection, getCurrentInspectorName(user)),
+          )
         }
       } catch (requestError) {
         if (!ignore) {
@@ -115,7 +130,7 @@ export default function useInspectionRegister(inspectionId) {
     return () => {
       ignore = true
     }
-  }, [inspectionId])
+  }, [inspectionId, isAuthReady, user])
 
   const totals = useMemo(() => {
     const items = form?.items ?? []
@@ -176,8 +191,17 @@ export default function useInspectionRegister(inspectionId) {
     setActionError("")
 
     try {
+      const inspectorId = getCurrentInspectorId(user)
+
+      if (!inspectorId) {
+        setActionError(
+          "로그인 사용자 정보를 확인할 수 없습니다. 다시 로그인 후 시도해 주세요.",
+        )
+        return null
+      }
+
       return await submitInspectionResult(inspectionId, {
-        inspectorId: 1,
+        inspectorId,
 
         inspectorName: form.inspectorName.trim(),
 

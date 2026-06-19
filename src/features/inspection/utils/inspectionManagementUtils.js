@@ -77,6 +77,16 @@ export function getInspectionStatusMeta(status) {
       label: "불합격",
       badgeClassName: "border-rose-200 bg-rose-50 text-rose-500",
     },
+
+    PASS: {
+      label: "검수 완료",
+      badgeClassName: "border-emerald-200 bg-emerald-50 text-emerald-600",
+    },
+
+    DEFECT: {
+      label: "불량 발생",
+      badgeClassName: "border-rose-200 bg-rose-50 text-rose-500",
+    },
   }
 
   return (
