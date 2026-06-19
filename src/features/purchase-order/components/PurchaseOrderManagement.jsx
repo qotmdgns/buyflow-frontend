@@ -78,6 +78,14 @@ export default function PurchaseOrderManagement() {
     confirmCancel,
   } = usePurchaseOrderManagement()
 
+  console.log("=========================================");
+  console.log("🔥 [최종 화면단] orders 주머니 속살 전체 확인 :", orders);
+  if (orders && orders.length > 0) {
+    console.log("📌 [최종 화면단] 1번째 행 데이터의 변수명 철자들 :", Object.keys(orders[0]));
+    console.log("📌 [최종 화면단] 1번째 행의 실제 값 :", orders[0]);
+  }
+  console.log("=========================================");
+
   function moveToEdit(order) {
     closeDetail()
 
@@ -264,51 +272,64 @@ export default function PurchaseOrderManagement() {
                 </TableMessage>
               )}
 
-        {!loading &&
-          !error &&
-          orders.map((order) => (
-            <tr
-              key={order.orderId}
-              onClick={() => openDetail(order)}
-              className="cursor-pointer border-t border-slate-100 text-slate-600 transition hover:bg-blue-50/50"
-            >
-              <td className="whitespace-nowrap px-3 py-3 font-semibold text-blue-600">
-                {order.orderNo || order.orderNumber || "-"}
-              </td>
+              {!loading &&
+                !error &&
+                orders.map((order) => {
+                  const computedTotalAmount = order.items?.reduce((acc, item) => {
+                    const qty = Number(item.quantity || 0);
+                    const price = Number(item.unitPrice || 0);
+                    return acc + (qty * price);
+                  }, 0) || 0;
 
-              <td className="whitespace-nowrap px-3 py-3">
-                {order.requestNo || order.requestNumber || "-"}
-              </td>
+                  const finalAmountWithVat = computedTotalAmount > 0 ? computedTotalAmount + Math.floor(computedTotalAmount * 0.1) : 0;
 
-              <td className="whitespace-nowrap px-3 py-3 font-medium text-slate-700">
-                {order.supplierName || "-"}
-              </td>
+                  return (
+                    <tr
+                      key={order.orderId}
+                      onClick={() => openDetail(order)}
+                      className="cursor-pointer border-t border-slate-100 text-slate-600 transition hover:bg-blue-50/50"
+                    >
+                      <td className="whitespace-nowrap px-3 py-3 font-semibold text-blue-600">
+                        {order.orderNumber || "-"}
+                      </td>
 
-              <td className="whitespace-nowrap px-3 py-3">
-                {order.orderManager || order.userName || "-"}
-              </td>
+                      {/* 🚀 [구매 요청 번호 최종 교정]: 오라클 객체 밸브 연동선 정방향 매핑 */}
+                      <td className="whitespace-nowrap px-3 py-3">
+                        {order.requestNumber && order.requestNumber !== "-"
+                          ? order.requestNumber 
+                          : (order.purchaseRequest?.requestNo || order.purchaseRequest?.requestNumber || "-")}
+                      </td>
 
-              <td className="whitespace-nowrap px-3 py-3">
-                {order.createdAt ? order.createdAt.substring(0, 10) : "-"}
-              </td>
+                      <td className="whitespace-nowrap px-3 py-3 font-medium text-slate-700">
+                        {order.supplierName || "-"}
+                      </td>
 
-              <td className="whitespace-nowrap px-3 py-3">
-                {order.expectedInboundFrom || "-"} ~ {order.expectedInboundTo || "-"}
-              </td>
+                      <td className="whitespace-nowrap px-3 py-3">
+                        {order.orderManager || order.userName || "-"}
+                      </td>
 
-              <td className="whitespace-nowrap px-3 py-3 text-right">
-                {order.itemCount || (order.items ? order.items.length : 0)}건
-              </td>
+                      <td className="whitespace-nowrap px-3 py-3">
+                        {order.orderedAt ? String(order.orderedAt).substring(0, 10) : "-"}
+                      </td>
 
-              <td className="whitespace-nowrap px-3 py-3 text-right font-semibold text-slate-800">
-                {formatWon(order.totalAmount || 0)}
-              </td>
+                      <td className="whitespace-nowrap px-3 py-3">
+                        {order.expectedInboundFrom || "-"} ~ {order.expectedInboundTo || "-"}
+                      </td>
 
-              <td className="whitespace-nowrap px-3 py-3">
-                <StatusBadge status={order.orderStatus || order.status} />
-              </td>
-            </tr>
-          ))}
+                      <td className="whitespace-nowrap px-3 py-3 text-right">
+                        {order.itemCount || (order.items ? order.items.length : 0)}건
+                      </td>
+
+                      <td className="whitespace-nowrap px-3 py-3 text-right font-semibold text-slate-800">
+                        {finalAmountWithVat > 0 ? formatWon(finalAmountWithVat) : "0원"}
+                      </td>
+
+                      <td className="whitespace-nowrap px-3 py-3">
+                        <StatusBadge status={order.status || order.orderStatus} />
+                      </td>
+                    </tr>
+                  );
+                })}
             </tbody>
           </table>
         </div>
