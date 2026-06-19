@@ -196,18 +196,19 @@ export async function fetchStockFilterOptions() {
     return stockFilterOptions
   }
 
-  const response = await fetch(
-    `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/inventories/filter-options`,
-    { cache: "no-store" },
-  )
+const response = await fetch(
+  `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/inventories/filter-options`,
+  {
+    cache: "no-store",
+  },
+)
 
   if (!response.ok) {
-    throw new Error("재고 검색 조건을 불러오지 못했습니다.")
+    throw new Error("재고 이력 필터 옵션을 불러오지 못했습니다.")
   }
 
   return response.json()
 }
-
 export async function fetchInventories(params = {}) {
   if (USE_MOCK) {
     await wait(150)
@@ -216,6 +217,8 @@ export async function fetchInventories(params = {}) {
   }
 
   const query = buildQuery(params)
+  
+  console.log("inventory-query", query.toString())
 
   const response = await fetch(
     `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/inventories?${query.toString()}`,

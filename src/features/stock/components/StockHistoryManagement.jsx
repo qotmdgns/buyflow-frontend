@@ -21,20 +21,33 @@ function FieldLabel({ children }) {
   )
 }
 
-function SelectField({ value, options, onChange }) {
+function SelectField({
+  value,
+  options = [],
+  onChange,
+}) {
   return (
     <select
       value={value}
       onChange={onChange}
       className={`${INPUT_CLASS_NAME} bg-white text-slate-600`}
     >
-      {options.map((option) => {
-        const value = typeof option === "string" ? option : option.value
+      {(options ?? []).map((option) => {
+        const optionValue =
+          typeof option === "string"
+            ? option
+            : option?.value ?? ""
 
-        const label = typeof option === "string" ? option : option.label
+        const label =
+          typeof option === "string"
+            ? option
+            : option?.label ?? optionValue
 
         return (
-          <option key={value} value={value}>
+          <option
+            key={optionValue}
+            value={optionValue}
+          >
             {label}
           </option>
         )
@@ -243,64 +256,66 @@ export default function StockHistoryManagement({ initialFilters }) {
                 </tr>
               )}
 
-              {!loading &&
-                !error &&
-                histories.map((history) => (
-                  <tr
-                    key={history.historyid}
-                    className="border-t border-slate-100 text-slate-600"
-                  >
-                    <td className="whitespace-nowrap px-3 py-3">
-                      {history.createdAt}
-                    </td>
+{!loading &&
+  !error &&
+  histories.map((history) => (
+    <tr
+      key={history.id}
+      className="border-t border-slate-100 text-slate-600"
+    >
+      <td className="whitespace-nowrap px-3 py-3">
+        {history.occurredAt}
+      </td>
 
-                    <td className="whitespace-nowrap px-3 py-3">
-                      <span>{history.historyType}</span>
-                    </td>
+      <td className="whitespace-nowrap px-3 py-3">
+        <MovementBadge type={history.movementType} />
+      </td>
 
-                    <td className="px-3 py-3">
-                      <p className="font-semibold text-slate-800">
-                        
-                      </p>
+      <td className="px-3 py-3">
+        <p className="font-semibold text-slate-800">
+          {history.itemName}
+        </p>
 
-                      <p className="mt-0.5 text-[12px] text-slate-400">
-                        
-                      </p>
-                    </td>
+        <p className="mt-0.5 text-[12px] text-slate-400">
+          {history.itemCode}
+        </p>
+      </td>
 
-                    <td className="whitespace-nowrap px-3 py-3">
-                      
-                    </td>
+      <td className="whitespace-nowrap px-3 py-3">
+        {history.warehouseName}
+      </td>
 
-                    <td
-                      className={`px-3 py-3 font-bold ${
-                        history.changeQty > 0
-                          ? "text-emerald-600"
-                          : "text-rose-500"
-                      }`}
-                    >
-                      {formatSignedQuantity(history.changeQty)}
-                    </td>
+      <td
+        className={`px-3 py-3 font-bold ${
+          history.quantity > 0
+            ? "text-emerald-600"
+            : "text-rose-500"
+        }`}
+      >
+        {formatSignedQuantity(history.quantity)}
+      </td>
 
-                    <td className="px-3 py-3">
-                      {formatNumber(history.beforeQty)}
-                    </td>
+      <td className="px-3 py-3">
+        {formatNumber(history.beforeStock)}
+      </td>
 
-                    <td className="px-3 py-3 font-semibold text-slate-800">
-                      {formatNumber(history.afterQty)}
-                    </td>
+      <td className="px-3 py-3 font-semibold text-slate-800">
+        {formatNumber(history.afterStock)}
+      </td>
 
-                    <td className="whitespace-nowrap px-3 py-3 text-slate-400">
-                      {history.referenceNumber}
-                    </td>
+      <td className="whitespace-nowrap px-3 py-3 text-slate-400">
+        {history.referenceNumber}
+      </td>
 
-                    <td className="min-w-56 px-3 py-3">{history.reason}</td>
+      <td className="min-w-56 px-3 py-3">
+        {history.reason}
+      </td>
 
-                    <td className="whitespace-nowrap px-3 py-3">
-                      {history.createdBy}
-                    </td>
-                  </tr>
-                ))}
+      <td className="whitespace-nowrap px-3 py-3">
+        {history.processedBy}
+      </td>
+    </tr>
+  ))}
             </tbody>
           </table>
         </div>

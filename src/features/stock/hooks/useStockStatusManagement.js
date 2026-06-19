@@ -45,12 +45,14 @@ export default function useStockStatusManagement() {
   useEffect(() => {
     let ignore = false
 
-    fetchStockFilterOptions()
-      .then((data) => {
-        if (!ignore) {
-          setFilterOptions(data)
-        }
-      })
+fetchStockFilterOptions()
+  .then((data) => {
+    console.log("inventory-filter-options", data)
+
+    if (!ignore) {
+      setFilterOptions(data)
+    }
+  })
       .catch(() => {
         if (!ignore) {
           setFilterOptions(DEFAULT_STOCK_FILTER_OPTIONS)

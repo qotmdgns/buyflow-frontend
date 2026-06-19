@@ -51,6 +51,60 @@ function TableMessage({ children, isError = false }) {
   )
 }
 
+function formatDate(value) {
+  if (!value) return "-"
+  return String(value).substring(0, 10)
+}
+
+function getRequestNumber(order) {
+  return (
+    order.requestNo ||
+    order.requestNumber ||
+    order.purchaseRequest?.requestNo ||
+    order.purchaseRequest?.requestNumber ||
+    "-"
+  )
+}
+
+function getExpectedReceiptText(order) {
+  const from = order.expectedReceiptFrom || order.expectedInboundFrom || "-"
+  const to = order.expectedReceiptTo || order.expectedInboundTo || "-"
+
+  return `${from} ~ ${to}`
+}
+
+function getItemCount(order) {
+  if (order.itemCount !== undefined && order.itemCount !== null) {
+    return order.itemCount
+  }
+
+  return order.items?.length ?? 0
+}
+
+function getOrderTotalAmount(order) {
+  const directTotal = Number(order.totalAmount ?? order.totalPrice ?? 0)
+
+  if (Number.isFinite(directTotal) && directTotal > 0) {
+    return directTotal
+  }
+
+  const supplyAmount =
+    order.items?.reduce((acc, item) => {
+      const quantity = Number(
+        item.orderQuantity ?? item.quantity ?? item.requestedQuantity ?? 0,
+      )
+      const unitPrice = Number(item.unitPrice ?? item.price ?? 0)
+
+      return acc + quantity * unitPrice
+    }, 0) ?? 0
+
+  if (!Number.isFinite(supplyAmount) || supplyAmount <= 0) {
+    return 0
+  }
+
+  return supplyAmount + Math.floor(supplyAmount * 0.1)
+}
+
 export default function PurchaseOrderManagement() {
   const router = useRouter()
 
@@ -70,7 +124,6 @@ export default function PurchaseOrderManagement() {
     searchOrders,
     resetFilters,
     movePage,
-    changePageSize,
     openDetail,
     closeDetail,
     openCancel,
@@ -80,7 +133,6 @@ export default function PurchaseOrderManagement() {
 
   function moveToEdit(order) {
     closeDetail()
-
     router.push(`/purchase-orders/${order.orderId}/edit`)
   }
 
@@ -141,7 +193,7 @@ export default function PurchaseOrderManagement() {
               }
               className={INPUT_CLASS_NAME}
             >
-              {filterOptions.suppliers.map((supplier) => (
+              {(filterOptions?.suppliers ?? []).map((supplier) => (
                 <option key={supplier} value={supplier}>
                   {supplier}
                 </option>
@@ -174,7 +226,7 @@ export default function PurchaseOrderManagement() {
               onChange={(event) => updateFilter("status", event.target.value)}
               className={INPUT_CLASS_NAME}
             >
-              {filterOptions?.statuses.map((status) => (
+              {(filterOptions?.statuses ?? []).map((status) => (
                 <option key={status} value={status}>
                   {status === "전체"
                     ? status
@@ -277,7 +329,7 @@ export default function PurchaseOrderManagement() {
                     </td>
 
                     <td className="whitespace-nowrap px-3 py-3">
-                      {order.requestNo || order.requestNumber || "-"}
+                      {getRequestNumber(order)}
                     </td>
 
                     <td className="whitespace-nowrap px-3 py-3 font-medium text-slate-700">
@@ -289,22 +341,19 @@ export default function PurchaseOrderManagement() {
                     </td>
 
                     <td className="whitespace-nowrap px-3 py-3">
-                      {order.createdAt ? order.createdAt.substring(0, 10) : "-"}
+                      {formatDate(order.orderedAt || order.createdAt)}
                     </td>
 
                     <td className="whitespace-nowrap px-3 py-3">
-                      {order.expectedReceiptFrom || "-"} ~{" "}
-                      {order.expectedReceiptTo || "-"}
+                      {getExpectedReceiptText(order)}
                     </td>
 
                     <td className="whitespace-nowrap px-3 py-3 text-right">
-                      {order.itemCount ||
-                        (order.items ? order.items.length : 0)}
-                      건
+                      {getItemCount(order)}건
                     </td>
 
                     <td className="whitespace-nowrap px-3 py-3 text-right font-semibold text-slate-800">
-                      {formatWon(order.totalAmount || 0)}
+                      {formatWon(getOrderTotalAmount(order))}
                     </td>
 
                     <td className="whitespace-nowrap px-3 py-3">
@@ -358,7 +407,7 @@ export default function PurchaseOrderManagement() {
 
       {cancelTarget && (
         <PurchaseOrderCancelModal
-          key={cancelTarget.id}
+          key={cancelTarget.id || cancelTarget.orderId}
           order={cancelTarget}
           submitting={canceling}
           error={cancelError}

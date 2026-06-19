@@ -27,12 +27,47 @@ function FieldError({ message }) {
 
 function StatusBadge({ status }) {
   const meta = getPurchaseOrderStatusMeta(status)
+
   return (
     <span
       className={`inline-flex rounded-full border px-2.5 py-1 text-[12px] font-semibold ${meta.badgeClassName}`}
     >
       {meta.label}
     </span>
+  )
+}
+
+function getSupplierValue(supplier, index) {
+  if (typeof supplier === "string") {
+    return supplier
+  }
+
+  return String(
+    supplier.supplierId ??
+      supplier.id ??
+      supplier.supplierCode ??
+      supplier.supplierName ??
+      supplier.suppliername ??
+      supplier.name ??
+      supplier.nameKo ??
+      index,
+  )
+}
+
+function getSupplierName(supplier, index) {
+  if (typeof supplier === "string") {
+    return supplier
+  }
+
+  const supplierId = supplier.supplierId ?? supplier.id ?? index
+
+  return (
+    supplier.supplierName ||
+    supplier.suppliername ||
+    supplier.name ||
+    supplier.nameKo ||
+    supplier.supplierCode ||
+    `공급업체(${supplierId})`
   )
 }
 
@@ -52,6 +87,7 @@ export default function PurchaseOrderForm({
   draftSelectedItemIds = new Set(),
   availableRequestItems = [],
   onChange,
+  changeSupplier,
   onChangeSupplier,
   onApplyPurchaseRequest,
   onChangeItemValue,
@@ -66,12 +102,41 @@ export default function PurchaseOrderForm({
 }) {
   const isEditMode = mode === "edit"
 
+  const approvedPurchaseRequests = options?.approvedPurchaseRequests ?? []
+  const suppliers = options?.suppliers ?? []
+  const warehouses = options?.warehouses ?? []
+
+  const selectedSupplierValue =
+    form.supplierId !== undefined &&
+    form.supplierId !== null &&
+    form.supplierId !== ""
+      ? String(form.supplierId)
+      : form.supplierCode || form.supplierName || ""
+
+  const safeSummary = summary ?? {
+    supplyAmount: 0,
+    vatAmount: 0,
+    totalAmount: 0,
+  }
+
+  const handleChangeSupplier = (value) => {
+    if (typeof changeSupplier === "function") {
+      changeSupplier(value)
+      return
+    }
+
+    if (typeof onChangeSupplier === "function") {
+      onChangeSupplier(value)
+    }
+  }
+
   return (
     <div className="w-full">
       <header className="mb-3 flex flex-wrap items-center justify-between gap-3">
         <h1 className="text-[22px] font-bold text-slate-900">
           {isEditMode ? "발주 수정" : "발주 등록"}
         </h1>
+
         <div className="flex gap-2">
           <button
             type="button"
@@ -80,6 +145,7 @@ export default function PurchaseOrderForm({
           >
             취소
           </button>
+
           {editable && (
             <button
               type="button"
@@ -91,6 +157,7 @@ export default function PurchaseOrderForm({
               저장
             </button>
           )}
+
           {editableCoreFields && (
             <button
               type="button"
@@ -123,6 +190,7 @@ export default function PurchaseOrderForm({
             발주 기본정보
           </h2>
         </div>
+
         <div className="grid gap-x-8 gap-y-3 p-4 lg:grid-cols-2">
           <div className="space-y-3">
             <label className="block">
@@ -130,7 +198,7 @@ export default function PurchaseOrderForm({
               <input
                 placeholder="[저장 시 시스템에서 자동 번호 부여]"
                 disabled
-                className="h-10 w-full rounded-md border border-slate-200 bg-slate-50 px-3 text-[13px] text-blue-500 font-semibold outline-none cursor-not-allowed placeholder:text-blue-500/70"
+                className="h-10 w-full cursor-not-allowed rounded-md border border-slate-200 bg-slate-50 px-3 text-[13px] font-semibold text-blue-500 outline-none placeholder:text-blue-500/70"
               />
             </label>
 
@@ -143,7 +211,7 @@ export default function PurchaseOrderForm({
                 className={INPUT_CLASS_NAME}
               >
                 <option value="">승인 완료 구매 요청 선택</option>
-                {options.approvedPurchaseRequests.map((request, index) => (
+                {approvedPurchaseRequests.map((request, index) => (
                   <option key={request.id || index} value={request.id}>
                     {request.requestNumber} / {request.title}
                   </option>
@@ -164,39 +232,32 @@ export default function PurchaseOrderForm({
             <label className="block">
               <FieldLabel required>공급업체</FieldLabel>
               <select
-                value={form.supplierId || ""}
-                onChange={(event) => onChangeSupplier(event.target.value)}
+                value={selectedSupplierValue}
+                onChange={(event) => handleChangeSupplier(event.target.value)}
                 disabled={!editableCoreFields}
                 className={INPUT_CLASS_NAME}
               >
                 <option value="">공급업체 선택</option>
-                {options.suppliers?.map((supplier, index) => {
-                  if (typeof supplier === "string") {
-                    return (
-                      <option key={`supplier-opt-${index}`} value={supplier}>
-                        {supplier}
-                      </option>
-                    )
-                  }
-                  const sId = supplier.supplierId || supplier.id || index
-
-                  const sName =
-                    supplier.supplierName ||
-                    supplier.suppliername ||
-                    supplier.name ||
-                    supplier.nameKo ||
-                    supplier.supplierCode ||
-                    `공급업체(${sId})`
+                {suppliers.map((supplier, index) => {
+                  const supplierValue = getSupplierValue(supplier, index)
+                  const supplierName = getSupplierName(supplier, index)
 
                   return (
-                    <option key={`supplier-opt-${sId}`} value={sId}>
-                      {sName}
+                    <option
+                      key={`supplier-opt-${supplierValue}-${index}`}
+                      value={supplierValue}
+                    >
+                      {supplierName}
                     </option>
                   )
                 })}
               </select>
               <FieldError
-                message={errors.supplierName || errors.supplierCode}
+                message={
+                  errors.supplierId ||
+                  errors.supplierName ||
+                  errors.supplierCode
+                }
               />
             </label>
 
@@ -224,6 +285,7 @@ export default function PurchaseOrderForm({
               <FieldLabel>발주 상태</FieldLabel>
               <StatusBadge status={form.status} />
             </div>
+
             <label className="block">
               <FieldLabel required>발주 담당자</FieldLabel>
               <input
@@ -284,7 +346,7 @@ export default function PurchaseOrderForm({
                 className={INPUT_CLASS_NAME}
               >
                 <option value="">입고 창고 선택</option>
-                {options.warehouses.map((warehouse, index) => (
+                {warehouses.map((warehouse, index) => (
                   <option
                     key={warehouse.warehouseCode || index}
                     value={warehouse.warehouseCode}
@@ -330,6 +392,7 @@ export default function PurchaseOrderForm({
             <h2 className="text-[15px] font-bold text-slate-800">발주 품목</h2>
             <FieldError message={errors.items} />
           </div>
+
           {typeof openItemModal === "function" && editableCoreFields && (
             <button
               type="button"
@@ -370,23 +433,29 @@ export default function PurchaseOrderForm({
                 ))}
               </tr>
             </thead>
+
             <tbody>
               {items.map((item, index) => {
                 const line = calculatePurchaseOrderLine(item)
+
                 return (
                   <tr
                     key={item.requestItemId || index}
                     className="border-t border-slate-100 text-slate-600"
                   >
                     <td className="px-3 py-2.5 text-center">{index + 1}</td>
+
                     <td className="px-3 py-2.5 font-semibold text-blue-600">
                       {item.itemCode}
                     </td>
+
                     <td className="px-3 py-2.5">{item.itemName}</td>
                     <td className="px-3 py-2.5">{item.specification}</td>
+
                     <td className="px-3 py-2.5 text-right">
                       {item.requestedQuantity}
                     </td>
+
                     <td className="px-3 py-2.5">
                       <input
                         type="number"
@@ -403,7 +472,9 @@ export default function PurchaseOrderForm({
                         className="h-9 w-20 rounded-md border border-slate-200 px-2 text-right disabled:bg-slate-50"
                       />
                     </td>
+
                     <td className="px-3 py-2.5">{item.unit}</td>
+
                     <td className="px-3 py-2.5">
                       <input
                         type="number"
@@ -420,15 +491,19 @@ export default function PurchaseOrderForm({
                         className="h-9 w-28 rounded-md border border-slate-200 px-2 text-right disabled:bg-slate-50"
                       />
                     </td>
+
                     <td className="px-3 py-2.5 text-right">
                       {formatWon(line.supplyAmount)}
                     </td>
+
                     <td className="px-3 py-2.5 text-right">
                       {formatWon(line.vatAmount)}
                     </td>
+
                     <td className="px-3 py-2.5 text-right font-semibold">
                       {formatWon(line.totalAmount)}
                     </td>
+
                     <td className="px-3 py-2.5 text-center">
                       <button
                         type="button"
@@ -450,16 +525,18 @@ export default function PurchaseOrderForm({
           <dl className="w-full max-w-xs space-y-2 text-[13px]">
             <div className="flex justify-between">
               <dt>공급가액</dt>
-              <dd>{formatWon(summary.supplyAmount)}</dd>
+              <dd>{formatWon(safeSummary.supplyAmount)}</dd>
             </div>
+
             <div className="flex justify-between">
-              <dt>부가세 (10%)\</dt>
-              <dd>{formatWon(summary.vatAmount)}</dd>
+              <dt>부가세 (10%)</dt>
+              <dd>{formatWon(safeSummary.vatAmount)}</dd>
             </div>
+
             <div className="flex justify-between border-t pt-3">
               <dt className="font-bold">총 발주 금액</dt>
               <dd className="text-[20px] font-bold text-blue-600">
-                {formatWon(summary.totalAmount)}
+                {formatWon(safeSummary.totalAmount)}
               </dd>
             </div>
           </dl>
@@ -471,6 +548,7 @@ export default function PurchaseOrderForm({
           {submitError}
         </p>
       )}
+
       {isItemModalOpen && (
         <PurchaseOrderItemSelectModal
           requestItems={availableRequestItems}
