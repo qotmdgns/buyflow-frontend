@@ -319,17 +319,20 @@ export async function updateUser(userId, payload) {
 // roleId 는 'ROLE_ADMIN' 같은 역할 코드이며 DB의 ROLE_CODE 와 일치한다.
 // ─────────────────────────────────────────────────────────────
 export async function fetchRolePermissions(roleId) {
-  const permissionCodes = await apiFetch(`/api/roles/${roleId}/permissions`, {
+  const roleCode = roleId.replace(/^ROLE_/, "")
+  
+
+  const permissionCodes = await apiFetch(`/api/roles/${roleCode}/permissions`, {
     method: "GET",
   })
 
   return buildGroupsFromCodes(permissionCodes)
 }
-
 export async function updateRolePermissions(roleId, groups) {
+  const roleCode = roleId.replace(/^ROLE_/, "")
   const permissionCodes = extractCheckedCodes(groups)
 
-  const savedCodes = await apiFetch(`/api/roles/${roleId}/permissions`, {
+  const savedCodes = await apiFetch(`/api/roles/${roleCode}/permissions`, {
     method: "PUT",
     body: JSON.stringify({ permissionCodes }),
   })
