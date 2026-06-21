@@ -81,20 +81,33 @@ export function canEditPurchaseOrder(status) {
   return status === "DRAFT" || status === "CONFIRMED"
 }
 
-export function canEditPurchaseOrderCoreFields(status) {
-  return status === "DRAFT"
-}
+export const canEditPurchaseOrderCoreFields = (status) => {
+  if (!status) return true; // status가 없으면 편집 허용
+
+  const editableStatuses = ["DRAFT", "PENDING", "CONFIRMED"]; // 필요에 따라 추가
+
+  return editableStatuses.includes(status);
+};
 
 export function canCancelPurchaseOrder(status) {
   return status === "DRAFT" || status === "CONFIRMED"
 }
 
-export function calculatePurchaseOrderLine(item) {
-  const orderQuantity = Number(item.orderQuantity ?? 0)
+export function calculatePurchaseOrderLine(item = {}) {
+  // orderQuantity 또는 quantity 둘 다 지원
+  const quantity = Number(item.orderQuantity ?? item.quantity ?? 0)
   const unitPrice = Number(item.unitPrice ?? 0)
 
-  const supplyAmount = orderQuantity * unitPrice
-  const vatAmount = Math.round(supplyAmount * 0.1)
+  const supplyAmount = quantity * unitPrice
+  const vatAmount = Math.round(supplyAmount * 0.1)   // 또는 Math.floor
+
+  console.log("=== [LINE] 계산 ===", { 
+    quantity, 
+    unitPrice, 
+    supplyAmount, 
+    vatAmount, 
+    totalAmount: supplyAmount + vatAmount 
+  })
 
   return {
     supplyAmount,
@@ -114,11 +127,7 @@ export function calculatePurchaseOrderSummary(items = []) {
         totalAmount: summary.totalAmount + line.totalAmount,
       }
     },
-    {
-      supplyAmount: 0,
-      vatAmount: 0,
-      totalAmount: 0,
-    },
+    { supplyAmount: 0, vatAmount: 0, totalAmount: 0 }
   )
 }
 

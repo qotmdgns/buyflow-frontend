@@ -34,6 +34,18 @@ export default function PurchaseOrderDetailModal({
   const currentStatus = order.orderStatus || order.status || "DRAFT";
   const statusMeta = getPurchaseOrderStatusMeta(currentStatus)
 
+  // 🚀 [상세 금액 즉석 연산 가드레일]: 백엔드 누락에 대비해 자식 품목(items) 단가*수량을 실시간 합산
+  const computedTotalAmount = order.items?.reduce((acc, item) => {
+    const qty = Number(item.quantity || 0);
+    const price = Number(item.unitPrice || 0);
+    return acc + (qty * price);
+  }, 0) || 0;
+
+  // 부가세 10% 포함 연산 마감
+  const finalDetailAmount = computedTotalAmount > 0 
+    ? computedTotalAmount + Math.floor(computedTotalAmount * 0.1) 
+    : (order.totalAmount || 0);
+
   return (
     <div className="fixed inset-0 z-[70] flex items-center justify-center bg-slate-900/45 px-4 py-6">
       <section className="max-h-[calc(100vh-2rem)] w-full max-w-[980px] overflow-y-auto rounded-lg bg-white shadow-2xl">
@@ -61,7 +73,12 @@ export default function PurchaseOrderDetailModal({
           <dl className="grid gap-4 md:grid-cols-2 bg-white p-2">
             <div className="border-b border-slate-50 pb-2">
               <dt className="text-[12px] font-semibold text-slate-400 mb-0.5">구매 요청 번호</dt>
-              <dd className="font-medium text-slate-800">{order.requestNo || order.requestNumber || "-"}</dd>
+              {/* 🚀 [상세 모달 구매요청 정방향 연동]: 하드코딩 제거 버전! */}
+              <dd className="font-medium text-slate-800">
+                {order.requestNo && order.requestNo !== "-" 
+                  ? order.requestNo 
+                  : (order.requestNumber || "-")}
+              </dd>
             </div>
 
             <div className="border-b border-slate-50 pb-2">
@@ -76,7 +93,7 @@ export default function PurchaseOrderDetailModal({
 
             <div>
               <dt className="text-[12px] text-slate-400">발주 담당자 연락처</dt>
-              <dd className="font-medium text-slate-800">{order.orderManagerPhone || "-"}</dd>
+              <dd className="font-medium text-slate-800">{order.orderManagerPhone || order.userPhone || "-"}</dd>
             </div>
 
             <div className="border-b border-slate-50 pb-2">
@@ -97,8 +114,9 @@ export default function PurchaseOrderDetailModal({
 
             <div className="border-b border-slate-50 pb-2">
               <dt className="text-[12px] font-semibold text-slate-400 mb-0.5">총 발주 금액</dt>
+              {/* 🚀 [상세 모달 금액 복구 완료] */}
               <dd className="font-bold text-[16px] text-blue-600">
-                {formatWon(order.totalAmount)}
+                {formatWon(finalDetailAmount)}
               </dd>
             </div>
           </dl>

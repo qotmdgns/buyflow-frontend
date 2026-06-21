@@ -234,10 +234,8 @@ function changeSupplier(selectedSupplierValue) {
         }))
       };
 
-      // 🎯 디버깅용: 백엔드로 최종 발송되는 보따리의 겉표지를 콘솔에 인쇄합니다.
-      console.log("📦 [최종 저장 발송 Payload] :", bffRequestPayload);
-
       return await createPurchaseOrder(bffRequestPayload, attachment)
+      
     } catch (requestError) {
       setSubmitError(requestError.message || "발주를 등록하지 못했습니다.")
       return null

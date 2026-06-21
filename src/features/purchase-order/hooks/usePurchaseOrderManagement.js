@@ -1,10 +1,9 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useState, useCallback } from "react"
 
 import {
   cancelPurchaseOrder,
-  fetchPurchaseOrderFilterOptions,
   fetchPurchaseOrders,
 } from "@/features/purchase-order/api/purchaseOrderApi"
 
@@ -25,8 +24,8 @@ export default function usePurchaseOrderManagement() {
   )
 
   const [filterOptions, setFilterOptions] = useState({
-    suppliers: ["전체 공급업체"],
-    statuses: ["전체"],
+    suppliers: [],
+    statuses: [],
   })
 
   const [orders, setOrders] = useState([])
@@ -45,8 +44,36 @@ export default function usePurchaseOrderManagement() {
 
   const detailState = usePurchaseOrderDetail(selectedOrderId)
 
+const loadFormOptions = useCallback(async () => {
+  try {
+    // 성공하는 URL로 바꿔보세요
+    const res = await fetch("http://localhost:8080/api/orders/form-options", {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      credentials: "include",
+    });
+
+    if (!res.ok) {
+      console.error("Status:", res.status);
+      throw new Error(`HTTP ${res.status}`);
+    }
+    
+    const response = await res.json();
+    console.log("✅ 성공적으로 받아옴:", response);
+
+    setFilterOptions({
+      suppliers: response.suppliers || [],
+      statuses: response.statuses || ["전체", "PENDING", "APPROVED", "CANCELLED"],
+    });
+  } catch (err) {
+    console.error("폼 옵션 로딩 실패:", err);
+  }
+}, []);
+
   useEffect(() => {
-    fetchPurchaseOrderFilterOptions().then(setFilterOptions)
+    loadFormOptions()
   }, [])
 
   useEffect(() => {
@@ -64,13 +91,8 @@ export default function usePurchaseOrderManagement() {
         })
 
         if (!ignore) {
-          // 🚀 [최종 지뢰 진압 완료]: 백엔드 자바 컨트롤러에서 사출해 준 
-          // PageResponse 표준 족보 주머니 이름인 'content' 또는 'items' 가드 매핑!
           const realContentList = data.content || data.items || data || [];
           setOrders(realContentList)
-
-          console.log("현재 page", pagination.page)
-          console.log("현재 size", pagination.size)
 
           // 페이징 객체 안전핀 가드레일 매핑
           if (data.pagination) {

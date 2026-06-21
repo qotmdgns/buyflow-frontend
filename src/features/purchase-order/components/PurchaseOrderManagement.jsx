@@ -78,14 +78,6 @@ export default function PurchaseOrderManagement() {
     confirmCancel,
   } = usePurchaseOrderManagement()
 
-  console.log("=========================================");
-  console.log("🔥 [최종 화면단] orders 주머니 속살 전체 확인 :", orders);
-  if (orders && orders.length > 0) {
-    console.log("📌 [최종 화면단] 1번째 행 데이터의 변수명 철자들 :", Object.keys(orders[0]));
-    console.log("📌 [최종 화면단] 1번째 행의 실제 값 :", orders[0]);
-  }
-  console.log("=========================================");
-
   function moveToEdit(order) {
     closeDetail()
 
@@ -96,7 +88,6 @@ export default function PurchaseOrderManagement() {
     <div className="w-full">
       <header className="mb-3">
         <h1 className="text-[22px] font-bold text-slate-900">발주 관리</h1>
-
         <p className="mt-1 text-[13px] text-slate-400">
           공급업체에 전달한 발주 내역과 입고 진행 상태를 관리합니다.
         </p>
@@ -143,15 +134,16 @@ export default function PurchaseOrderManagement() {
             </span>
 
             <select
-              value={draftFilters.supplierName}
+              value={draftFilters.supplierName || ""}
               onChange={(event) =>
                 updateFilter("supplierName", event.target.value)
               }
               className={INPUT_CLASS_NAME}
             >
+              <option value= "">전체</option>
               {filterOptions.suppliers.map((supplier) => (
-                <option key={supplier} value={supplier}>
-                  {supplier}
+                <option key={supplier.supplierId || supplier.supplierName} value={supplier.supplierName}>
+                  {supplier.supplierName}
                 </option>
               ))}
             </select>
@@ -295,9 +287,9 @@ export default function PurchaseOrderManagement() {
 
                       {/* 🚀 [구매 요청 번호 최종 교정]: 오라클 객체 밸브 연동선 정방향 매핑 */}
                       <td className="whitespace-nowrap px-3 py-3">
-                        {order.requestNumber && order.requestNumber !== "-"
-                          ? order.requestNumber 
-                          : (order.purchaseRequest?.requestNo || order.purchaseRequest?.requestNumber || "-")}
+                        {order.requestNo && order.requestNo !== "-" 
+                          ? order.requestNo 
+                          : (order.requestNumber || "-")}
                       </td>
 
                       <td className="whitespace-nowrap px-3 py-3 font-medium text-slate-700">

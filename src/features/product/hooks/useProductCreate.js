@@ -174,8 +174,6 @@ export default function useProductCreate() {
     setIsSaving(true)
 
     try {
-      // TODO: 백엔드 구현 후 POST /api/products 요청으로 교체합니다.
-      console.log("품목 등록 요청 payload", payload)
 
       await new Promise((resolve) => setTimeout(resolve, 300))
 
