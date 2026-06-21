@@ -273,6 +273,7 @@ export default function usePurchaseRequestCreate() {
     try {
       const createdRequest = await createPurchaseRequest({
         requestNumber: currentForm.requestNumber,
+        requestorId,
         requester: currentForm.requester,
         department: currentForm.department,
         requestDate: currentForm.requestDate,

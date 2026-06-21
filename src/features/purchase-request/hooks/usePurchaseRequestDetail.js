@@ -1,7 +1,11 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { fetchPurchaseRequestDetail } from "@/features/purchase-request/api/purchaseRequestApi"
+import {
+  cancelPurchaseRequest,
+  deletePurchaseRequest,
+  fetchPurchaseRequestDetail,
+} from "@/features/purchase-request/api/purchaseRequestApi"
 
 export default function usePurchaseRequestDetail(requestId) {
   const [request, setRequest] = useState(null)
@@ -48,10 +52,22 @@ export default function usePurchaseRequestDetail(requestId) {
     setReloadKey((currentKey) => currentKey + 1)
   }
 
+  async function cancelRequest() {
+    const nextRequest = await cancelPurchaseRequest(requestId)
+    setRequest(nextRequest)
+    return nextRequest
+  }
+
+  async function deleteRequest() {
+    await deletePurchaseRequest(requestId)
+  }
+
   return {
     request,
     loading,
     error,
     reload,
+    cancelRequest,
+    deleteRequest,
   }
 }

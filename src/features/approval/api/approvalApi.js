@@ -294,13 +294,59 @@ function createApprovalListQueryString(params = {}) {
   return query.toString()
 }
 
-function normalizeApprovalListResponse(data) {
-  if (Array.isArray(data.items) && data.pagination) {
-    return data
-  }
+const REQUEST_STATUS_LABELS = {
+  DRAFT: "임시 저장",
+  PENDING: "승인 대기",
+  PENDING_APPROVAL: "승인 대기",
+  WAITING: "승인 대기",
+  REQUESTED: "승인 대기",
+  APPROVED: "승인 완료",
+  REJECTED: "반려",
+  ORDERED: "발주 완료",
+  CANCEL_REQUESTED: "요청 취소",
+  CANCELED: "요청 취소",
+  CANCELLED: "요청 취소",
+}
+
+function normalizeApprovalListItem(item, index = 0) {
+  const requestStatus = item.requestStatus ?? item.status ?? "PENDING_APPROVAL"
 
   return {
-    items: data.content ?? [],
+    approvalId: item.approvalId ?? item.id ?? index + 1,
+    requestId: item.requestId ?? item.purchaseRequestId ?? null,
+    requestNumber: item.requestNumber ?? item.requestNo ?? "",
+    title: item.title ?? item.requestTitle ?? "",
+    requester: item.requester?.name ?? item.requester ?? "-",
+    department: item.requestDepartment?.name ?? item.department ?? "-",
+    requestedAt: item.requestedAt ?? item.requestDate ?? "",
+    desiredReceiptAt:
+      item.desiredReceiptAt ?? item.desiredInboundAt ?? item.expectedDate ?? "",
+    createdAt: item.createdAt ?? item.requestedAt ?? item.requestDate ?? "",
+    updatedAt: item.updatedAt ?? "",
+    totalAmount: Number(item.totalAmount ?? 0),
+    priority: item.priority ?? item.priorityLabel ?? "일반",
+    requestStatus,
+    requestStatusLabel:
+      item.requestStatusLabel ??
+      REQUEST_STATUS_LABELS[requestStatus] ??
+      requestStatus,
+    approvalStep: item.approvalStep ?? item.currentStep?.stepLabel ?? "-",
+    approver: item.approver ?? item.currentStep?.approver?.name ?? "-",
+  }
+}
+
+function normalizeApprovalListResponse(data) {
+  if (Array.isArray(data.items) && data.pagination) {
+    return {
+      ...data,
+      items: data.items.map(normalizeApprovalListItem),
+    }
+  }
+
+  const items = data.content ?? []
+
+  return {
+    items: items.map(normalizeApprovalListItem),
     pagination: {
       page: (data.number ?? 0) + 1,
       size: data.size ?? 10,

@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react"
 import {
   cancelPurchaseRequest,
+  deletePurchaseRequest,
   fetchPurchaseRequestFilterOptions,
   fetchPurchaseRequests,
   fetchPurchaseRequestSummary,
@@ -146,7 +147,7 @@ export default function usePurchaseRequestManagement() {
 
   function selectSummaryStatus(status) {
     const nextFilters = {
-      ...draftFilters,
+      ...appliedFilters,
       status,
     }
 
@@ -187,13 +188,20 @@ export default function usePurchaseRequestManagement() {
     return data.items
   }
 
-  async function cancelRequest(requestId) {
-    await cancelPurchaseRequest(requestId)
-
+  async function refreshSummaryAndList() {
     const nextSummary = await fetchPurchaseRequestSummary()
     setSummary(nextSummary)
-
     setRefreshKey((currentKey) => currentKey + 1)
+  }
+
+  async function cancelRequest(requestId) {
+    await cancelPurchaseRequest(requestId)
+    await refreshSummaryAndList()
+  }
+
+  async function deleteRequest(requestId) {
+    await deletePurchaseRequest(requestId)
+    await refreshSummaryAndList()
   }
 
   function toggleAllRows() {
@@ -239,6 +247,7 @@ export default function usePurchaseRequestManagement() {
     changePageSize,
     exportRequests,
     cancelRequest,
+    deleteRequest,
     toggleAllRows,
     toggleRow,
   }

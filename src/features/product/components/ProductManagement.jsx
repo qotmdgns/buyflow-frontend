@@ -48,7 +48,7 @@ export default function ProductManagement() {
 
     try {
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_BASE_URL}/products`,
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/products`,
         {
           method: "POST",
           headers: {

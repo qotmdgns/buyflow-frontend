@@ -30,11 +30,7 @@ function FieldLabel({ children }) {
   )
 }
 
-function SelectField({
-  value,
-  options = [],
-  onChange,
-}) {
+function SelectField({ value, options = [], onChange }) {
   return (
     <select
       value={value}
@@ -42,21 +38,12 @@ function SelectField({
       className={`${INPUT_CLASS_NAME} bg-white text-slate-600`}
     >
       {options.map((option) => {
-        const optionValue =
-          typeof option === "string"
-            ? option
-            : option.value
+        const optionValue = typeof option === "string" ? option : option.value
 
-        const optionLabel =
-          typeof option === "string"
-            ? option
-            : option.label
+        const optionLabel = typeof option === "string" ? option : option.label
 
         return (
-          <option
-            key={optionValue}
-            value={optionValue}
-          >
+          <option key={optionValue} value={optionValue}>
             {optionLabel}
           </option>
         )
@@ -83,7 +70,7 @@ function StockStatusBadge({ stock }) {
   )
 }
 
-export default function StockStatusManagement() {
+export default function StockStatusManagement({ initialFilters = {} }) {
   const {
     draftFilters,
     appliedFilters,
@@ -104,7 +91,7 @@ export default function StockStatusManagement() {
     openAdjustment,
     closeAdjustment,
     saveAdjustment,
-  } = useStockStatusManagement()
+  } = useStockStatusManagement(initialFilters)
 
   return (
     <div className="w-full">

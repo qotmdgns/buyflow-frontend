@@ -1,13 +1,9 @@
-import Link from "next/link"
 import {
   AlertTriangle,
   ClipboardCheck,
   Clock3,
-  Download,
-  MoreVertical,
   PackageOpen,
   RefreshCcw,
-  Search,
   Truck,
 } from "lucide-react"
 import { getDashboardData } from "@/features/dashboard/api/dashboardApi"
@@ -15,6 +11,7 @@ import {
   InventoryStatusChart,
   MonthlyReceiptChart,
 } from "@/features/dashboard/components/DashboardCharts"
+import DashboardTables from "@/features/dashboard/components/DashboardTables"
 
 const summaryIcons = {
   delayedOrders: RefreshCcw,
@@ -86,7 +83,7 @@ function StatusBadge({ status }) {
   )
 }
 
-function RecentRequests({ requests }) {
+function RecentRequests({ requests, total }) {
   return (
     <section className="rounded-lg border border-slate-200 bg-white shadow-sm">
       <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 p-3">
@@ -172,13 +169,16 @@ function RecentRequests({ requests }) {
 
       <div className="flex items-center justify-between border-t border-slate-100 p-4 text-[13px] text-slate-400">
         <span>페이지 당 행 수: 5</span>
-        <span>1-5 / 124</span>
+        <span>
+          {requests.length > 0 ? `1-${requests.length}` : "0"} /{" "}
+          {total ?? requests.length}
+        </span>
       </div>
     </section>
   )
 }
 
-function LowStockItems({ items }) {
+function LowStockItems({ items, total }) {
   return (
     <section className="rounded-lg border border-slate-200 bg-white shadow-sm">
       <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 p-3">
@@ -192,7 +192,7 @@ function LowStockItems({ items }) {
           </div>
 
           <span className="mt-1 inline-block rounded-full bg-rose-500 px-2.5 py-1 text-[12px] text-white">
-            관리 시급 5건
+            관리 시급 {total ?? items.length}건
           </span>
         </div>
 
@@ -253,7 +253,7 @@ function LowStockItems({ items }) {
       </div>
 
       <div className="flex flex-wrap items-center justify-between gap-2 border-t border-slate-100 p-3 text-[13px] text-slate-400">
-        <span>※ 현재 화면은 임시 데이터로 표시됩니다.</span>
+        <span>※ 안전재고 미만 품목을 부족 수량 기준으로 표시합니다.</span>
 
         <div className="flex gap-2">
           <button
@@ -305,9 +305,12 @@ export default async function DashboardPage() {
       </div>
 
       <div className="mt-3 grid gap-3 xl:grid-cols-[minmax(0,1fr)_minmax(0,1.05fr)]">
-        <RecentRequests requests={data.recentRequests} />
-
-        <LowStockItems items={data.lowStockItems} />
+        <DashboardTables
+          recentRequests={data.recentRequests ?? []}
+          recentRequestTotal={data.recentRequestTotal ?? 0}
+          lowStockItems={data.lowStockItems ?? []}
+          lowStockTotal={data.lowStockTotal ?? 0}
+        />
       </div>
 
       <footer className="mt-6 flex flex-wrap items-center justify-between gap-2 border-t border-slate-200 py-3 text-[12px] text-slate-400">

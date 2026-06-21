@@ -19,14 +19,21 @@ const DEFAULT_SUMMARY = {
   outOfStock: 0,
 }
 
-export default function useStockStatusManagement() {
-  const [draftFilters, setDraftFilters] = useState({
+function createInitialFilters(initialFilters = {}) {
+  return {
     ...DEFAULT_STOCK_FILTERS,
-  })
+    ...initialFilters,
+  }
+}
 
-  const [appliedFilters, setAppliedFilters] = useState({
-    ...DEFAULT_STOCK_FILTERS,
-  })
+export default function useStockStatusManagement(initialFilters = {}) {
+  const [draftFilters, setDraftFilters] = useState(() =>
+    createInitialFilters(initialFilters),
+  )
+
+  const [appliedFilters, setAppliedFilters] = useState(() =>
+    createInitialFilters(initialFilters),
+  )
 
   const [filterOptions, setFilterOptions] = useState(
     DEFAULT_STOCK_FILTER_OPTIONS,
@@ -45,14 +52,14 @@ export default function useStockStatusManagement() {
   useEffect(() => {
     let ignore = false
 
-fetchStockFilterOptions()
-  .then((data) => {
-    console.log("inventory-filter-options", data)
+    fetchStockFilterOptions()
+      .then((data) => {
+        console.log("inventory-filter-options", data)
 
-    if (!ignore) {
-      setFilterOptions(data)
-    }
-  })
+        if (!ignore) {
+          setFilterOptions(data)
+        }
+      })
       .catch(() => {
         if (!ignore) {
           setFilterOptions(DEFAULT_STOCK_FILTER_OPTIONS)
