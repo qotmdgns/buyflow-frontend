@@ -1,5 +1,5 @@
 "use client"
-
+import { useEffect } from "react"
 import { CircleAlert, FileUp, Plus, Save, Send, Trash2 } from "lucide-react"
 import PurchaseOrderItemSelectModal from "@/features/purchase-order/components/PurchaseOrderItemSelectModal"
 import {
@@ -26,8 +26,19 @@ function FieldError({ message }) {
 }
 
 function StatusBadge({ status }) {
+  if (!status) {
+    return <span className="text-slate-400">-</span>;
+  }
   const meta = getPurchaseOrderStatusMeta(status)
 
+  if (!meta || !meta.badgeClassName) {
+    return (
+      <span className="inline-flex rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 text-[12px] font-semibold text-slate-500">
+        {status}
+      </span>
+    );
+  }
+  
   return (
     <span
       className={`inline-flex rounded-full border px-2.5 py-1 text-[12px] font-semibold ${meta.badgeClassName}`}
@@ -100,6 +111,23 @@ export default function PurchaseOrderForm({
   toggleDraftItem,
   confirmSelectedItems,
 }) {
+
+// ==================== 디버깅 useEffect ====================
+  useEffect(() => {
+    console.log("=== [FORM] 받은 items ===", items)
+    console.log("=== [FORM] items 길이 ===", items?.length ?? 0)
+  }, [items])
+
+  useEffect(() => {
+    console.log("=== [FORM] editableCoreFields ===", editableCoreFields)
+    console.log("=== [FORM] editable ===", editable)
+  }, [editable, editableCoreFields])
+
+  useEffect(() => {
+  console.log("=== [FORM] editableCoreFields 현재 값 ===", editableCoreFields)
+}, [editableCoreFields])
+  // =======================================================
+
   const isEditMode = mode === "edit"
 
   const approvedPurchaseRequests = options?.approvedPurchaseRequests ?? []
@@ -146,17 +174,17 @@ export default function PurchaseOrderForm({
             취소
           </button>
 
-          {editable && (
+          {/* {editable && (
             <button
               type="button"
-              onClick={() => onSave("DRAFT")}
+              onClick={() => onSave("")}
               disabled={submitting}
               className="flex h-10 items-center gap-1.5 rounded-md border border-blue-200 bg-white px-4 text-[13px] font-semibold text-blue-600 hover:bg-blue-50 disabled:opacity-50"
             >
               <Save size={14} />
               저장
             </button>
-          )}
+          )} */}
 
           {editableCoreFields && (
             <button
@@ -206,15 +234,32 @@ export default function PurchaseOrderForm({
               <FieldLabel required>구매 요청 번호</FieldLabel>
               <select
                 value={form.requestId || ""}
-                onChange={(event) => onApplyPurchaseRequest(event.target.value)}
+                onChange={(event) => {
+                  const value = event.target.value;
+                  if (typeof onApplyPurchaseRequest === "function") {
+                    onApplyPurchaseRequest(value);
+                  } else {
+                    console.warn("[PurchaseOrderForm] onApplyPurchaseRequest prop이 전달되지 않았습니다.");
+                    if (typeof onChange === "function") {
+                      onChange("requestId", value);
+                    }
+                  }
+                }}  
+                  // onApplyPurchaseRequest(event.target.value)}
                 disabled={!editableCoreFields}
                 className={INPUT_CLASS_NAME}
               >
                 <option value="">승인 완료 구매 요청 선택</option>
                 {approvedPurchaseRequests.map((request, index) => (
-                  <option key={request.id || index} value={request.id}>
-                    {request.requestNumber} / {request.title}
+                  <option 
+                    key={request.id || request.requestId || index} 
+                    value={request.id || request.requestId}
+                  >
+                    {request.requestNumber} / {request.title || "제목 없음"}
                   </option>
+                  // <option key={request.id || index} value={request.id}>
+                  //   {request.requestNumber} / {request.title}
+                  // </option>
                 ))}
               </select>
               <FieldError message={errors.requestId} />
@@ -228,28 +273,30 @@ export default function PurchaseOrderForm({
                 className={INPUT_CLASS_NAME}
               />
             </label>
-
             <label className="block">
               <FieldLabel required>공급업체</FieldLabel>
-              <select
-                value={selectedSupplierValue}
-                onChange={(event) => handleChangeSupplier(event.target.value)}
-                disabled={!editableCoreFields}
+              <select 
+                value={selectedSupplierValue} 
+                onChange={(event) => {
+                  const val = event.target.value;
+                  handleChangeSupplier(val);   // 기존에 정의된 함수 사용
+                }} 
+                disabled={!editableCoreFields} 
                 className={INPUT_CLASS_NAME}
               >
                 <option value="">공급업체 선택</option>
                 {suppliers.map((supplier, index) => {
-                  const supplierValue = getSupplierValue(supplier, index)
-                  const supplierName = getSupplierName(supplier, index)
+                  const supplierValue = getSupplierValue(supplier, index);
+                  const supplierName = getSupplierName(supplier, index);
 
                   return (
                     <option
-                      key={`supplier-opt-${supplierValue}-${index}`}
+                      key={supplierValue}
                       value={supplierValue}
                     >
                       {supplierName}
                     </option>
-                  )
+                  );
                 })}
               </select>
               <FieldError
@@ -260,7 +307,6 @@ export default function PurchaseOrderForm({
                 }
               />
             </label>
-
             <label className="block">
               <FieldLabel>공급업체 담당자</FieldLabel>
               <input
@@ -435,87 +481,55 @@ export default function PurchaseOrderForm({
             </thead>
 
             <tbody>
-              {items.map((item, index) => {
-                const line = calculatePurchaseOrderLine(item)
+            {items.map((item, index) => {
+              console.log(`=== [TABLE ITEM ${index}] 실제 데이터 ===`, item)
+              const line = calculatePurchaseOrderLine(item)
 
-                return (
-                  <tr
-                    key={item.requestItemId || index}
-                    className="border-t border-slate-100 text-slate-600"
-                  >
-                    <td className="px-3 py-2.5 text-center">{index + 1}</td>
-
-                    <td className="px-3 py-2.5 font-semibold text-blue-600">
-                      {item.itemCode}
-                    </td>
-
-                    <td className="px-3 py-2.5">{item.itemName}</td>
-                    <td className="px-3 py-2.5">{item.specification}</td>
-
-                    <td className="px-3 py-2.5 text-right">
-                      {item.requestedQuantity}
-                    </td>
-
-                    <td className="px-3 py-2.5">
-                      <input
-                        type="number"
-                        min="1"
-                        value={item.orderQuantity || ""}
-                        onChange={(event) =>
-                          onChangeItemValue(
-                            item.requestItemId,
-                            "orderQuantity",
-                            event.target.value,
-                          )
-                        }
-                        disabled={!editableCoreFields}
-                        className="h-9 w-20 rounded-md border border-slate-200 px-2 text-right disabled:bg-slate-50"
-                      />
-                    </td>
-
-                    <td className="px-3 py-2.5">{item.unit}</td>
-
-                    <td className="px-3 py-2.5">
-                      <input
-                        type="number"
-                        min="0"
-                        value={item.unitPrice || 0}
-                        onChange={(event) =>
-                          onChangeItemValue(
-                            item.requestItemId,
-                            "unitPrice",
-                            event.target.value,
-                          )
-                        }
-                        disabled={!editableCoreFields}
-                        className="h-9 w-28 rounded-md border border-slate-200 px-2 text-right disabled:bg-slate-50"
-                      />
-                    </td>
-
-                    <td className="px-3 py-2.5 text-right">
-                      {formatWon(line.supplyAmount)}
-                    </td>
-
-                    <td className="px-3 py-2.5 text-right">
-                      {formatWon(line.vatAmount)}
-                    </td>
-
-                    <td className="px-3 py-2.5 text-right font-semibold">
-                      {formatWon(line.totalAmount)}
-                    </td>
-
-                    <td className="px-3 py-2.5 text-center">
-                      <button
-                        type="button"
-                        onClick={() => onRemoveItem(item.requestItemId)}
-                        disabled={!editableCoreFields}
-                        className="text-slate-400 hover:text-rose-500 disabled:opacity-30"
-                      >
-                        <Trash2 size={14} />
-                      </button>
-                    </td>
-                  </tr>
-                )
+              return (
+                <tr key={item.requestItemId || index} className="border-t border-slate-100 text-slate-600">
+                  <td className="px-3 py-2.5 text-center">{index + 1}</td>
+                  <td className="px-3 py-2.5 font-semibold text-blue-600">
+                    {item.itemCode || item.productNo || '-'}
+                  </td>
+                  <td className="px-3 py-2.5">{item.itemName || item.productName || '-'}</td>
+                  <td className="px-3 py-2.5">{item.specification || item.spec || '-'}</td>
+                  <td className="px-3 py-2.5 text-right">{item.requestedQuantity || item.quantity || 0}</td>
+                  <td className="px-3 py-2.5">
+                    <input 
+                      type="number" 
+                      min="1" 
+                      value={item.orderQuantity || item.quantity || ""} 
+                      onChange={(event) => onChangeItemValue(item.requestItemId, "orderQuantity", event.target.value)} 
+                      disabled={!editableCoreFields} 
+                      className="h-9 w-20 rounded-md border border-slate-200 px-2 text-right" 
+                    />
+                  </td>
+                  <td className="px-3 py-2.5">{item.unit || '-'}</td>
+                  <td className="px-3 py-2.5">
+                    <input 
+                      type="number" 
+                      min="0" 
+                      value={item.unitPrice || 0} 
+                      onChange={(event) => onChangeItemValue(item.requestItemId, "unitPrice", event.target.value)} 
+                      disabled={!editableCoreFields} 
+                      className="h-9 w-28 rounded-md border border-slate-200 px-2 text-right" 
+                    />
+                  </td>
+                  <td className="px-3 py-2.5 text-right">{formatWon(line.supplyAmount)}</td>
+                  <td className="px-3 py-2.5 text-right">{formatWon(line.vatAmount)}</td>
+                  <td className="px-3 py-2.5 text-right font-semibold">{formatWon(line.totalAmount)}</td>
+                  <td className="px-3 py-2.5 text-center">
+<button 
+  type="button" 
+  onClick={() => onRemoveItem(item.requestItemId)} 
+  disabled={!editableCoreFields} 
+  className="text-slate-400 hover:text-rose-500 disabled:opacity-30"
+>
+  <Trash2 size={14} />
+</button>
+                  </td>
+                </tr>
+              )
               })}
             </tbody>
           </table>

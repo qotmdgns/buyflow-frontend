@@ -128,7 +128,7 @@ function normalizePurchaseRequestListItem(item, index = 0) {
     department: item.department ?? item.departmentName ?? "-",
     requestedAt: item.requestedAt ?? item.requestDate ?? "",
     desiredReceiptAt:
-      item.desiredReceiptAt ?? item.desiredInboundAt ?? item.expectedDate ?? "",
+      item.desiredReceiptAt ?? item.desiredReceiptAt ?? item.expectedDate ?? "",
     createdAt: item.createdAt ?? item.requestedAt ?? item.requestDate ?? "",
     updatedAt: item.updatedAt ?? "",
     itemCount: Number(item.itemCount ?? item.items?.length ?? 0),
@@ -165,8 +165,8 @@ function normalizePurchaseRequestResponse(data) {
 function createQueryString(params) {
   const query = new URLSearchParams()
   const queryKeyMap = {
-    desiredReceiptFrom: "desiredInboundFrom",
-    desiredReceiptTo: "desiredInboundTo",
+    desiredReceiptFrom: "desiredReceiptFrom",
+    desiredReceiptTo: "desiredReceiptTo",
   }
 
   Object.entries(params).forEach(([key, value]) => {
@@ -345,7 +345,7 @@ function normalizePurchaseRequestDetailResponse(data) {
     department: data.department ?? data.departmentName ?? "",
     requestedAt: data.requestedAt ?? data.requestDate ?? "",
     desiredReceiptAt:
-      data.desiredReceiptAt ?? data.desiredInboundAt ?? data.expectedDate ?? "",
+      data.desiredReceiptAt ?? data.desiredReceiptAt ?? data.expectedDate ?? "",
     createdAt: data.createdAt ?? data.requestedAt ?? data.requestDate ?? "",
     updatedAt: data.updatedAt ?? "",
     priority:

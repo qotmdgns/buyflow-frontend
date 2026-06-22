@@ -27,6 +27,23 @@ const INPUT_CLASS_NAME =
 function StatusBadge({ status }) {
   const meta = getPurchaseOrderStatusMeta(status)
 
+  // const isConfirmed = 
+  //   status === "APPROVED" || 
+  //   status === "CONFIRMED" || 
+  //   status === "ORDERED" ||
+  //   (meta.label && (
+  //     meta.label.includes("확정") || 
+  //     meta.label.includes("완료")
+  //   ));
+
+  //   if (isConfirmed) {
+  //   return (
+  //     <span className="inline-flex items-center rounded-full bg-blue-100 px-3.5 py-1 text-[13px] font-semibold text-blue-700 border border-blue-200 shadow-sm">
+  //       발주 확정
+  //     </span>
+  //   );
+  // }
+
   return (
     <span
       className={`inline-flex rounded-full border px-2.5 py-1 text-[12px] font-semibold ${meta.badgeClassName}`}
@@ -67,8 +84,8 @@ function getRequestNumber(order) {
 }
 
 function getExpectedReceiptText(order) {
-  const from = order.expectedReceiptFrom || order.expectedInboundFrom || "-"
-  const to = order.expectedReceiptTo || order.expectedInboundTo || "-"
+  const from = order.expectedReceiptFrom || order.expectedReceiptFrom || "-"
+  const to = order.expectedReceiptTo || order.expectedReceiptTo || "-"
 
   return `${from} ~ ${to}`
 }
@@ -117,6 +134,7 @@ export default function PurchaseOrderManagement() {
     error,
     selectedOrderId,
     detailState,
+    changePageSize,
     cancelTarget,
     canceling,
     cancelError,
@@ -140,7 +158,6 @@ export default function PurchaseOrderManagement() {
     <div className="w-full">
       <header className="mb-3">
         <h1 className="text-[22px] font-bold text-slate-900">발주 관리</h1>
-
         <p className="mt-1 text-[13px] text-slate-400">
           공급업체에 전달한 발주 내역과 입고 진행 상태를 관리합니다.
         </p>
@@ -180,27 +197,30 @@ export default function PurchaseOrderManagement() {
               className={INPUT_CLASS_NAME}
             />
           </label>
-
           <label>
             <span className="mb-1 block text-[13px] font-semibold text-slate-600">
               공급업체
             </span>
 
             <select
-              value={draftFilters.supplierName}
+              value={draftFilters.supplierName || ""}
               onChange={(event) =>
                 updateFilter("supplierName", event.target.value)
               }
               className={INPUT_CLASS_NAME}
             >
+              <option value="">전체</option>
+
               {(filterOptions?.suppliers ?? []).map((supplier) => (
-                <option key={supplier} value={supplier}>
-                  {supplier}
+                <option
+                  key={supplier.supplierId || supplier.supplierName}
+                  value={supplier.supplierName}
+                >
+                  {supplier.supplierName}
                 </option>
               ))}
             </select>
           </label>
-
           <label>
             <span className="mb-1 block text-[13px] font-semibold text-slate-600">
               발주 담당자
@@ -215,12 +235,10 @@ export default function PurchaseOrderManagement() {
               className={INPUT_CLASS_NAME}
             />
           </label>
-
           <label>
             <span className="mb-1 block text-[13px] font-semibold text-slate-600">
               발주 상태
             </span>
-
             <select
               value={draftFilters.status}
               onChange={(event) => updateFilter("status", event.target.value)}
@@ -327,35 +345,29 @@ export default function PurchaseOrderManagement() {
                     <td className="whitespace-nowrap px-3 py-3 font-semibold text-blue-600">
                       {order.orderNo || order.orderNumber || "-"}
                     </td>
-
                     <td className="whitespace-nowrap px-3 py-3">
-                      {getRequestNumber(order)}
+                      {order.requestNo && order.requestNo !== "-"
+                        ? order.requestNo
+                        : order.requestNumber || "-"}
                     </td>
-
                     <td className="whitespace-nowrap px-3 py-3 font-medium text-slate-700">
                       {order.supplierName || "-"}
                     </td>
-
                     <td className="whitespace-nowrap px-3 py-3">
                       {order.orderManager || order.userName || "-"}
                     </td>
-
                     <td className="whitespace-nowrap px-3 py-3">
                       {formatDate(order.orderedAt || order.createdAt)}
                     </td>
-
                     <td className="whitespace-nowrap px-3 py-3">
                       {getExpectedReceiptText(order)}
                     </td>
-
                     <td className="whitespace-nowrap px-3 py-3 text-right">
                       {getItemCount(order)}건
                     </td>
-
                     <td className="whitespace-nowrap px-3 py-3 text-right font-semibold text-slate-800">
                       {formatWon(getOrderTotalAmount(order))}
                     </td>
-
                     <td className="whitespace-nowrap px-3 py-3">
                       <StatusBadge status={order.orderStatus || order.status} />
                     </td>

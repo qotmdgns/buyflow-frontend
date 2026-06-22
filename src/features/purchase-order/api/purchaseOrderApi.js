@@ -54,16 +54,16 @@ function toFrontendPurchaseOrder(data) {
     orderedAt: data.createdAt ? String(data.createdAt).slice(0, 10) : "-",
     expectedReceiptFrom:
       data.expectedReceiptFrom ||
-      data.expectedInboundFrom ||
+      data.expectedReceiptFrom ||
       (data.dueDate ? String(data.dueDate).slice(0, 10) : "-"),
     expectedReceiptTo:
       data.expectedReceiptTo ||
-      data.expectedInboundTo ||
+      data.expectedReceiptTo ||
       (data.dueDate ? String(data.dueDate).slice(0, 10) : "-"),
     warehouseCode: data.warehouseCode || "",
     warehouseName: data.warehouseName || "일반 창고",
     memo: data.memo || "",
-    status: data.orderStatus || "DRAFT",
+    status: data.orderStatus || "",
     items: data.items || [],
   }
 }
@@ -256,7 +256,6 @@ export async function fetchPurchaseOrderFilterOptions() {
     ],
     statuses: [
       "전체",
-      "DRAFT",
       "CONFIRMED",
       "PARTIAL_RECEIVED",
       "RECEIVED",

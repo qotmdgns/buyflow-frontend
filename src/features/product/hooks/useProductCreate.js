@@ -114,6 +114,12 @@ export default function useProductCreate({
     setIsSaving(true)
 
     try {
+<<<<<<< HEAD
+
+      await new Promise((resolve) => setTimeout(resolve, 300))
+
+      window.alert("품목이 등록되었습니다.")
+=======
       if (mode === "edit") {
         await updateProduct(productId, form)
         window.alert("품목이 수정되었습니다.")
@@ -121,6 +127,7 @@ export default function useProductCreate({
         await createProduct(form)
         window.alert("품목이 등록되었습니다.")
       }
+>>>>>>> 39cfa0052cd44d8e88fdfa8b777f695a7037c9cb
 
       return true
     } catch (error) {

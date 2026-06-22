@@ -58,6 +58,8 @@ export default function PurchaseOrderEdit({ orderId }) {
       onChangeAttachment={purchaseOrder.changeAttachment}
       onCancel={() => router.push("/purchase-orders")}
       onSave={saveOrder}
+
+      onApplyPurchaseRequest={purchaseOrder.onApplyPurchaseRequest}
     />
   )
 }
