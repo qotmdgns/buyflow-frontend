@@ -1,21 +1,16 @@
 import { apiFetch } from "@/lib/api/fetchClient"
 import {
-  mockDepartments,
   mockRolePermissions,
   mockRoles,
   mockUsers,
 } from "@/features/system/data/mockSystemData"
 
-const USE_MOCK = process.env.NEXT_PUBLIC_USE_SYSTEM_MOCK !== "false"
+// 읽기(목록/역할/필터)는 항상 실제 백엔드를 사용한다.
+// 쓰기(생성/수정)는 아직 백엔드 관리자 API가 정리되지 않아 mock 토글을 유지한다.
+//   (백엔드: 관리자 "생성" 엔드포인트 없음 / 수정은 profile·roles·status 로 분리)
+const USE_MOCK_WRITE = process.env.NEXT_PUBLIC_USE_SYSTEM_MOCK !== "false"
 
 let userDatabase = mockUsers.map((user) => ({ ...user }))
-
-let rolePermissionDatabase = Object.fromEntries(
-  Object.entries(mockRolePermissions).map(([roleId, groups]) => [
-    roleId,
-    clonePermissionGroups(groups),
-  ]),
-)
 
 function wait(milliseconds) {
   return new Promise((resolve) => setTimeout(resolve, milliseconds))
@@ -29,10 +24,7 @@ function clonePermissionGroups(groups) {
 }
 
 // ─────────────────────────────────────────────────────────────
-// [추가] 백엔드(코드 배열) ↔ 화면(groups 구조) 변환 어댑터
-// 백엔드는 권한을 ["dashboard.read", ...] 코드 배열로 주고받지만,
-// 화면(RolePermissionPanel)은 그룹/체크박스 구조(groups)를 쓴다.
-// ROLE_ADMIN 템플릿이 모든 권한을 포함하므로 이를 골격으로 사용한다.
+// 백엔드(코드 배열) ↔ 화면(groups 구조) 변환 어댑터 (권한 관리 패널용)
 // ─────────────────────────────────────────────────────────────
 function buildGroupsFromCodes(permissionCodes) {
   const codeSet = new Set(permissionCodes ?? [])
@@ -48,83 +40,169 @@ function buildGroupsFromCodes(permissionCodes) {
 
 function extractCheckedCodes(groups) {
   const codes = []
-
   groups.forEach((group) => {
     group.permissions.forEach((permission) => {
-      if (permission.checked) {
-        codes.push(permission.key)
-      }
+      if (permission.checked) codes.push(permission.key)
     })
   })
-
   return codes
 }
 
-function includesKeyword(value, keyword) {
-  return String(value ?? "")
-    .toLowerCase()
-    .includes(keyword.trim().toLowerCase())
+// ─────────────────────────────────────────────────────────────
+// 백엔드 응답 → 화면 사용자/역할 모양으로 변환하는 어댑터
+//   AdminUserResponse = { user: UserResponse, roles: RoleResponse[], permissions: string[] }
+//   UserResponse      = { userId, loginId, userName, email, departmentName,
+//                         positionName, jobRank, status, useYn, createdAt, ... }
+//   RoleResponse      = { roleId, roleCode, roleName, roleGroup, sortOrder, useYn }
+// ─────────────────────────────────────────────────────────────
+function statusLabel(user) {
+  const inactive =
+    user.useYn === "N" ||
+    user.status === "INACTIVE" ||
+    user.status === "SUSPENDED"
+  return inactive ? "사용 중지" : "사용 중"
 }
 
-function findRoleName(roleId) {
-  return mockRoles.find((role) => role.id === roleId)?.name ?? "-"
+// 직급(사원/주임/대리/과장) 표시.
+//   - 백엔드 UserResponse.jobRank 가 원본(과장 등)이면 그대로 사용
+//   - 아직 USER/ADMIN 으로 정규화돼 오면 positionName 으로 폴백
+//   → 백엔드 수정 전/후 모두 동작
+function rankLabel(user) {
+  const raw = user.jobRank
+  if (raw && raw !== "USER" && raw !== "ADMIN") return raw
+  return user.positionName || ""
 }
 
-function withRoleName(user) {
+// 여러 역할 중 대표 역할(우선순위 = sortOrder 작은 것: ADMIN > MANAGER > ...)
+function pickPrimaryRole(roles = []) {
+  if (!roles.length) return null
+  return [...roles].sort(
+    (a, b) => (a.sortOrder ?? 99) - (b.sortOrder ?? 99),
+  )[0]
+}
+
+function adaptUser(item) {
+  const user = item.user ?? item
+  const roles = item.roles ?? []
+  const primary = pickPrimaryRole(roles)
+
   return {
-    ...user,
-    roleName: findRoleName(user.roleId),
+    id: user.userId,
+    employeeNo: user.loginId ?? "", // 백엔드에 사번 컬럼이 없어 loginId 사용
+    name: user.userName ?? "",
+    email: user.email ?? "",
+    department: user.departmentName ?? "",
+    position: rankLabel(user),
+    roleId: primary?.roleCode ?? "",
+    roleName: roles.length ? roles.map((role) => role.roleName).join(", ") : "-",
+    activeStatus: statusLabel(user),
+    registeredAt: String(user.createdAt ?? "").slice(0, 10),
   }
 }
 
-function getTodayString() {
-  return new Date().toISOString().slice(0, 10)
+function adaptRole(role) {
+  return {
+    id: role.roleCode, // 화면 roleId = ROLE_CODE (예: ADMIN, WAREHOUSE)
+    name: role.roleName,
+    description: role.description ?? "",
+    group: role.roleGroup,
+    userCount: undefined, // 백엔드 미제공 → 패널은 (?? 0) 처리
+  }
 }
 
-function getMockUsers(params) {
-  const {
-    page = 1,
-    size = 10,
-    department = "전체",
-    roleId = "전체",
-    keyword = "",
-    activeStatus = "전체",
-  } = params
+// ─────────────────────────────────────────────────────────────
+// 읽기: 실제 백엔드
+// ─────────────────────────────────────────────────────────────
 
-  const filteredUsers = userDatabase.filter((user) => {
-    const matchesDepartment =
-      department === "전체" || user.department === department
+// 사용자 목록 (ADMIN 전용): GET /api/admin/users/page
+//   지원 파라미터: keyword, status, useYn, jobRank, page(0-base), size
+//   ※ department / roleId 필터는 백엔드 미지원 → 현재 서버 전송하지 않음
+export async function fetchUsers(params = {}) {
+  const { page = 1, size = 10, keyword = "", activeStatus = "전체" } = params
 
-    const matchesRole = roleId === "전체" || user.roleId === roleId
+  const query = new URLSearchParams()
+  query.set("page", String(Math.max(0, Number(page) - 1)))
+  query.set("size", String(size))
+  if (keyword) query.set("keyword", keyword)
+  if (activeStatus === "사용 중") query.set("useYn", "Y")
+  if (activeStatus === "사용 중지") query.set("useYn", "N")
 
-    const matchesKeyword =
-      !keyword ||
-      includesKeyword(user.name, keyword) ||
-      includesKeyword(user.employeeNo, keyword) ||
-      includesKeyword(user.email, keyword)
-
-    const matchesActiveStatus =
-      activeStatus === "전체" || user.activeStatus === activeStatus
-
-    return (
-      matchesDepartment && matchesRole && matchesKeyword && matchesActiveStatus
-    )
+  const data = await apiFetch(`/api/admin/users/page?${query.toString()}`, {
+    method: "GET",
   })
 
-  const totalElements = filteredUsers.length
-  const totalPages = Math.max(1, Math.ceil(totalElements / size))
-  const safePage = Math.min(Math.max(page, 1), totalPages)
-  const offset = (safePage - 1) * size
+  const items = (data?.items ?? []).map(adaptUser)
+  const pagination = data?.pagination ?? {}
 
   return {
-    items: filteredUsers.slice(offset, offset + size).map(withRoleName),
+    items,
     pagination: {
-      page: safePage,
-      size,
-      totalElements,
-      totalPages,
+      page: pagination.page ?? Number(page),
+      size: pagination.size ?? size,
+      totalElements: pagination.totalElements ?? items.length,
+      totalPages: pagination.totalPages ?? 1,
     },
   }
+}
+
+// 역할별 인원수: 전체 사용자(GET /api/admin/users)의 roles 를 집계
+//   - 한 사용자가 여러 역할을 가지면 각 역할에 1명씩 카운트
+//   - 실패해도 카드가 0명으로만 보이도록 빈 맵 폴백
+async function fetchRoleUserCounts() {
+  try {
+    const users = await apiFetch(`/api/admin/users`, { method: "GET" })
+    const counts = {}
+    ;(users ?? []).forEach((item) => {
+      ;(item.roles ?? []).forEach((role) => {
+        if (!role?.roleCode) return
+        counts[role.roleCode] = (counts[role.roleCode] ?? 0) + 1
+      })
+    })
+    return counts
+  } catch {
+    return {}
+  }
+}
+
+// 역할 목록: GET /api/roles  (활성 역할만, ROLE_ 드리프트 제외) + 인원수 집계
+export async function fetchRoles() {
+  const [data, counts] = await Promise.all([
+    apiFetch(`/api/roles`, { method: "GET" }),
+    fetchRoleUserCounts(),
+  ])
+
+  return (data ?? [])
+    .filter((role) => role.useYn !== "N")
+    .map((role) => ({
+      ...adaptRole(role),
+      userCount: counts[role.roleCode] ?? 0,
+    }))
+}
+
+// 검색 필터 옵션: 역할은 실제 /api/roles, 부서/상태는 정적 목록
+//   (백엔드에 부서 distinct 엔드포인트가 없어 실제 부서명을 정적으로 둠)
+export async function fetchUserFilterOptions() {
+  const roles = await fetchRoles()
+  return {
+    departments: [
+      "전체",
+      "영업팀",
+      "구매팀",
+      "시스템관리팀",
+      "물류운영팀",
+      "재고관리팀",
+    ],
+    roles,
+    activeStatuses: ["전체", "사용 중", "사용 중지"],
+  }
+}
+
+// ─────────────────────────────────────────────────────────────
+// 쓰기: 아직 mock (백엔드 관리자 생성/수정 API 정리 후 전환 예정)
+//   ⚠ 읽기는 실제 DB라, mock 으로 만든 사용자는 목록 새로고침 시 사라진다.
+// ─────────────────────────────────────────────────────────────
+function getTodayString() {
+  return new Date().toISOString().slice(0, 10)
 }
 
 function createUserRecord(payload, id, registeredAt = getTodayString()) {
@@ -141,201 +219,67 @@ function createUserRecord(payload, id, registeredAt = getTodayString()) {
   }
 }
 
-function ensureUniqueUser(payload, targetId = null) {
-  const employeeNo = payload.employeeNo.trim().toUpperCase()
-  const email = payload.email.trim().toLowerCase()
-
-  const duplicatedEmployeeNo = userDatabase.some(
-    (user) =>
-      user.id !== targetId && user.employeeNo.toUpperCase() === employeeNo,
-  )
-
-  if (duplicatedEmployeeNo) {
-    throw new Error("이미 사용 중인 사번입니다.")
-  }
-
-  const duplicatedEmail = userDatabase.some(
-    (user) => user.id !== targetId && user.email.toLowerCase() === email,
-  )
-
-  if (duplicatedEmail) {
-    throw new Error("이미 사용 중인 이메일입니다.")
-  }
-}
-
-export async function fetchUsers(params = {}) {
-  if (USE_MOCK) {
-    await wait(150)
-    return getMockUsers(params)
-  }
-
-  const query = new URLSearchParams()
-
-  Object.entries(params).forEach(([key, value]) => {
-    if (value === "" || value === "전체") {
-      return
-    }
-
-    query.set(key, key === "page" ? String(Number(value) - 1) : String(value))
-  })
-
-  const response = await fetch(
-    `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/system/users?${query.toString()}`,
-    { cache: "no-store" },
-  )
-
-  if (!response.ok) {
-    throw new Error("사용자 목록을 불러오지 못했습니다.")
-  }
-
-  return response.json()
-}
-
-export async function fetchUserFilterOptions() {
-  if (USE_MOCK) {
-    return {
-      departments: ["전체", ...mockDepartments],
-      roles: mockRoles,
-      activeStatuses: ["전체", "사용 중", "사용 중지"],
-    }
-  }
-
-  const response = await fetch(
-    `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/system/users/filter-options`,
-    { cache: "no-store" },
-  )
-
-  if (!response.ok) {
-    throw new Error("사용자 검색 조건을 불러오지 못했습니다.")
-  }
-
-  return response.json()
-}
-
-export async function fetchRoles() {
-  if (USE_MOCK) {
-    await wait(80)
-
-    return mockRoles.map((role) => ({
-      ...role,
-      userCount: userDatabase.filter((user) => user.roleId === role.id).length,
-    }))
-  }
-
-  const response = await fetch(
-    `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/system/roles`,
-    { cache: "no-store" },
-  )
-
-  if (!response.ok) {
-    throw new Error("권한 그룹 목록을 불러오지 못했습니다.")
-  }
-
-  return response.json()
-}
-
 export async function createUser(payload) {
-  if (USE_MOCK) {
+  if (USE_MOCK_WRITE) {
     await wait(180)
-    ensureUniqueUser(payload)
-
     const nextId =
       userDatabase.reduce((maxId, user) => Math.max(maxId, user.id), 0) + 1
-
     const createdUser = createUserRecord(payload, nextId)
-
     userDatabase = [createdUser, ...userDatabase]
-
-    return withRoleName(createdUser)
+    return createdUser
   }
 
-  const response = await fetch(
-    `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/system/users`,
-    {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(payload),
-    },
-  )
-
-  if (!response.ok) {
-    throw new Error("신규 사용자를 등록하지 못했습니다.")
-  }
-
-  return response.json()
+  // TODO: 백엔드에 관리자 사용자 생성 엔드포인트가 생기면 연결
+  throw new Error("사용자 생성 API가 아직 준비되지 않았습니다.")
 }
 
+// 화면 roleId(코드 'WAREHOUSE' / 'ROLE_WAREHOUSE' / 숫자) → 백엔드 숫자 roleId
+async function resolveRoleNumericId(roleIdOrCode) {
+  if (roleIdOrCode == null || roleIdOrCode === "") return null
+  if (/^\d+$/.test(String(roleIdOrCode))) return Number(roleIdOrCode)
+
+  const roles = await apiFetch(`/api/roles`, { method: "GET" })
+  const code = String(roleIdOrCode).replace(/^ROLE_/, "")
+  const match = (roles ?? []).find((role) => role.roleCode === code)
+  return match ? match.roleId : null
+}
+
+// 사용자 수정: 권한 그룹(역할) 변경을 실제 저장한다.
+//   PUT /api/admin/users/{userId}/roles  body { roleIds: [숫자] }  (역할 통째 교체)
+//   ※ 부서·직급·상태 저장은 후속(프로필 PUT /status PATCH 분리). 지금은 역할만.
 export async function updateUser(userId, payload) {
-  if (USE_MOCK) {
-    await wait(180)
-
-    const targetId = Number(userId)
-    const targetIndex = userDatabase.findIndex((user) => user.id === targetId)
-
-    if (targetIndex === -1) {
-      throw new Error("수정할 사용자를 찾을 수 없습니다.")
-    }
-
-    ensureUniqueUser(payload, targetId)
-
-    const updatedUser = createUserRecord(
-      payload,
-      targetId,
-      userDatabase[targetIndex].registeredAt,
-    )
-
-    userDatabase = userDatabase.map((user) =>
-      user.id === targetId ? updatedUser : user,
-    )
-
-    return withRoleName(updatedUser)
+  const numericRoleId = await resolveRoleNumericId(payload.roleId)
+  if (!numericRoleId) {
+    throw new Error("선택한 역할을 찾을 수 없습니다.")
   }
 
-  const response = await fetch(
-    `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/system/users/${userId}`,
-    {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(payload),
-    },
-  )
+  const updated = await apiFetch(`/api/admin/users/${userId}/roles`, {
+    method: "PUT",
+    body: JSON.stringify({ roleIds: [numericRoleId] }),
+  })
 
-  if (!response.ok) {
-    throw new Error("사용자 정보를 수정하지 못했습니다.")
-  }
-
-  return response.json()
+  return adaptUser(updated)
 }
 
 // ─────────────────────────────────────────────────────────────
-// 권한 관리: 항상 실제 백엔드(Oracle DB) 사용
+// 권한 관리: 항상 실제 백엔드 (이미 정상)
 //   GET /api/roles/{roleCode}/permissions  -> 권한 코드 배열
 //   PUT /api/roles/{roleCode}/permissions  -> body { permissionCodes: [...] }
-// apiFetch가 JWT 토큰 첨부 + ApiResponse 언래핑(data 반환)을 처리한다.
-// roleId 는 'ROLE_ADMIN' 같은 역할 코드이며 DB의 ROLE_CODE 와 일치한다.
 // ─────────────────────────────────────────────────────────────
 export async function fetchRolePermissions(roleId) {
   const roleCode = roleId.replace(/^ROLE_/, "")
-  
-
   const permissionCodes = await apiFetch(`/api/roles/${roleCode}/permissions`, {
     method: "GET",
   })
-
   return buildGroupsFromCodes(permissionCodes)
 }
+
 export async function updateRolePermissions(roleId, groups) {
   const roleCode = roleId.replace(/^ROLE_/, "")
   const permissionCodes = extractCheckedCodes(groups)
-
   const savedCodes = await apiFetch(`/api/roles/${roleCode}/permissions`, {
     method: "PUT",
     body: JSON.stringify({ permissionCodes }),
   })
-
   return buildGroupsFromCodes(savedCodes)
 }
