@@ -174,7 +174,7 @@ export default function ReceiptDetail({ receiptId }) {
             </thead>
 
             <tbody>
-              {receipt.items.map((item, index) => (
+              {(receipt.items || []).map((item, index) => (
                 <tr
                   key={item.orderItemId}
                   className="border-t border-slate-100 text-slate-600"
@@ -245,7 +245,7 @@ export default function ReceiptDetail({ receiptId }) {
                 </tr>
               )}
 
-              {receipt.histories.map((history) => (
+              {(receipt.histories || []).map((history) => (
                 <tr
                   key={history.id}
                   className="border-t border-slate-100 text-slate-600"
