@@ -104,11 +104,8 @@ useEffect(() => {
 
         console.log("=== [EDIT] 4. 최종 setItems 배열 ===", itemsToSet)
         setItems(itemsToSet)
-        // ============================================================
 
-        // ==================== 당신의 기존 복잡한 Form 매핑 로직 유지 ====================
-        const currentSupplierId = detail.supplierId || detail.supplier?.supplierId || 21
-        
+        const currentSupplierId = detail.supplierId || detail.supplier?.supplierId || 21        
         const matchedSupplier = formOptions.suppliers?.find(
           (s) => Number(s.supplierId || s.id) === Number(currentSupplierId)
         )
@@ -131,8 +128,8 @@ useEffect(() => {
           requestNo: fallbackRequestNo,
           requestTitle: rawRequestTitle,
           
-          expectedInboundFrom: detail.expectedInboundFrom || "",
-          expectedInboundTo: detail.expectedInboundTo || "",
+          expectedReceiptFrom: detail.expectedReceiptFrom || "",
+          expectedReceiptTo: detail.expectedReceiptTo || "",
           warehouseCode: detail.warehouseCode || "",
           warehouseName: detail.warehouseName || "",
           memo: detail.memo || "",
@@ -167,7 +164,6 @@ useEffect(() => {
 
         console.log("=== [EDIT] setForm 상태 ===", assignedFormState)
         setForm(assignedFormState)
-        // ==================================================================
 
         setDetailState({
           detail,
@@ -310,14 +306,14 @@ function removeItem(requestItemId) {
       const bffRequestPayload = {
         supplierId: Number(form.supplierId || detailState.detail?.supplierId || 21),
         createdBy: Number(form.createdBy || 5),
-        dueDate: form.expectedInboundTo ? `${form.expectedInboundTo}T23:59:59` : null,
+        dueDate: form.expectedReceiptTo ? `${form.expectedReceiptTo}T23:59:59` : null,
         orderStatus: form.status || "CONFIRMED",
         orderNo: form.orderNo || form.orderNumber || null,
         requestId: form.requestId ? Number(form.requestId) : null,
         requestNumber: form.requestNumber || "",
         requestTitle: form.requestTitle || "",
-        expectedInboundFrom: form.expectedInboundFrom || "",
-        expectedInboundTo: form.expectedInboundTo || "",
+        expectedReceiptFrom: form.expectedReceiptFrom || "",
+        expectedReceiptTo: form.expectedReceiptTo || "",
         warehouseCode: form.warehouseCode || "",
         memo: form.memo || "",
         items: items.map((item) => ({

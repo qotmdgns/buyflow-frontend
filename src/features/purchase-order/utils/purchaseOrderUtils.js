@@ -3,9 +3,21 @@ export const PURCHASE_ORDER_STATUS_META = {
     label: "임시 저장",
     badgeClassName: "border-slate-200 bg-slate-50 text-slate-500",
   },
+  PENDING: {
+    label: "발주 대기",
+    badgeClassName: "border-amber-200 bg-amber-50 text-amber-700",
+  },
+  APPROVED: {
+    label: "발주 확정",
+    badgeClassName: "border-blue-200 bg-blue-50 text-blue-700",
+  },
   CONFIRMED: {
     label: "발주 확정",
-    badgeClassName: "border-blue-200 bg-blue-50 text-blue-600",
+    badgeClassName: "border-blue-200 bg-blue-50 text-blue-700",
+  },
+  ORDERED: {
+    label: "발주 완료",
+    badgeClassName: "border-blue-200 bg-blue-50 text-blue-700",
   },
   PARTIAL_RECEIVED: {
     label: "부분 입고",
@@ -15,9 +27,17 @@ export const PURCHASE_ORDER_STATUS_META = {
     label: "입고 완료",
     badgeClassName: "border-emerald-200 bg-emerald-50 text-emerald-600",
   },
+  COMPLETED: {
+    label: "입고 완료",
+    badgeClassName: "border-emerald-200 bg-emerald-50 text-emerald-600",
+  },
   CANCELED: {
-    label: "취소",
-    badgeClassName: "border-rose-200 bg-rose-50 text-rose-500",
+    label: "발주 취소",
+    badgeClassName: "border-rose-200 bg-rose-50 text-rose-600",
+  },
+  CANCELLED: {
+    label: "발주 취소",
+    badgeClassName: "border-rose-200 bg-rose-50 text-rose-600",
   },
 }
 
@@ -53,7 +73,7 @@ export const EMPTY_PURCHASE_ORDER_FORM = {
   expectedReceiptTo: "",
   warehouseCode: "",
   memo: "",
-  status: "DRAFT",
+  status: "",
 }
 
 export function getTodayString() {
@@ -65,20 +85,30 @@ export function formatWon(value = 0) {
 }
 
 export function getPurchaseOrderStatusMeta(status) {
-  return (
-    PURCHASE_ORDER_STATUS_META[status] ?? {
-      label: status || "-",
+  if (!status) {
+    return {
+      label: "-",
       badgeClassName: "border-slate-200 bg-slate-50 text-slate-500",
-    }
-  )
+    };
+  }
+
+  const key = status.toString().toUpperCase();
+
+  return PURCHASE_ORDER_STATUS_META[key] ?? {
+    label: status,
+    badgeClassName: "border-slate-200 bg-slate-50 text-slate-500",
+  };
 }
 
 export function getPurchaseOrderStatusLabel(status) {
-  return getPurchaseOrderStatusMeta(status).label
+  if (!status) return "알 수 없음";
+  
+  const meta = PURCHASE_ORDER_STATUS_META[status.toUpperCase()];
+  return meta ? meta.label : status;
 }
 
 export function canEditPurchaseOrder(status) {
-  return status === "DRAFT" || status === "CONFIRMED"
+  return status === "CONFIRMED"
 }
 
 export const canEditPurchaseOrderCoreFields = (status) => {

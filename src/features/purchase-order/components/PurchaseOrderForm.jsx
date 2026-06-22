@@ -26,8 +26,19 @@ function FieldError({ message }) {
 }
 
 function StatusBadge({ status }) {
+  if (!status) {
+    return <span className="text-slate-400">-</span>;
+  }
   const meta = getPurchaseOrderStatusMeta(status)
 
+  if (!meta || !meta.badgeClassName) {
+    return (
+      <span className="inline-flex rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 text-[12px] font-semibold text-slate-500">
+        {status}
+      </span>
+    );
+  }
+  
   return (
     <span
       className={`inline-flex rounded-full border px-2.5 py-1 text-[12px] font-semibold ${meta.badgeClassName}`}
@@ -163,17 +174,17 @@ export default function PurchaseOrderForm({
             취소
           </button>
 
-          {editable && (
+          {/* {editable && (
             <button
               type="button"
-              onClick={() => onSave("DRAFT")}
+              onClick={() => onSave("")}
               disabled={submitting}
               className="flex h-10 items-center gap-1.5 rounded-md border border-blue-200 bg-white px-4 text-[13px] font-semibold text-blue-600 hover:bg-blue-50 disabled:opacity-50"
             >
               <Save size={14} />
               저장
             </button>
-          )}
+          )} */}
 
           {editableCoreFields && (
             <button
@@ -223,15 +234,32 @@ export default function PurchaseOrderForm({
               <FieldLabel required>구매 요청 번호</FieldLabel>
               <select
                 value={form.requestId || ""}
-                onChange={(event) => onApplyPurchaseRequest(event.target.value)}
+                onChange={(event) => {
+                  const value = event.target.value;
+                  if (typeof onApplyPurchaseRequest === "function") {
+                    onApplyPurchaseRequest(value);
+                  } else {
+                    console.warn("[PurchaseOrderForm] onApplyPurchaseRequest prop이 전달되지 않았습니다.");
+                    if (typeof onChange === "function") {
+                      onChange("requestId", value);
+                    }
+                  }
+                }}  
+                  // onApplyPurchaseRequest(event.target.value)}
                 disabled={!editableCoreFields}
                 className={INPUT_CLASS_NAME}
               >
                 <option value="">승인 완료 구매 요청 선택</option>
                 {approvedPurchaseRequests.map((request, index) => (
-                  <option key={request.id || index} value={request.id}>
-                    {request.requestNumber} / {request.title}
+                  <option 
+                    key={request.id || request.requestId || index} 
+                    value={request.id || request.requestId}
+                  >
+                    {request.requestNumber} / {request.title || "제목 없음"}
                   </option>
+                  // <option key={request.id || index} value={request.id}>
+                  //   {request.requestNumber} / {request.title}
+                  // </option>
                 ))}
               </select>
               <FieldError message={errors.requestId} />
@@ -245,34 +273,30 @@ export default function PurchaseOrderForm({
                 className={INPUT_CLASS_NAME}
               />
             </label>
-
             <label className="block">
               <FieldLabel required>공급업체</FieldLabel>
-              {/* 🚀 [공급업체 선택창 완공]: 누락되었던 value 속성에 form.supplierName를 정방향 동기화하여 고정 팅김을 전면 분쇄합니다! */}
               <select 
-                value={form.supplierName || ""}
+                value={selectedSupplierValue} 
                 onChange={(event) => {
                   const val = event.target.value;
-                  if (typeof changeSupplier === "function") {
-                    changeSupplier(val);
-                  } else if (typeof onChangeSupplier === "function") {
-                    onChangeSupplier(val);
-                  }
+                  handleChangeSupplier(val);   // 기존에 정의된 함수 사용
                 }} 
                 disabled={!editableCoreFields} 
                 className={INPUT_CLASS_NAME}
               >
                 <option value="">공급업체 선택</option>
-                {options.suppliers?.map((supplier, index) => {
-                  const sName = typeof supplier === "string" ? supplier : (supplier.supplierName || supplier.name || `공급업체(${index})`);
+                {suppliers.map((supplier, index) => {
+                  const supplierValue = getSupplierValue(supplier, index);
+                  const supplierName = getSupplierName(supplier, index);
+
                   return (
                     <option
-                      key={`supplier-opt-${supplierValue}-${index}`}
+                      key={supplierValue}
                       value={supplierValue}
                     >
                       {supplierName}
                     </option>
-                  )
+                  );
                 })}
               </select>
               <FieldError
@@ -283,7 +307,6 @@ export default function PurchaseOrderForm({
                 }
               />
             </label>
-
             <label className="block">
               <FieldLabel>공급업체 담당자</FieldLabel>
               <input

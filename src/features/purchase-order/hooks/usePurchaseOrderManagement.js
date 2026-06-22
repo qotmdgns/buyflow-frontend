@@ -73,56 +73,59 @@ const loadFormOptions = useCallback(async () => {
 }, []);
 
   useEffect(() => {
-    loadFormOptions()
-  }, [])
+    void loadFormOptions()
+  }, [loadFormOptions])
 
-  useEffect(() => {
-    let ignore = false
+useEffect(() => {
+  let ignore = false
 
-    async function loadOrders() {
-      setLoading(true)
-      setError("")
+  async function loadOrders() {
+    setLoading(true)
+    setError("")
 
-      try {
-        const data = await fetchPurchaseOrders({
-          ...appliedFilters,
-          page: pagination.page,
-          size: pagination.size,
-        })
+    try {
+      const params = {
+        ...appliedFilters,
+        page: pagination.page,
+        size: pagination.size,
+      };
+      console.log("📤 [SEARCH] 최종 params:", params);
 
-        if (!ignore) {
-          const realContentList = data.content || data.items || data || [];
-          setOrders(realContentList)
+      const data = await fetchPurchaseOrders(params);
 
-          // 페이징 객체 안전핀 가드레일 매핑
-          if (data.pagination) {
-            setPagination(data.pagination)
-          } else if (data.page) {
-            setPagination({
-              page: data.page,
-              size: data.size,
-              totalElements: data.totalElements,
-              totalPages: data.totalPages
-            })
-          }
-        }
-      } catch (requestError) {
-        if (!ignore) {
-          setError(requestError.message || "발주 목록을 불러오지 못했습니다.")
-        }
-      } finally {
-        if (!ignore) {
-          setLoading(false)
+      if (!ignore) {
+        const realContentList = data.content || data.items || data || [];
+        setOrders(realContentList);
+
+        if (data.pagination) {
+          setPagination(data.pagination);
+        } else if (data.page) {
+          setPagination({
+            page: data.page,
+            size: data.size || pagination.size,
+            totalElements: data.totalElements || 0,
+            totalPages: data.totalPages || 1,
+          });
         }
       }
+    } catch (requestError) {
+      console.error("목록 로드 실패:", requestError);
+      if (!ignore) {
+        setError(requestError.message || "발주 목록을 불러오지 못했습니다.");
+      }
+    } finally {
+      if (!ignore) {
+        setLoading(false);
+      }
     }
+  }
 
-    loadOrders()
+  loadOrders();
 
-    return () => {
-      ignore = true
-    }
-  }, [appliedFilters, pagination.page, pagination.size, refreshKey])
+  return () => {
+    ignore = true;
+  };
+}, [appliedFilters, pagination.page, pagination.size, refreshKey]);
 
   function updateFilter(name, value) {
     setDraftFilters((currentFilters) => ({

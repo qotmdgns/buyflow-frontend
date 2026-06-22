@@ -27,6 +27,23 @@ const INPUT_CLASS_NAME =
 function StatusBadge({ status }) {
   const meta = getPurchaseOrderStatusMeta(status)
 
+  // const isConfirmed = 
+  //   status === "APPROVED" || 
+  //   status === "CONFIRMED" || 
+  //   status === "ORDERED" ||
+  //   (meta.label && (
+  //     meta.label.includes("확정") || 
+  //     meta.label.includes("완료")
+  //   ));
+
+  //   if (isConfirmed) {
+  //   return (
+  //     <span className="inline-flex items-center rounded-full bg-blue-100 px-3.5 py-1 text-[13px] font-semibold text-blue-700 border border-blue-200 shadow-sm">
+  //       발주 확정
+  //     </span>
+  //   );
+  // }
+
   return (
     <span
       className={`inline-flex rounded-full border px-2.5 py-1 text-[12px] font-semibold ${meta.badgeClassName}`}
@@ -67,8 +84,8 @@ function getRequestNumber(order) {
 }
 
 function getExpectedReceiptText(order) {
-  const from = order.expectedReceiptFrom || order.expectedInboundFrom || "-"
-  const to = order.expectedReceiptTo || order.expectedInboundTo || "-"
+  const from = order.expectedReceiptFrom || order.expectedReceiptFrom || "-"
+  const to = order.expectedReceiptTo || order.expectedReceiptTo || "-"
 
   return `${from} ~ ${to}`
 }
@@ -117,6 +134,7 @@ export default function PurchaseOrderManagement() {
     error,
     selectedOrderId,
     detailState,
+    changePageSize,
     cancelTarget,
     canceling,
     cancelError,

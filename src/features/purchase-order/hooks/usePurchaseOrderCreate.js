@@ -420,10 +420,10 @@ export default function usePurchaseOrderCreate() {
     }, 0)
 
     const expectedReceiptFrom =
-      form.expectedReceiptFrom || form.expectedInboundFrom || ""
+      form.expectedReceiptFrom || form.expectedReceiptFrom || ""
 
     const expectedReceiptTo =
-      form.expectedReceiptTo || form.expectedInboundTo || ""
+      form.expectedReceiptTo || form.expectedReceiptTo || ""
 
     const payloadItems = items.map((item) => {
       const quantity = Number(item.orderQuantity || item.quantity || 0)
@@ -462,8 +462,8 @@ export default function usePurchaseOrderCreate() {
       expectedReceiptFrom,
       expectedReceiptTo,
 
-      expectedInboundFrom: expectedReceiptFrom,
-      expectedInboundTo: expectedReceiptTo,
+      expectedReceiptFrom: expectedReceiptFrom,
+      expectedReceiptTo: expectedReceiptTo,
 
       warehouseCode: form.warehouseCode || "",
       memo: form.memo || "",
@@ -477,33 +477,27 @@ export default function usePurchaseOrderCreate() {
     setSubmitError("")
 
     try {
-      // 🚀 [총 발주 금액 선제 연산]: 백엔드가 계산을 누락하더라도 DB에 정상 저장되도록 총액을 구합니다.
       const totalAmountCalculated = items.reduce((acc, item) => {
         const qty = Number(item.orderQuantity || 0);
         const price = Number(item.unitPrice || 0);
         return acc + (qty * price * 1.1); // 부가세 10% 포함 총액 계산
       }, 0);
 
-      // 🟢 [자바 DTO 1:1 완벽 저격]: PurchaseOrderDto.Request 자바 필드명과 완벽하게 일치시킵니다!
       const bffRequestPayload = {
         supplierId: (!form.supplierId || isNaN(Number(form.supplierId))) ? 2 : Number(form.supplierId), 
         createdBy: Number(form.createdBy || 5),  
-        dueDate: form.expectedInboundTo ? `${form.expectedInboundTo}T23:59:59` : null, 
+        dueDate: form.expectedReceiptTo ? `${form.expectedReceiptTo}T23:59:59` : null, 
         orderStatus: status,                       
         orderNo: form.orderNo || null,           
-        
-        // 🚀 [구매 요청 싱크 폭격]: 자바 Request DTO가 수령할 수 있도록 명확하게 매핑 사출!
         requestId: form.requestId ? Number(form.requestId) : null,
         requestNumber: form.requestNumber || "", // 찐 구매요청 번호 강제 주입
         requestTitle: form.requestTitle || "",
         
-        expectedInboundFrom: form.expectedInboundFrom || "",
-        expectedInboundTo: form.expectedInboundTo || "",
+        expectedReceiptFrom: form.expectedReceiptFrom || "",
+        expectedReceiptTo: form.expectedReceiptTo || "",
         warehouseCode: form.warehouseCode || "",
         memo: form.memo || "",
         manager: form.manager || "-", // 공급업체 담당자명 토스
-        
-        // 🚀 [금액 유실 방어선]: 자바 DTO 구조에 맞게 총액 필드가 있다면 함께 쏴서 저장 유도
         totalAmount: totalAmountCalculated, 
 
         items: items.map((item) => ({

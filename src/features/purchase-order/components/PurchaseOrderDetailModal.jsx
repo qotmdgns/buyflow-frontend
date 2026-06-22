@@ -82,12 +82,6 @@ export default function PurchaseOrderDetailModal({
                   ? order.requestNo 
                   : (order.requestNumber || "-")}
               </dd>    
-              <dt className="text-[12px] font-semibold text-slate-400 mb-0.5">
-                구매 요청 번호
-              </dt>
-              <dd className="font-medium text-slate-800">
-                {order.requestNo || order.requestNumber || "-"}
-              </dd>
             </div>
 
             <div className="border-b border-slate-50 pb-2">
@@ -106,15 +100,17 @@ export default function PurchaseOrderDetailModal({
 
             <div>
               <dt className="text-[12px] text-slate-400">발주 담당자 연락처</dt>
-              <dd className="font-medium text-slate-800">{order.orderManagerPhone || order.userPhone || "-"}</dd>
+              <dd className="font-medium text-slate-800">{order.orderManagerPhone || "-"}</dd>
             </div>
 
-            <div className="border-b border-slate-50 pb-2">
+            {/* <div className="border-b border-slate-50 pb-2">
               <dt className="text-[12px] font-semibold text-slate-400 mb-0.5">입고 예정일</dt>
               <dd className="font-medium text-slate-800">
-                {order.orderManagerPhone || "-"}
+                {order.expectedInboundFrom && order.expectedInboundTo 
+                  ? `${order.expectedInboundFrom} ~ ${order.expectedInboundTo}`
+                  : (order.dueDate ? String(order.dueDate).slice(0, 10) : "-")}
               </dd>
-            </div>
+            </div> */}
 
             <div className="border-b border-slate-50 pb-2">
               <dt className="text-[12px] font-semibold text-slate-400 mb-0.5">
@@ -130,7 +126,6 @@ export default function PurchaseOrderDetailModal({
             </div>
 
             <div className="border-b border-slate-50 pb-2">
-              <dt className="text-[12px] font-semibold text-slate-400 mb-0.5">총 발주 금액</dt>
               <dt className="text-[12px] font-semibold text-slate-400 mb-0.5">
                 입고 창고
               </dt>
