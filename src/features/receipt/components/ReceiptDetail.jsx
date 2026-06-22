@@ -62,9 +62,10 @@ function ErrorState({ error, onReload }) {
   )
 }
 
-export default function ReceiptDetail({ receiptId }) {
-  const { receipt, loading, error, reload } = useReceiptDetail(receiptId)
-
+export default function ReceiptDetail({ receiptId, mode = "receipt" }) {
+  const { receipt, loading, error, reload } =
+    useReceiptDetail(receiptId, mode)
+    
   if (loading) {
     return <LoadingState />
   }

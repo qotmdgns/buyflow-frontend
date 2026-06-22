@@ -357,6 +357,35 @@ export async function fetchReceiptById(receiptId) {
   return clone(receipt)
 }
 
+export async function fetchReceiptByOrderId(orderId) {
+  if (!USE_MOCK) {
+    const response = await fetch(
+      createApiUrl(`/api/receipts/order/${orderId}`),
+      {
+        cache: "no-store",
+      },
+    )
+
+    if (!response.ok) {
+      throw new Error("입고 상세 정보를 불러오지 못했습니다.")
+    }
+
+    return response.json()
+  }
+
+  await wait(100)
+
+  const receipt = receiptDatabase.find(
+    (item) => item.id === Number(orderId),
+  )
+
+  if (!receipt) {
+    throw new Error("입고 정보를 찾을 수 없습니다.")
+  }
+
+  return clone(receipt)
+}
+
 export async function createReceiptReceipt(payload, attachment = null) {
   if (!USE_MOCK) {
     const response = await fetch(createApiUrl("/api/receipts"), {
