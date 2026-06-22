@@ -1,5 +1,6 @@
 "use client"
 
+import { useEffect, useState } from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import {
@@ -17,6 +18,7 @@ import {
   Warehouse,
 } from "lucide-react"
 import SidebarAccount from "@/features/auth/components/SidebarAccount"
+import { hasPermission } from "@/utils/permissions"
 
 const menuGroups = [
   {
@@ -50,7 +52,15 @@ const menuGroups = [
   },
   {
     label: "설정",
-    items: [{ label: "사용자 및 권한 관리", href: "/system", icon: Settings }],
+    items: [
+      {
+        label: "사용자 및 권한 관리",
+        href: "/system",
+        icon: Settings,
+        // 시스템 관리(사용자/권한) = ADMIN 전용. 둘 중 하나라도 있으면 노출.
+        requireAnyPermission: ["users.read", "roles.write"],
+      },
+    ],
   },
 ]
 
@@ -72,12 +82,38 @@ function Logo() {
 export default function Sidebar() {
   const pathname = usePathname()
 
+  // 세션 권한은 마운트 이후에 읽는다 (SSR 하이드레이션 불일치 방지)
+  const [ready, setReady] = useState(false)
+
+  useEffect(() => {
+    setReady(true)
+  }, [])
+
+  const canSee = (item) => {
+    if (!item.requireAnyPermission) {
+      return true
+    }
+
+    if (!ready) {
+      return false
+    }
+
+    return item.requireAnyPermission.some((permission) =>
+      hasPermission(permission),
+    )
+  }
+
+  // 권한 없는 항목 제거 + 항목이 모두 빠진 그룹은 라벨까지 숨김
+  const visibleGroups = menuGroups
+    .map((group) => ({ ...group, items: group.items.filter(canSee) }))
+    .filter((group) => group.items.length > 0)
+
   return (
     <aside className="fixed inset-y-0 left-0 z-30 hidden w-[220px] border-r border-slate-200 bg-white lg:flex lg:flex-col">
       <Logo />
 
       <nav className="flex-1 overflow-y-auto py-2">
-        {menuGroups.map((group, groupIndex) => (
+        {visibleGroups.map((group, groupIndex) => (
           <div
             key={`${group.label}-${groupIndex}`}
             className={groupIndex ? "mt-3" : ""}
