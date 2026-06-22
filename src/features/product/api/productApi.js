@@ -17,14 +17,41 @@ function normalizeProductItem(product) {
     id: product.id ?? product.productId,
     code: product.code ?? product.productNo,
     name: product.name ?? product.productName,
-    category: product.category ?? product.categoryName,
+    category: product.category ?? product.categoryName ?? "",
+    spec: product.spec ?? product.specification ?? "",
+    unit: product.unit ?? "",
     manufacturer: product.manufacturer ?? product.companyName ?? "",
     description: product.description ?? "",
     unitPrice: product.unitPrice ?? 0,
     safetyStock: product.safetyStock ?? 0,
     currentStock: product.currentStock ?? 0,
     isActive: product.isActive ?? product.useYn !== "N",
-    registeredAt: product.registeredAt ?? "",
+    registeredAt: product.registeredAt ?? product.createdAt ?? "",
+  }
+}
+
+function withAllOption(values = []) {
+  const uniqueValues = Array.from(
+    new Set(
+      values
+        .filter(Boolean)
+        .map((value) => String(value).trim())
+        .filter(Boolean),
+    ),
+  )
+
+  return ["전체", ...uniqueValues.filter((value) => value !== "전체")]
+}
+
+function normalizeProductFilterOptions(data = {}) {
+  const rawData = data.data ?? data
+
+  return {
+    categories: withAllOption(
+      rawData.categories ?? rawData.categoryNames ?? [],
+    ),
+    units: withAllOption(rawData.units ?? []),
+    activeStatuses: rawData.activeStatuses ?? ["전체", "사용", "미사용"],
   }
 }
 
@@ -167,7 +194,7 @@ export async function fetchProductFilterOptions() {
     throw new Error("품목 검색 조건을 불러오지 못했습니다.")
   }
 
-  return response.json()
+  return normalizeProductFilterOptions(await response.json())
 }
 
 export async function fetchProductById(productId) {
