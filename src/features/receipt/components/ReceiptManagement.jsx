@@ -120,6 +120,7 @@ function PageIconButton({ children, label, disabled, onClick }) {
 }
 
 export default function ReceiptManagement() {
+  console.log("ReceiptManagement 렌더링")
   const router = useRouter()
 
   const {
@@ -269,17 +270,21 @@ export default function ReceiptManagement() {
 
           return (
             <button
-              key={tab.key}
-              type="button"
-              onClick={() => selectTab(tab.key)}
-              className={`border-b-2 px-1 pb-2 text-[13px] font-semibold transition ${
-                isActive
-                  ? "border-slate-800 text-slate-800"
-                  : "border-transparent text-slate-400 hover:text-slate-600"
-              }`}
-            >
-              {tab.label} ({summary.tabCounts[tab.key] ?? 0})
-            </button>
+  key={tab.key}
+  type="button"
+  onClick={() => selectTab(tab.key)}
+  className={`border-b-2 px-1 pb-2 text-[13px] font-semibold transition ${
+    isActive
+      ? "border-slate-800 text-slate-800"
+      : "border-transparent text-slate-400 hover:text-slate-600"
+  }`}
+>
+  {tab.label} (
+    {summary.tabCounts?.[tab.key] ??
+      summary.tabCounts?.[tab.key.toLowerCase()] ??
+      0}
+  )
+</button>
           )
         })}
       </div>
@@ -587,8 +592,9 @@ export default function ReceiptManagement() {
                     </td>
 
                     <td className="whitespace-nowrap px-3 py-3 text-center">
-                      <Link
-                        href={`/receipts/${receipt.id}`}
+  {console.log("LINK DATA", receipt.id, receipt.receiptId)}
+  <Link
+                        href={`/receipts/${receipt.receiptId}`}
                         aria-label={`${receipt.orderNumber} 입고 상세 보기`}
                         className="inline-flex items-center justify-center rounded-md border border-blue-200 bg-blue-50 px-3 py-1.5 text-[13px] font-semibold text-blue-600 transition hover:bg-blue-100"
                       >

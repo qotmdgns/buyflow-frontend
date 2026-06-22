@@ -71,16 +71,6 @@ export default function ProductSearchForm({
             onChange={(event) => onChange("category", event.target.value)}
           />
         </label>
-
-        <label>
-          <FieldLabel>사용 여부</FieldLabel>
-
-          <SelectField
-            value={filters.activeStatus}
-            options={filterOptions.activeStatuses}
-            onChange={(event) => onChange("activeStatus", event.target.value)}
-          />
-        </label>
       </div>
 
       <div className="mt-3 flex flex-wrap items-end justify-between gap-3">
@@ -93,18 +83,6 @@ export default function ProductSearchForm({
               options={filterOptions.units}
               onChange={(event) => onChange("unit", event.target.value)}
             />
-          </label>
-
-          <label className="mb-2 flex items-center gap-2 text-[13px] text-slate-600">
-            <input
-              type="checkbox"
-              checked={filters.lowStockOnly}
-              onChange={(event) =>
-                onChange("lowStockOnly", event.target.checked)
-              }
-              className="h-4 w-4 rounded border-slate-300 accent-blue-600"
-            />
-            안전재고 이하만 보기
           </label>
         </div>
 

@@ -25,6 +25,7 @@ export default function useProductManagement() {
   const [selectedIds, setSelectedIds] = useState(new Set())
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState("")
+  const [reloadKey, setReloadKey] = useState(0)
 
   // 선택한 품목의 상세 Modal 데이터
   const [detailProduct, setDetailProduct] = useState(null)
@@ -86,7 +87,7 @@ export default function useProductManagement() {
     return () => {
       ignore = true
     }
-  }, [appliedFilters, pagination.page, pageSize])
+  }, [appliedFilters, pagination.page, pageSize, reloadKey])
 
   const allCurrentRowsSelected =
     products.length > 0 &&
@@ -177,6 +178,10 @@ export default function useProductManagement() {
     setDetailProduct(null)
   }
 
+  function reloadProducts() {
+    setReloadKey((currentKey) => currentKey + 1)
+  }
+
   return {
     draftFilters,
     filterOptions,
@@ -197,5 +202,6 @@ export default function useProductManagement() {
     toggleRow,
     openProductDetail,
     closeProductDetail,
+    reloadProducts,
   }
 }
