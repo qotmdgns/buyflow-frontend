@@ -4,8 +4,7 @@ import {
 } from "@/features/warehouse/data/mockWarehouseData"
 import { buildWarehouseAddress } from "@/features/warehouse/utils/warehouseManagementUtils"
 
-const USE_MOCK = process.env.
-NEXT_PUBLIC_USE_WAREHOUSE_MOCK=false
+const USE_MOCK = process.env.NEXT_PUBLIC_USE_WAREHOUSE_MOCK !== "false"
 
 let warehouseDatabase = mockWarehouses.map((warehouse) => ({ ...warehouse }))
 

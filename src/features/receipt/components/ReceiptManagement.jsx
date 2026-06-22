@@ -120,6 +120,7 @@ function PageIconButton({ children, label, disabled, onClick }) {
 }
 
 export default function ReceiptManagement() {
+  console.log("ReceiptManagement 렌더링")
   const router = useRouter()
 
   const {

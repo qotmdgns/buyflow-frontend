@@ -82,6 +82,8 @@ export default function useReceiptManagement() {
       setError("")
 
       try {
+        console.log("loadReceipts 실행됨")
+
         const data = await fetchReceipts({
           ...appliedFilters,
           activeTab,
@@ -90,14 +92,14 @@ export default function useReceiptManagement() {
         })
 
         if (!ignore) {
-          const nextItems = data?.items ?? []
+const nextItems = data?.items ?? []
 
-          const nextPagination = {
-            ...DEFAULT_RECEIPT_PAGINATION,
-            ...(data?.pagination ?? {}),
-            page: data?.pagination?.page ?? currentPage,
-            size: data?.pagination?.size ?? currentSize,
-          }
+const nextPagination = {
+  ...DEFAULT_RECEIPT_PAGINATION,
+  ...(data?.pagination ?? {}),
+  page: data?.pagination?.page ?? currentPage,
+  size: data?.pagination?.size ?? currentSize,
+}
 
           setReceipts(nextItems)
           setPagination(nextPagination)
