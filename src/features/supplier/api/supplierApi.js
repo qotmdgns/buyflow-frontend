@@ -1,3 +1,4 @@
+import { apiFetch } from "@/lib/api/fetchClient"
 import {
   mockSuppliers,
   supplierFilterOptions,
@@ -96,16 +97,12 @@ export async function fetchSuppliers(params = {}) {
     query.set(key, key === "page" ? String(Number(value) - 1) : String(value))
   })
 
-  const response = await fetch(
-    `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/suppliers?${query.toString()}`,
-    { cache: "no-store" },
-  )
+  // apiFetch: JWT 토큰 자동 첨부 + base URL 기본값 + ApiResponse 언래핑
+  const data = await apiFetch(`/api/suppliers?${query.toString()}`, {
+    cache: "no-store",
+  })
 
-  if (!response.ok) {
-    throw new Error("공급업체 목록을 불러오지 못했습니다.")
-  }
-
-  return normalizeSupplierResponse(await response.json())
+  return normalizeSupplierResponse(data)
 }
 
 export async function fetchSupplierFilterOptions() {
@@ -113,16 +110,7 @@ export async function fetchSupplierFilterOptions() {
     return supplierFilterOptions
   }
 
-  const response = await fetch(
-    `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/suppliers/filter-options`,
-    { cache: "no-store" },
-  )
-
-  if (!response.ok) {
-    throw new Error("공급업체 검색 조건을 불러오지 못했습니다.")
-  }
-
-  return response.json()
+  return apiFetch("/api/suppliers/filter-options", { cache: "no-store" })
 }
 
 const SUPPLIER_TRADE_STATUS_LABELS = {
@@ -171,20 +159,10 @@ export async function fetchSupplierById(supplierId) {
     return normalizeSupplierDetailResponse(supplier)
   }
 
-  const response = await fetch(
-    `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/suppliers/${encodeURIComponent(
-      supplierId,
-    )}`,
+  const data = await apiFetch(
+    `/api/suppliers/${encodeURIComponent(supplierId)}`,
     { cache: "no-store" },
   )
 
-  if (response.status === 404) {
-    throw new Error("공급업체 정보를 찾을 수 없습니다.")
-  }
-
-  if (!response.ok) {
-    throw new Error("공급업체 상세 정보를 불러오지 못했습니다.")
-  }
-
-  return normalizeSupplierDetailResponse(await response.json())
+  return normalizeSupplierDetailResponse(data)
 }
