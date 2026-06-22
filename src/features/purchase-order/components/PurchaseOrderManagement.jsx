@@ -51,6 +51,60 @@ function TableMessage({ children, isError = false }) {
   )
 }
 
+function formatDate(value) {
+  if (!value) return "-"
+  return String(value).substring(0, 10)
+}
+
+function getRequestNumber(order) {
+  return (
+    order.requestNo ||
+    order.requestNumber ||
+    order.purchaseRequest?.requestNo ||
+    order.purchaseRequest?.requestNumber ||
+    "-"
+  )
+}
+
+function getExpectedReceiptText(order) {
+  const from = order.expectedReceiptFrom || order.expectedInboundFrom || "-"
+  const to = order.expectedReceiptTo || order.expectedInboundTo || "-"
+
+  return `${from} ~ ${to}`
+}
+
+function getItemCount(order) {
+  if (order.itemCount !== undefined && order.itemCount !== null) {
+    return order.itemCount
+  }
+
+  return order.items?.length ?? 0
+}
+
+function getOrderTotalAmount(order) {
+  const directTotal = Number(order.totalAmount ?? order.totalPrice ?? 0)
+
+  if (Number.isFinite(directTotal) && directTotal > 0) {
+    return directTotal
+  }
+
+  const supplyAmount =
+    order.items?.reduce((acc, item) => {
+      const quantity = Number(
+        item.orderQuantity ?? item.quantity ?? item.requestedQuantity ?? 0,
+      )
+      const unitPrice = Number(item.unitPrice ?? item.price ?? 0)
+
+      return acc + quantity * unitPrice
+    }, 0) ?? 0
+
+  if (!Number.isFinite(supplyAmount) || supplyAmount <= 0) {
+    return 0
+  }
+
+  return supplyAmount + Math.floor(supplyAmount * 0.1)
+}
+
 export default function PurchaseOrderManagement() {
   const router = useRouter()
 
@@ -70,7 +124,6 @@ export default function PurchaseOrderManagement() {
     searchOrders,
     resetFilters,
     movePage,
-    changePageSize,
     openDetail,
     closeDetail,
     openCancel,
@@ -80,7 +133,6 @@ export default function PurchaseOrderManagement() {
 
   function moveToEdit(order) {
     closeDetail()
-
     router.push(`/purchase-orders/${order.orderId}/edit`)
   }
 
@@ -127,7 +179,6 @@ export default function PurchaseOrderManagement() {
               className={INPUT_CLASS_NAME}
             />
           </label>
-
           <label>
             <span className="mb-1 block text-[13px] font-semibold text-slate-600">
               공급업체
@@ -140,15 +191,18 @@ export default function PurchaseOrderManagement() {
               }
               className={INPUT_CLASS_NAME}
             >
-              <option value= "">전체</option>
-              {filterOptions.suppliers.map((supplier) => (
-                <option key={supplier.supplierId || supplier.supplierName} value={supplier.supplierName}>
+              <option value="">전체</option>
+
+              {(filterOptions?.suppliers ?? []).map((supplier) => (
+                <option
+                  key={supplier.supplierId || supplier.supplierName}
+                  value={supplier.supplierName}
+                >
                   {supplier.supplierName}
                 </option>
               ))}
             </select>
           </label>
-
           <label>
             <span className="mb-1 block text-[13px] font-semibold text-slate-600">
               발주 담당자
@@ -163,18 +217,16 @@ export default function PurchaseOrderManagement() {
               className={INPUT_CLASS_NAME}
             />
           </label>
-
           <label>
             <span className="mb-1 block text-[13px] font-semibold text-slate-600">
               발주 상태
             </span>
-
             <select
               value={draftFilters.status}
               onChange={(event) => updateFilter("status", event.target.value)}
               className={INPUT_CLASS_NAME}
             >
-              {filterOptions?.statuses.map((status) => (
+              {(filterOptions?.statuses ?? []).map((status) => (
                 <option key={status} value={status}>
                   {status === "전체"
                     ? status
@@ -266,62 +318,43 @@ export default function PurchaseOrderManagement() {
 
               {!loading &&
                 !error &&
-                orders.map((order) => {
-                  const computedTotalAmount = order.items?.reduce((acc, item) => {
-                    const qty = Number(item.quantity || 0);
-                    const price = Number(item.unitPrice || 0);
-                    return acc + (qty * price);
-                  }, 0) || 0;
-
-                  const finalAmountWithVat = computedTotalAmount > 0 ? computedTotalAmount + Math.floor(computedTotalAmount * 0.1) : 0;
-
-                  return (
-                    <tr
-                      key={order.orderId}
-                      onClick={() => openDetail(order)}
-                      className="cursor-pointer border-t border-slate-100 text-slate-600 transition hover:bg-blue-50/50"
-                    >
-                      <td className="whitespace-nowrap px-3 py-3 font-semibold text-blue-600">
-                        {order.orderNumber || "-"}
-                      </td>
-
-                      {/* 🚀 [구매 요청 번호 최종 교정]: 오라클 객체 밸브 연동선 정방향 매핑 */}
-                      <td className="whitespace-nowrap px-3 py-3">
-                        {order.requestNo && order.requestNo !== "-" 
-                          ? order.requestNo 
-                          : (order.requestNumber || "-")}
-                      </td>
-
-                      <td className="whitespace-nowrap px-3 py-3 font-medium text-slate-700">
-                        {order.supplierName || "-"}
-                      </td>
-
-                      <td className="whitespace-nowrap px-3 py-3">
-                        {order.orderManager || order.userName || "-"}
-                      </td>
-
-                      <td className="whitespace-nowrap px-3 py-3">
-                        {order.orderedAt ? String(order.orderedAt).substring(0, 10) : "-"}
-                      </td>
-
-                      <td className="whitespace-nowrap px-3 py-3">
-                        {order.expectedInboundFrom || "-"} ~ {order.expectedInboundTo || "-"}
-                      </td>
-
-                      <td className="whitespace-nowrap px-3 py-3 text-right">
-                        {order.itemCount || (order.items ? order.items.length : 0)}건
-                      </td>
-
-                      <td className="whitespace-nowrap px-3 py-3 text-right font-semibold text-slate-800">
-                        {finalAmountWithVat > 0 ? formatWon(finalAmountWithVat) : "0원"}
-                      </td>
-
-                      <td className="whitespace-nowrap px-3 py-3">
-                        <StatusBadge status={order.status || order.orderStatus} />
-                      </td>
-                    </tr>
-                  );
-                })}
+                orders.map((order) => (
+                  <tr
+                    key={order.orderId}
+                    onClick={() => openDetail(order)}
+                    className="cursor-pointer border-t border-slate-100 text-slate-600 transition hover:bg-blue-50/50"
+                  >
+                    <td className="whitespace-nowrap px-3 py-3 font-semibold text-blue-600">
+                      {order.orderNo || order.orderNumber || "-"}
+                    </td>
+                    <td className="whitespace-nowrap px-3 py-3">
+                      {order.requestNo && order.requestNo !== "-"
+                        ? order.requestNo
+                        : order.requestNumber || "-"}
+                    </td>
+                    <td className="whitespace-nowrap px-3 py-3 font-medium text-slate-700">
+                      {order.supplierName || "-"}
+                    </td>
+                    <td className="whitespace-nowrap px-3 py-3">
+                      {order.orderManager || order.userName || "-"}
+                    </td>
+                    <td className="whitespace-nowrap px-3 py-3">
+                      {formatDate(order.orderedAt || order.createdAt)}
+                    </td>
+                    <td className="whitespace-nowrap px-3 py-3">
+                      {getExpectedReceiptText(order)}
+                    </td>
+                    <td className="whitespace-nowrap px-3 py-3 text-right">
+                      {getItemCount(order)}건
+                    </td>
+                    <td className="whitespace-nowrap px-3 py-3 text-right font-semibold text-slate-800">
+                      {formatWon(getOrderTotalAmount(order))}
+                    </td>
+                    <td className="whitespace-nowrap px-3 py-3">
+                      <StatusBadge status={order.orderStatus || order.status} />
+                    </td>
+                  </tr>
+                ))}
             </tbody>
           </table>
         </div>
@@ -368,7 +401,7 @@ export default function PurchaseOrderManagement() {
 
       {cancelTarget && (
         <PurchaseOrderCancelModal
-          key={cancelTarget.id}
+          key={cancelTarget.id || cancelTarget.orderId}
           order={cancelTarget}
           submitting={canceling}
           error={cancelError}

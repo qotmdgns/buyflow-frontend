@@ -37,7 +37,7 @@ const menuGroups = [
       { label: "구매 요청", href: "/purchase-requests", icon: ShoppingCart },
       { label: "승인 관리", href: "/approvals", icon: CheckSquare },
       { label: "발주 관리", href: "/purchase-orders", icon: ClipboardList },
-      { label: "입고 관리", href: "/inbounds", icon: LogIn },
+      { label: "입고 관리", href: "/receipts", icon: LogIn },
       { label: "검수 관리", href: "/inspections", icon: PackageCheck },
     ],
   },

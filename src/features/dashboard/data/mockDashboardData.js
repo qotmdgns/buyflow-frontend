@@ -19,7 +19,7 @@ export const mockDashboardData = {
       tone: "default",
     },
     {
-      key: "scheduledInbound",
+      key: "scheduledReceipt",
       label: "입고 예정 건수",
       value: "24건",
       badge: "5%",
@@ -44,7 +44,7 @@ export const mockDashboardData = {
     },
   ],
 
-  monthlyInbound: [
+  monthlyReceipt: [
     { month: "1월", quantity: 410 },
     { month: "2월", quantity: 370 },
     { month: "3월", quantity: 500 },

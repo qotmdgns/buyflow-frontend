@@ -31,10 +31,8 @@ export default function PurchaseOrderDetailModal({
     return null
   }
 
-  const currentStatus = order.orderStatus || order.status || "DRAFT";
+  const currentStatus = order.orderStatus || order.status || "DRAFT"
   const statusMeta = getPurchaseOrderStatusMeta(currentStatus)
-
-  // 🚀 [상세 금액 즉석 연산 가드레일]: 백엔드 누락에 대비해 자식 품목(items) 단가*수량을 실시간 합산
   const computedTotalAmount = order.items?.reduce((acc, item) => {
     const qty = Number(item.quantity || 0);
     const price = Number(item.unitPrice || 0);
@@ -50,9 +48,15 @@ export default function PurchaseOrderDetailModal({
     <div className="fixed inset-0 z-[70] flex items-center justify-center bg-slate-900/45 px-4 py-6">
       <section className="max-h-[calc(100vh-2rem)] w-full max-w-[980px] overflow-y-auto rounded-lg bg-white shadow-2xl">
         <header className="flex justify-between border-b px-5 py-4">
-          <h2 className="text-[16px] font-bold text-slate-800">발주 상세 정보</h2>
+          <h2 className="text-[16px] font-bold text-slate-800">
+            발주 상세 정보
+          </h2>
 
-          <button type="button" onClick={onClose} className="text-slate-400 hover:text-slate-600">
+          <button
+            type="button"
+            onClick={onClose}
+            className="text-slate-400 hover:text-slate-600"
+          >
             <X size={17} />
           </button>
         </header>
@@ -73,17 +77,26 @@ export default function PurchaseOrderDetailModal({
           <dl className="grid gap-4 md:grid-cols-2 bg-white p-2">
             <div className="border-b border-slate-50 pb-2">
               <dt className="text-[12px] font-semibold text-slate-400 mb-0.5">구매 요청 번호</dt>
-              {/* 🚀 [상세 모달 구매요청 정방향 연동]: 하드코딩 제거 버전! */}
               <dd className="font-medium text-slate-800">
                 {order.requestNo && order.requestNo !== "-" 
                   ? order.requestNo 
                   : (order.requestNumber || "-")}
+              </dd>    
+              <dt className="text-[12px] font-semibold text-slate-400 mb-0.5">
+                구매 요청 번호
+              </dt>
+              <dd className="font-medium text-slate-800">
+                {order.requestNo || order.requestNumber || "-"}
               </dd>
             </div>
 
             <div className="border-b border-slate-50 pb-2">
-              <dt className="text-[12px] font-semibold text-slate-400 mb-0.5">공급업체</dt>
-              <dd className="font-medium text-slate-800">{order.supplierName || "-"}</dd>
+              <dt className="text-[12px] font-semibold text-slate-400 mb-0.5">
+                공급업체
+              </dt>
+              <dd className="font-medium text-slate-800">
+                {order.supplierName || "-"}
+              </dd>
             </div>
 
             <div>
@@ -99,22 +112,40 @@ export default function PurchaseOrderDetailModal({
             <div className="border-b border-slate-50 pb-2">
               <dt className="text-[12px] font-semibold text-slate-400 mb-0.5">입고 예정일</dt>
               <dd className="font-medium text-slate-800">
-                {order.expectedInboundFrom && order.expectedInboundTo 
-                  ? `${order.expectedInboundFrom} ~ ${order.expectedInboundTo}`
-                  : (order.dueDate ? String(order.dueDate).slice(0, 10) : "-")}
+                {order.orderManagerPhone || "-"}
               </dd>
             </div>
 
             <div className="border-b border-slate-50 pb-2">
-              <dt className="text-[12px] font-semibold text-slate-400 mb-0.5">입고 창고</dt>
+              <dt className="text-[12px] font-semibold text-slate-400 mb-0.5">
+                입고 예정일
+              </dt>
               <dd className="font-medium text-slate-800">
-                {order.warehouseName || (order.warehouseCode ? `창고 코드: ${order.warehouseCode}` : "일반 창고")}
+                {order.expectedReceiptFrom && order.expectedReceiptTo
+                  ? `${order.expectedReceiptFrom} ~ ${order.expectedReceiptTo}`
+                  : order.dueDate
+                    ? String(order.dueDate).slice(0, 10)
+                    : "-"}
               </dd>
             </div>
 
             <div className="border-b border-slate-50 pb-2">
               <dt className="text-[12px] font-semibold text-slate-400 mb-0.5">총 발주 금액</dt>
-              {/* 🚀 [상세 모달 금액 복구 완료] */}
+              <dt className="text-[12px] font-semibold text-slate-400 mb-0.5">
+                입고 창고
+              </dt>
+              <dd className="font-medium text-slate-800">
+                {order.warehouseName ||
+                  (order.warehouseCode
+                    ? `창고 코드: ${order.warehouseCode}`
+                    : "일반 창고")}
+              </dd>
+            </div>
+
+            <div className="border-b border-slate-50 pb-2">
+              <dt className="text-[12px] font-semibold text-slate-400 mb-0.5">
+                총 발주 금액
+              </dt>
               <dd className="font-bold text-[16px] text-blue-600">
                 {formatWon(finalDetailAmount)}
               </dd>
@@ -123,8 +154,12 @@ export default function PurchaseOrderDetailModal({
 
           {order.memo && (
             <div className="rounded-md border border-slate-100 bg-slate-50/50 px-4 py-2.5 mt-2">
-              <dt className="text-[12px] font-semibold text-slate-400 mb-1">비고 / 특이사항</dt>
-              <dd className="text-slate-700 whitespace-pre-wrap">{order.memo}</dd>
+              <dt className="text-[12px] font-semibold text-slate-400 mb-1">
+                비고 / 특이사항
+              </dt>
+              <dd className="text-slate-700 whitespace-pre-wrap">
+                {order.memo}
+              </dd>
             </div>
           )}
 

@@ -5,84 +5,32 @@ import {
 
 const USE_MOCK = process.env.NEXT_PUBLIC_USE_PRODUCT_MOCK !== "false"
 
-function wait(milliseconds) {
-  return new Promise((resolve) => setTimeout(resolve, milliseconds))
-}
+const API_BASE_URL = (
+  process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:8080"
+).replace(/\/$/, "")
 
-function includesKeyword(value, keyword) {
-  return String(value ?? "")
-    .toLowerCase()
-    .includes(keyword.trim().toLowerCase())
-}
-
-function getMockProducts(params) {
-  const {
-    page = 1,
-    size = 10,
-    itemCode = "",
-    itemName = "",
-    category = "전체",
-    unit = "전체",
-    activeStatus = "전체",
-    lowStockOnly = false,
-  } = params
-
-  const filteredProducts = mockProducts.filter((product) => {
-    const matchesItemCode = !itemCode || includesKeyword(product.code, itemCode)
-    const matchesItemName = !itemName || includesKeyword(product.name, itemName)
-    const matchesCategory = category === "전체" || product.category === category
-    const matchesUnit = unit === "전체" || product.unit === unit
-    const matchesActiveStatus =
-      activeStatus === "전체" ||
-      (activeStatus === "사용" && product.isActive) ||
-      (activeStatus === "미사용" && !product.isActive)
-
-    const matchesLowStock =
-      !lowStockOnly || product.currentStock < product.safetyStock
-
-    return (
-      matchesItemCode &&
-      matchesItemName &&
-      matchesCategory &&
-      matchesUnit &&
-      matchesActiveStatus &&
-      matchesLowStock
-    )
-  })
-
-  const totalElements = filteredProducts.length
-  const totalPages = Math.max(1, Math.ceil(totalElements / size))
-  const safePage = Math.min(Math.max(page, 1), totalPages)
-  const offset = (safePage - 1) * size
-
-  return {
-    items: filteredProducts.slice(offset, offset + size),
-    pagination: {
-      page: safePage,
-      size,
-      totalElements,
-      totalPages,
-    },
-  }
-}
+const PRODUCT_API_BASE_URL = `${API_BASE_URL}/api/products`
 
 function normalizeProductResponse(data) {
-  // Spring Boot List<Product>
+  // 백엔드 ProductController의 getProducts()는 현재 List<Product>를 반환함
+  // 즉, 응답 형태가 [{ productId, productNo, productName, ... }] 배열임
   if (Array.isArray(data)) {
     const items = data.map((product) => ({
       ...product,
 
-      // 프론트가 기대하는 이름
+      // 프론트 테이블이 사용하는 필드명으로 변환
       id: product.productId,
       code: product.productNo,
       name: product.productName,
       category: product.categoryName,
 
-      // 화면용 기본값
-      safetyStock: product.safetyStock ?? 0,
+      // 백엔드 PRODUCTS 테이블에는 현재재고/안전재고/사용여부/등록일이 없거나
+      // 응답에 포함되지 않을 수 있으므로 기본값 처리
       currentStock: product.currentStock ?? 0,
+      safetyStock: product.safetyStock ?? 0,
       isActive: product.isActive ?? true,
-      registeredAt: product.registeredAt ?? "",
+      registeredAt:
+        product.registeredAt ?? product.createdAt ?? product.createdDate ?? "",
     }))
 
     return {
@@ -96,19 +44,44 @@ function normalizeProductResponse(data) {
     }
   }
 
-  // Mock 구조
-  if (Array.isArray(data.items) && data.pagination) {
+  // 혹시 나중에 백엔드가 { items, pagination } 형태로 바뀌는 경우
+  if (data?.items && data?.pagination) {
     return data
   }
 
-  // Pageable 구조
+  // Spring Pageable 형태로 바뀌는 경우
+  if (data?.content) {
+    const items = data.content.map((product) => ({
+      ...product,
+      id: product.productId,
+      code: product.productNo,
+      name: product.productName,
+      category: product.categoryName,
+      currentStock: product.currentStock ?? 0,
+      safetyStock: product.safetyStock ?? 0,
+      isActive: product.isActive ?? true,
+      registeredAt:
+        product.registeredAt ?? product.createdAt ?? product.createdDate ?? "",
+    }))
+
+    return {
+      items,
+      pagination: {
+        page: (data.number ?? 0) + 1,
+        size: data.size ?? items.length,
+        totalElements: data.totalElements ?? items.length,
+        totalPages: Math.max(data.totalPages ?? 1, 1),
+      },
+    }
+  }
+
   return {
-    items: data.content ?? [],
+    items: [],
     pagination: {
-      page: (data.number ?? 0) + 1,
-      size: data.size ?? 10,
-      totalElements: data.totalElements ?? 0,
-      totalPages: Math.max(data.totalPages ?? 1, 1),
+      page: 1,
+      size: 15,
+      totalElements: 0,
+      totalPages: 1,
     },
   }
 }
@@ -126,14 +99,11 @@ export async function fetchProducts(params = {}) {
       return
     }
 
-    query.set(
-      key,
-      key === "page" ? String(Number(value) - 1) : String(value),
-    )
+    query.set(key, key === "page" ? String(Number(value) - 1) : String(value))
   })
 
   const response = await fetch(
-    `${process.env.NEXT_PUBLIC_API_BASE_URL}/products?${query.toString()}`,
+    `${PRODUCT_API_BASE_URL}${query.toString() ? `?${query.toString()}` : ""}`,
     {
       cache: "no-store",
     },
@@ -151,12 +121,9 @@ export async function fetchProductFilterOptions() {
     return productFilterOptions
   }
 
-  const response = await fetch(
-    `${process.env.NEXT_PUBLIC_API_BASE_URL}/products/filter-options`,
-    {
-      cache: "no-store",
-    },
-  )
+  const response = await fetch(`${PRODUCT_API_BASE_URL}/filter-options`, {
+    cache: "no-store",
+  })
 
   if (!response.ok) {
     throw new Error("품목 검색 조건을 불러오지 못했습니다.")
@@ -183,10 +150,9 @@ export async function fetchProductById(productId) {
     }
   }
 
-  const response = await fetch(
-    `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/products/${productId}`,
-    { cache: "no-store" },
-  )
+  const response = await fetch(`${PRODUCT_API_BASE_URL}/${productId}`, {
+    cache: "no-store",
+  })
 
   if (!response.ok) {
     throw new Error("품목 상세 정보를 불러오지 못했습니다.")

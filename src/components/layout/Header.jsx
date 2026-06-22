@@ -104,26 +104,26 @@ const breadcrumbRules = [
   },
 
   {
-    path: "/inbounds/new",
+    path: "/receipts/new",
     crumbs: [
-      { label: "구매 및 입고", href: "/inbounds" },
-      { label: "입고 관리", href: "/inbounds" },
+      { label: "구매 및 입고", href: "/receipts" },
+      { label: "입고 관리", href: "/receipts" },
       { label: "입고 등록" },
     ],
   },
   {
     matches: (pathname) =>
-      /^\/inbounds\/[^/]+$/.test(pathname) && pathname !== "/inbounds/new",
+      /^\/receipts\/[^/]+$/.test(pathname) && pathname !== "/receipts/new",
     crumbs: [
-      { label: "구매 및 입고", href: "/inbounds" },
-      { label: "입고 관리", href: "/inbounds" },
+      { label: "구매 및 입고", href: "/receipts" },
+      { label: "입고 관리", href: "/receipts" },
       { label: "입고 상세" },
     ],
   },
   {
-    path: "/inbounds",
+    path: "/receipts",
     crumbs: [
-      { label: "구매 및 입고", href: "/inbounds" },
+      { label: "구매 및 입고", href: "/receipts" },
       { label: "입고 관리" },
     ],
   },

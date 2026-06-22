@@ -2,7 +2,6 @@
 
 import Link from "next/link"
 import { useRouter } from "next/navigation"
-import { MoreHorizontal } from "lucide-react"
 
 import {
   formatWon,
@@ -68,7 +67,7 @@ export default function PurchaseRequestTable({
   allCurrentRowsSelected,
   onToggleAll,
   onToggleRow,
-  onCancelRequest,
+  onDeleteRequest,
 }) {
   const router = useRouter()
 
@@ -194,7 +193,7 @@ export default function PurchaseRequestTable({
                 </td>
 
                 <td className="whitespace-nowrap px-3 py-2.5">
-                  {request.desiredInboundAt}
+                  {request.desiredReceiptAt}
                 </td>
 
                 <td className="whitespace-nowrap px-3 py-2.5 text-right">
@@ -214,21 +213,38 @@ export default function PurchaseRequestTable({
                 </td>
 
                 <td className="px-3 py-2.5">
-                  {request.status === "승인 대기" ? (
-                    <button
-                      type="button"
-                      onClick={(event) => {
-                        event.stopPropagation()
-                        onCancelRequest?.(request)
-                      }}
-                      className="whitespace-nowrap rounded-md border border-rose-200 bg-white px-2.5 py-1.5 text-[12px] font-semibold text-rose-500 transition hover:bg-rose-50"
-                      aria-label={`${request.requestNumber} 요청 취소`}
-                    >
-                      요청 취소
-                    </button>
-                  ) : (
-                    <span className="text-[12px] text-slate-300">-</span>
-                  )}
+                  <div className="flex flex-wrap items-center gap-1.5">
+                    {["승인 대기", "반려"].includes(request.status) && (
+                      <Link
+                        href={`/purchase-requests/${request.id}/edit`}
+                        onClick={(event) => event.stopPropagation()}
+                        className="whitespace-nowrap rounded-md border border-slate-200 bg-white px-2.5 py-1.5 text-[12px] font-semibold text-slate-600 transition hover:bg-slate-50"
+                        aria-label={`${request.requestNumber} 수정`}
+                      >
+                        수정
+                      </Link>
+                    )}
+
+                    {["승인 대기", "반려", "요청 취소"].includes(
+                      request.status,
+                    ) && (
+                      <button
+                        type="button"
+                        onClick={(event) => {
+                          event.stopPropagation()
+                          onDeleteRequest?.(request)
+                        }}
+                        className="whitespace-nowrap rounded-md border border-rose-200 bg-white px-2.5 py-1.5 text-[12px] font-semibold text-rose-500 transition hover:bg-rose-50"
+                        aria-label={`${request.requestNumber} 삭제`}
+                      >
+                        삭제
+                      </button>
+                    )}
+
+                    {!["승인 대기", "반려", "요청 취소"].includes(
+                      request.status,
+                    ) && <span className="text-[12px] text-slate-300">-</span>}
+                  </div>
                 </td>
               </tr>
             ))}

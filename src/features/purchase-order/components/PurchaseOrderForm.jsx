@@ -21,26 +21,84 @@ function FieldLabel({ children, required = false }) {
 }
 
 function FieldError({ message }) {
-  if (!message) return null;
+  if (!message) return null
   return <p className="mt-1 text-[12px] font-medium text-rose-500">{message}</p>
 }
 
 function StatusBadge({ status }) {
   const meta = getPurchaseOrderStatusMeta(status)
+
   return (
-    <span className={`inline-flex rounded-full border px-2.5 py-1 text-[12px] font-semibold ${meta.badgeClassName}`}>
+    <span
+      className={`inline-flex rounded-full border px-2.5 py-1 text-[12px] font-semibold ${meta.badgeClassName}`}
+    >
       {meta.label}
     </span>
   )
 }
 
+function getSupplierValue(supplier, index) {
+  if (typeof supplier === "string") {
+    return supplier
+  }
+
+  return String(
+    supplier.supplierId ??
+      supplier.id ??
+      supplier.supplierCode ??
+      supplier.supplierName ??
+      supplier.suppliername ??
+      supplier.name ??
+      supplier.nameKo ??
+      index,
+  )
+}
+
+function getSupplierName(supplier, index) {
+  if (typeof supplier === "string") {
+    return supplier
+  }
+
+  const supplierId = supplier.supplierId ?? supplier.id ?? index
+
+  return (
+    supplier.supplierName ||
+    supplier.suppliername ||
+    supplier.name ||
+    supplier.nameKo ||
+    supplier.supplierCode ||
+    `공급업체(${supplierId})`
+  )
+}
+
 export default function PurchaseOrderForm({
-  mode, form, options, items, attachment, errors, submitError, submitting, summary,
-  editable = true, editableCoreFields = false, isItemModalOpen = false,
-  draftSelectedItemIds = new Set(), availableRequestItems = [],
-  
-  onChange, changeSupplier, onChangeSupplier, onApplyPurchaseRequest, onChangeItemValue, onRemoveItem,
-  onChangeAttachment, onCancel, onSave, openItemModal, closeItemModal, toggleDraftItem, confirmSelectedItems,
+  mode,
+  form,
+  options,
+  items,
+  attachment,
+  errors,
+  submitError,
+  submitting,
+  summary,
+  editable = true,
+  editableCoreFields = true,
+  isItemModalOpen = false,
+  draftSelectedItemIds = new Set(),
+  availableRequestItems = [],
+  onChange,
+  changeSupplier,
+  onChangeSupplier,
+  onApplyPurchaseRequest,
+  onChangeItemValue,
+  onRemoveItem,
+  onChangeAttachment,
+  onCancel,
+  onSave,
+  openItemModal,
+  closeItemModal,
+  toggleDraftItem,
+  confirmSelectedItems,
 }) {
 
 // ==================== 디버깅 useEffect ====================
@@ -61,20 +119,71 @@ export default function PurchaseOrderForm({
 
   const isEditMode = mode === "edit"
 
+  const approvedPurchaseRequests = options?.approvedPurchaseRequests ?? []
+  const suppliers = options?.suppliers ?? []
+  const warehouses = options?.warehouses ?? []
+
+  const selectedSupplierValue =
+    form.supplierId !== undefined &&
+    form.supplierId !== null &&
+    form.supplierId !== ""
+      ? String(form.supplierId)
+      : form.supplierCode || form.supplierName || ""
+
+  const safeSummary = summary ?? {
+    supplyAmount: 0,
+    vatAmount: 0,
+    totalAmount: 0,
+  }
+
+  const handleChangeSupplier = (value) => {
+    if (typeof changeSupplier === "function") {
+      changeSupplier(value)
+      return
+    }
+
+    if (typeof onChangeSupplier === "function") {
+      onChangeSupplier(value)
+    }
+  }
+
   return (
     <div className="w-full">
       <header className="mb-3 flex flex-wrap items-center justify-between gap-3">
-        <h1 className="text-[22px] font-bold text-slate-900">{isEditMode ? "발주 수정" : "발주 등록"}</h1>
+        <h1 className="text-[22px] font-bold text-slate-900">
+          {isEditMode ? "발주 수정" : "발주 등록"}
+        </h1>
+
         <div className="flex gap-2">
-          <button type="button" onClick={onCancel} className="h-10 rounded-md border border-slate-200 bg-white px-4 text-[13px] font-semibold text-slate-600 hover:bg-slate-50">취소</button>
+          <button
+            type="button"
+            onClick={onCancel}
+            className="h-10 rounded-md border border-slate-200 bg-white px-4 text-[13px] font-semibold text-slate-600 hover:bg-slate-50"
+          >
+            취소
+          </button>
+
           {editable && (
-            <button type="button" onClick={() => onSave("DRAFT")} disabled={submitting} className="flex h-10 items-center gap-1.5 rounded-md border border-blue-200 bg-white px-4 text-[13px] font-semibold text-blue-600 hover:bg-blue-50 disabled:opacity-50">
-              <Save size={14} />저장
+            <button
+              type="button"
+              onClick={() => onSave("DRAFT")}
+              disabled={submitting}
+              className="flex h-10 items-center gap-1.5 rounded-md border border-blue-200 bg-white px-4 text-[13px] font-semibold text-blue-600 hover:bg-blue-50 disabled:opacity-50"
+            >
+              <Save size={14} />
+              저장
             </button>
           )}
+
           {editableCoreFields && (
-            <button type="button" onClick={() => onSave("CONFIRMED")} disabled={submitting} className="flex h-10 items-center gap-1.5 rounded-md bg-blue-600 px-4 text-[13px] font-semibold text-white hover:bg-blue-700 disabled:opacity-50">
-              <Send size={14} />발주 확정
+            <button
+              type="button"
+              onClick={() => onSave("CONFIRMED")}
+              disabled={submitting}
+              className="flex h-10 items-center gap-1.5 rounded-md bg-blue-600 px-4 text-[13px] font-semibold text-white hover:bg-blue-700 disabled:opacity-50"
+            >
+              <Send size={14} />
+              발주 확정
             </button>
           )}
         </div>
@@ -85,30 +194,44 @@ export default function PurchaseOrderForm({
         <div>
           <p className="font-semibold text-slate-700">안내사항</p>
           <p className="mt-0.5">
-            {form.status === "CONFIRMED" ? "발주 확정 상태에서는 입고 예정일, 입고 창고, 첨부파일, 비고만 수정할 수 있습니다." : "승인 완료된 구매 요청을 기반으로 발주서를 생성합니다."}
+            {form.status === "CONFIRMED"
+              ? "발주 확정 상태에서는 입고 예정일, 입고 창고, 첨부파일, 비고만 수정할 수 있습니다."
+              : "승인 완료된 구매 요청을 기반으로 발주서를 생성합니다."}
           </p>
         </div>
       </section>
 
       <section className="mt-3 overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm">
-        <div className="border-b border-slate-100 px-4 py-3"><h2 className="text-[15px] font-bold text-slate-800">발주 기본정보</h2></div>
+        <div className="border-b border-slate-100 px-4 py-3">
+          <h2 className="text-[15px] font-bold text-slate-800">
+            발주 기본정보
+          </h2>
+        </div>
+
         <div className="grid gap-x-8 gap-y-3 p-4 lg:grid-cols-2">
           <div className="space-y-3">
             <label className="block">
               <FieldLabel>발주 번호</FieldLabel>
-              <input 
-                  placeholder="[저장 시 시스템에서 자동 번호 부여]" 
-                  disabled 
-                  className="h-10 w-full rounded-md border border-slate-200 bg-slate-50 px-3 text-[13px] text-blue-500 font-semibold outline-none cursor-not-allowed placeholder:text-blue-500/70" 
-                />
+              <input
+                placeholder="[저장 시 시스템에서 자동 번호 부여]"
+                disabled
+                className="h-10 w-full cursor-not-allowed rounded-md border border-slate-200 bg-slate-50 px-3 text-[13px] font-semibold text-blue-500 outline-none placeholder:text-blue-500/70"
+              />
             </label>
 
             <label className="block">
               <FieldLabel required>구매 요청 번호</FieldLabel>
-              <select value={form.requestId || ""} onChange={(event) => onApplyPurchaseRequest(event.target.value)} disabled={!editableCoreFields} className={INPUT_CLASS_NAME}>
+              <select
+                value={form.requestId || ""}
+                onChange={(event) => onApplyPurchaseRequest(event.target.value)}
+                disabled={!editableCoreFields}
+                className={INPUT_CLASS_NAME}
+              >
                 <option value="">승인 완료 구매 요청 선택</option>
-                {options.approvedPurchaseRequests.map((request, index) => (
-                  <option key={request.id || index} value={request.id}>{request.requestNumber} / {request.title}</option>
+                {approvedPurchaseRequests.map((request, index) => (
+                  <option key={request.id || index} value={request.id}>
+                    {request.requestNumber} / {request.title}
+                  </option>
                 ))}
               </select>
               <FieldError message={errors.requestId} />
@@ -116,7 +239,11 @@ export default function PurchaseOrderForm({
 
             <label className="block">
               <FieldLabel>구매 요청 제목</FieldLabel>
-              <input value={form.requestTitle || ""} disabled className={INPUT_CLASS_NAME} />
+              <input
+                value={form.requestTitle || ""}
+                disabled
+                className={INPUT_CLASS_NAME}
+              />
             </label>
 
             <label className="block">
@@ -139,55 +266,116 @@ export default function PurchaseOrderForm({
                 {options.suppliers?.map((supplier, index) => {
                   const sName = typeof supplier === "string" ? supplier : (supplier.supplierName || supplier.name || `공급업체(${index})`);
                   return (
-                    <option key={`supplier-opt-${index}`} value={sName}>
-                      {sName}
+                    <option
+                      key={`supplier-opt-${supplierValue}-${index}`}
+                      value={supplierValue}
+                    >
+                      {supplierName}
                     </option>
                   )
                 })}
               </select>
-              <FieldError message={errors.supplierName || errors.supplierCode} />
+              <FieldError
+                message={
+                  errors.supplierId ||
+                  errors.supplierName ||
+                  errors.supplierCode
+                }
+              />
             </label>
 
             <label className="block">
               <FieldLabel>공급업체 담당자</FieldLabel>
-              <input value={form.manager || ""} disabled className={INPUT_CLASS_NAME} />
+              <input
+                value={form.manager || ""}
+                disabled
+                className={INPUT_CLASS_NAME}
+              />
             </label>
 
             <label className="block">
               <FieldLabel>담당자 연락처</FieldLabel>
-              <input value={form.supplierContact || ""} disabled className={INPUT_CLASS_NAME} />
+              <input
+                value={form.supplierContact || ""}
+                disabled
+                className={INPUT_CLASS_NAME}
+              />
             </label>
           </div>
 
           <div className="space-y-3">
-            <div><FieldLabel>발주 상태</FieldLabel><StatusBadge status={form.status} /></div>
+            <div>
+              <FieldLabel>발주 상태</FieldLabel>
+              <StatusBadge status={form.status} />
+            </div>
+
             <label className="block">
               <FieldLabel required>발주 담당자</FieldLabel>
-              <input value={form.orderManager || ""} onChange={(event) => onChange("orderManager", event.target.value)} disabled={!editableCoreFields} className={INPUT_CLASS_NAME} />
+              <input
+                value={form.orderManager || ""}
+                onChange={(event) =>
+                  onChange("orderManager", event.target.value)
+                }
+                disabled={!editableCoreFields}
+                className={INPUT_CLASS_NAME}
+              />
               <FieldError message={errors.orderManager} />
             </label>
 
             <label className="block">
               <FieldLabel>발주일</FieldLabel>
-              <input type="date" value={form.orderedAt || ""} disabled className={INPUT_CLASS_NAME} />
+              <input
+                type="date"
+                value={form.orderedAt || ""}
+                disabled
+                className={INPUT_CLASS_NAME}
+              />
             </label>
 
             <div>
               <FieldLabel required>입고 예정일</FieldLabel>
               <div className="grid grid-cols-[minmax(0,1fr)_12px_minmax(0,1fr)] items-center gap-1">
-                <input type="date" value={form.expectedInboundFrom || ""} onChange={(event) => onChange("expectedInboundFrom", event.target.value)} disabled={!editable} className={INPUT_CLASS_NAME} />
+                <input
+                  type="date"
+                  value={form.expectedReceiptFrom || ""}
+                  onChange={(event) =>
+                    onChange("expectedReceiptFrom", event.target.value)
+                  }
+                  disabled={!editable}
+                  className={INPUT_CLASS_NAME}
+                />
                 <span className="text-center text-slate-300">~</span>
-                <input type="date" value={form.expectedInboundTo || ""} onChange={(event) => onChange("expectedInboundTo", event.target.value)} disabled={!editable} className={INPUT_CLASS_NAME} />
+                <input
+                  type="date"
+                  value={form.expectedReceiptTo || ""}
+                  onChange={(event) =>
+                    onChange("expectedReceiptTo", event.target.value)
+                  }
+                  disabled={!editable}
+                  className={INPUT_CLASS_NAME}
+                />
               </div>
-              <FieldError message={errors.expectedInbound} />
+              <FieldError message={errors.expectedReceipt} />
             </div>
 
             <label className="block">
               <FieldLabel required>입고 창고</FieldLabel>
-              <select value={form.warehouseCode || ""} onChange={(event) => onChange("warehouseCode", event.target.value)} disabled={!editable} className={INPUT_CLASS_NAME}>
+              <select
+                value={form.warehouseCode || ""}
+                onChange={(event) =>
+                  onChange("warehouseCode", event.target.value)
+                }
+                disabled={!editable}
+                className={INPUT_CLASS_NAME}
+              >
                 <option value="">입고 창고 선택</option>
-                {options.warehouses.map((warehouse, index) => (
-                  <option key={warehouse.warehouseCode || index} value={warehouse.warehouseCode}>{warehouse.warehouseName}</option>
+                {warehouses.map((warehouse, index) => (
+                  <option
+                    key={warehouse.warehouseCode || index}
+                    value={warehouse.warehouseCode}
+                  >
+                    {warehouse.warehouseName}
+                  </option>
                 ))}
               </select>
               <FieldError message={errors.warehouseCode} />
@@ -198,24 +386,45 @@ export default function PurchaseOrderForm({
               <span className="flex min-h-20 cursor-pointer flex-col items-center justify-center gap-1 rounded-md border border-dashed border-slate-200 px-3 py-3 text-center text-[13px] text-slate-400 hover:bg-slate-50">
                 <FileUp size={18} />
                 <span>{attachment?.name ?? "파일을 클릭하여 업로드"}</span>
-                <input type="file" className="hidden" disabled={!editable} onChange={onChangeAttachment} />
+                <input
+                  type="file"
+                  className="hidden"
+                  disabled={!editable}
+                  onChange={onChangeAttachment}
+                />
               </span>
             </label>
           </div>
 
           <label className="block lg:col-span-2">
             <FieldLabel>비고</FieldLabel>
-            <textarea value={form.memo || ""} onChange={(event) => onChange("memo", event.target.value)} disabled={!editable} rows={3} className="w-full resize-y rounded-md border border-slate-200 bg-white px-3 py-2 text-[13px] outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100 disabled:bg-slate-50" />
+            <textarea
+              value={form.memo || ""}
+              onChange={(event) => onChange("memo", event.target.value)}
+              disabled={!editable}
+              rows={3}
+              className="w-full resize-y rounded-md border border-slate-200 bg-white px-3 py-2 text-[13px] outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100 disabled:bg-slate-50"
+            />
           </label>
         </div>
       </section>
 
       <section className="mt-3 overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm">
         <div className="flex items-center justify-between border-b border-slate-100 px-4 py-3">
-          <div><h2 className="text-[15px] font-bold text-slate-800">발주 품목</h2><FieldError message={errors.items} /></div>
+          <div>
+            <h2 className="text-[15px] font-bold text-slate-800">발주 품목</h2>
+            <FieldError message={errors.items} />
+          </div>
+
           {typeof openItemModal === "function" && editableCoreFields && (
-            <button type="button" onClick={openItemModal} disabled={!form.requestId} className="flex h-9 items-center gap-1.5 rounded-md border border-slate-200 bg-white px-3 text-[13px] font-semibold text-slate-600 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40">
-              <Plus size={14} />품목 추가
+            <button
+              type="button"
+              onClick={openItemModal}
+              disabled={!form.requestId}
+              className="flex h-9 items-center gap-1.5 rounded-md border border-slate-200 bg-white px-3 text-[13px] font-semibold text-slate-600 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40"
+            >
+              <Plus size={14} />
+              품목 추가
             </button>
           )}
         </div>
@@ -224,11 +433,30 @@ export default function PurchaseOrderForm({
           <table className="w-full min-w-[1350px] text-left text-[13px]">
             <thead className="bg-slate-50 text-slate-600">
               <tr>
-                {["번호", "품목 코드", "품목명", "규격", "요청 수량", "발주 수량", "단위", "공급 단가", "공급가액", "부가세", "합계 금액", "삭제"].map((heading) => (
-                  <th key={heading} className="whitespace-nowrap px-3 py-3 font-semibold">{heading}</th>
+                {[
+                  "번호",
+                  "품목 코드",
+                  "품목명",
+                  "규격",
+                  "요청 수량",
+                  "발주 수량",
+                  "단위",
+                  "공급 단가",
+                  "공급가액",
+                  "부가세",
+                  "합계 금액",
+                  "삭제",
+                ].map((heading) => (
+                  <th
+                    key={heading}
+                    className="whitespace-nowrap px-3 py-3 font-semibold"
+                  >
+                    {heading}
+                  </th>
                 ))}
               </tr>
             </thead>
+
             <tbody>
             {items.map((item, index) => {
               console.log(`=== [TABLE ITEM ${index}] 실제 데이터 ===`, item)
@@ -286,15 +514,41 @@ export default function PurchaseOrderForm({
 
         <div className="flex justify-end border-t border-slate-100 px-5 py-4">
           <dl className="w-full max-w-xs space-y-2 text-[13px]">
-            <div className="flex justify-between"><dt>공급가액</dt><dd>{formatWon(summary.supplyAmount)}</dd></div>
-            <div className="flex justify-between"><dt>부가세 (10%)</dt><dd>{formatWon(summary.vatAmount)}</dd></div>
-            <div className="flex justify-between border-t pt-3"><dt className="font-bold">총 발주 금액</dt><dd className="text-[20px] font-bold text-blue-600">{formatWon(summary.totalAmount)}</dd></div>
+            <div className="flex justify-between">
+              <dt>공급가액</dt>
+              <dd>{formatWon(safeSummary.supplyAmount)}</dd>
+            </div>
+
+            <div className="flex justify-between">
+              <dt>부가세 (10%)</dt>
+              <dd>{formatWon(safeSummary.vatAmount)}</dd>
+            </div>
+
+            <div className="flex justify-between border-t pt-3">
+              <dt className="font-bold">총 발주 금액</dt>
+              <dd className="text-[20px] font-bold text-blue-600">
+                {formatWon(safeSummary.totalAmount)}
+              </dd>
+            </div>
           </dl>
         </div>
       </section>
 
-      {submitError && <p className="mt-3 rounded-md bg-rose-50 px-4 py-3 text-[13px] font-medium text-rose-600">{submitError}</p>}
-      {isItemModalOpen && <PurchaseOrderItemSelectModal requestItems={availableRequestItems} selectedIds={draftSelectedItemIds} onToggle={toggleDraftItem} onClose={closeItemModal} onConfirm={confirmSelectedItems} />}
+      {submitError && (
+        <p className="mt-3 rounded-md bg-rose-50 px-4 py-3 text-[13px] font-medium text-rose-600">
+          {submitError}
+        </p>
+      )}
+
+      {isItemModalOpen && (
+        <PurchaseOrderItemSelectModal
+          requestItems={availableRequestItems}
+          selectedIds={draftSelectedItemIds}
+          onToggle={toggleDraftItem}
+          onClose={closeItemModal}
+          onConfirm={confirmSelectedItems}
+        />
+      )}
     </div>
   )
 }

@@ -87,7 +87,7 @@ function RequestInfoCard({ approval }) {
         </InformationItem>
 
         <InformationItem label="희망 입고일">
-          {approval.desiredInboundAt}
+          {approval.desiredReceiptAt}
         </InformationItem>
 
         <InformationItem label="우선순위">

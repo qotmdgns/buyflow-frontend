@@ -3,12 +3,12 @@
 import Link from "next/link"
 import { ArrowLeft, Download, FileText, Plus } from "lucide-react"
 
-import useInboundDetail from "@/features/inbound/hooks/useInboundDetail"
+import useReceiptDetail from "@/features/receipt/hooks/useReceiptDetail"
 
 import {
   formatNumber,
-  getInboundStatusMeta,
-} from "@/features/inbound/utils/inboundUtils"
+  getReceiptStatusMeta,
+} from "@/features/receipt/utils/ReceiptUtils"
 
 function SectionTitle({ children }) {
   return <h2 className="text-[15px] font-bold text-slate-800">{children}</h2>
@@ -27,7 +27,7 @@ function InformationItem({ label, children }) {
 }
 
 function StatusBadge({ status }) {
-  const meta = getInboundStatusMeta(status)
+  const meta = getReceiptStatusMeta(status)
 
   return (
     <span
@@ -62,14 +62,14 @@ function ErrorState({ error, onReload }) {
   )
 }
 
-export default function InboundDetail({ inboundId }) {
-  const { inbound, loading, error, reload } = useInboundDetail(inboundId)
+export default function ReceiptDetail({ receiptId }) {
+  const { receipt, loading, error, reload } = useReceiptDetail(receiptId)
 
   if (loading) {
     return <LoadingState />
   }
 
-  if (error || !inbound) {
+  if (error || !receipt) {
     return <ErrorState error={error} onReload={reload} />
   }
 
@@ -79,26 +79,26 @@ export default function InboundDetail({ inboundId }) {
         <div>
           <div className="flex flex-wrap items-center gap-2">
             <h1 className="text-[22px] font-bold text-slate-900">입고 상세</h1>
-            <StatusBadge status={inbound.status} />
+            <StatusBadge status={receipt.status} />
           </div>
 
           <p className="mt-1 text-[13px] text-slate-400">
-            발주 번호: {inbound.orderNumber}
+            발주 번호: {receipt.orderNumber}
           </p>
         </div>
 
         <div className="flex gap-2">
           <Link
-            href="/inbounds"
+            href="/receipts"
             className="flex h-10 items-center gap-1.5 rounded-md border border-slate-200 bg-white px-4 text-[13px] font-semibold text-slate-600 hover:bg-slate-50"
           >
             <ArrowLeft size={14} />
             목록
           </Link>
 
-          {inbound.remainingQuantity > 0 && (
+          {receipt.remainingQuantity > 0 && (
             <Link
-              href={`/inbounds/new?inboundId=${inbound.id}`}
+              href={`/receipts/new?receiptId=${receipt.id}`}
               className="flex h-10 items-center gap-1.5 rounded-md bg-blue-600 px-4 text-[13px] font-semibold text-white hover:bg-blue-700"
             >
               <Plus size={14} />
@@ -113,33 +113,33 @@ export default function InboundDetail({ inboundId }) {
 
         <dl className="mt-4 grid gap-x-10 gap-y-4 md:grid-cols-2 xl:grid-cols-4">
           <InformationItem label="발주 번호">
-            {inbound.orderNumber}
+            {receipt.orderNumber}
           </InformationItem>
 
           <InformationItem label="공급업체">
-            {inbound.supplierName}
+            {receipt.supplierName}
           </InformationItem>
 
-          <InformationItem label="발주일">{inbound.orderedAt}</InformationItem>
+          <InformationItem label="발주일">{receipt.orderedAt}</InformationItem>
 
           <InformationItem label="입고 예정일">
-            {inbound.expectedInboundAt}
+            {receipt.expectedReceiptAt}
           </InformationItem>
 
           <InformationItem label="입고 창고">
-            {inbound.warehouseName}
+            {receipt.warehouseName}
           </InformationItem>
 
           <InformationItem label="발주 수량">
-            {formatNumber(inbound.orderQuantity)}
+            {formatNumber(receipt.orderQuantity)}
           </InformationItem>
 
           <InformationItem label="누적 입고">
-            {formatNumber(inbound.receivedQuantity)}
+            {formatNumber(receipt.receivedQuantity)}
           </InformationItem>
 
           <InformationItem label="미입고">
-            {formatNumber(inbound.remainingQuantity)}
+            {formatNumber(receipt.remainingQuantity)}
           </InformationItem>
         </dl>
       </section>
@@ -174,7 +174,7 @@ export default function InboundDetail({ inboundId }) {
             </thead>
 
             <tbody>
-              {inbound.items.map((item, index) => (
+              {receipt.items.map((item, index) => (
                 <tr
                   key={item.orderItemId}
                   className="border-t border-slate-100 text-slate-600"
@@ -237,7 +237,7 @@ export default function InboundDetail({ inboundId }) {
             </thead>
 
             <tbody>
-              {!inbound.histories.length && (
+              {!receipt.histories.length && (
                 <tr>
                   <td colSpan={6} className="h-28 text-center text-slate-400">
                     아직 등록된 입고 처리 이력이 없습니다.
@@ -245,13 +245,13 @@ export default function InboundDetail({ inboundId }) {
                 </tr>
               )}
 
-              {inbound.histories.map((history) => (
+              {receipt.histories.map((history) => (
                 <tr
                   key={history.id}
                   className="border-t border-slate-100 text-slate-600"
                 >
                   <td className="whitespace-nowrap px-3 py-2.5 font-semibold text-blue-600">
-                    {history.inboundNumber}
+                    {history.receiptNumber}
                   </td>
 
                   <td className="whitespace-nowrap px-3 py-2.5">

@@ -140,10 +140,10 @@ export default function PurchaseRequestSearchForm({
           <FieldLabel>희망 입고일</FieldLabel>
 
           <DateRangeField
-            from={filters.desiredInboundFrom}
-            to={filters.desiredInboundTo}
-            onFromChange={(value) => onChange("desiredInboundFrom", value)}
-            onToChange={(value) => onChange("desiredInboundTo", value)}
+            from={filters.desiredReceiptFrom}
+            to={filters.desiredReceiptTo}
+            onFromChange={(value) => onChange("desiredReceiptFrom", value)}
+            onToChange={(value) => onChange("desiredReceiptTo", value)}
           />
         </label>
       </div>

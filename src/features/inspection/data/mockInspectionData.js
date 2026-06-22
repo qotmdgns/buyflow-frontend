@@ -37,7 +37,7 @@ export const mockPendingInspections = Array.from({ length: 37 }, (_, index) => {
   return {
     id,
     inspectionNumber: `IQC-2026-${String(id).padStart(4, "0")}`,
-    inboundNumber: `IN-2026-${String(48 - index).padStart(4, "0")}`,
+    receiptNumber: `IN-2026-${String(48 - index).padStart(4, "0")}`,
     orderNumber: `PO-2026-${String(72 - index).padStart(4, "0")}`,
     supplierName: suppliers[index % suppliers.length],
     warehouseName: warehouses[index % warehouses.length],

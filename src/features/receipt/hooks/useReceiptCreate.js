@@ -3,25 +3,25 @@
 import { useEffect, useMemo, useState } from "react"
 
 import {
-  createInboundReceipt,
-  fetchInboundFormOptions,
-} from "@/features/inbound/api/inboundApi"
+  createReceiptReceipt,
+  fetchReceiptFormOptions,
+} from "@/features/receipt/api/ReceiptApi"
 
 import {
-  calculateInboundReceiptSummary,
-  createInboundForm,
-  createInboundReceiptItem,
-  validateInboundReceiptForm,
-} from "@/features/inbound/utils/inboundUtils"
+  calculateReceiptReceiptSummary,
+  createReceiptForm,
+  createReceiptReceiptItem,
+  validateReceiptReceiptForm,
+} from "@/features/receipt/utils/ReceiptUtils"
 
 const EMPTY_OPTIONS = {
-  nextInboundNumber: "",
+  nextReceiptNumber: "",
   eligibleOrders: [],
 }
 
-export default function useInboundCreate(initialInboundId = "") {
+export default function useReceiptCreate(initialReceiptId = "") {
   const [options, setOptions] = useState(EMPTY_OPTIONS)
-  const [form, setForm] = useState(createInboundForm())
+  const [form, setForm] = useState(createReceiptForm())
   const [items, setItems] = useState([])
   const [attachment, setAttachment] = useState(null)
   const [errors, setErrors] = useState({})
@@ -36,7 +36,7 @@ export default function useInboundCreate(initialInboundId = "") {
       setLoading(true)
 
       try {
-        const data = await fetchInboundFormOptions()
+        const data = await fetchReceiptFormOptions()
 
         if (ignore) {
           return
@@ -46,11 +46,11 @@ export default function useInboundCreate(initialInboundId = "") {
 
         setForm((currentForm) => ({
           ...currentForm,
-          inboundNumber: data.nextInboundNumber,
+          receiptNumber: data.nextReceiptNumber,
         }))
 
         const initialOrder = data.eligibleOrders.find(
-          (order) => order.orderId === Number(initialInboundId),
+          (order) => order.orderId === Number(initialReceiptId),
         )
 
         if (initialOrder) {
@@ -74,40 +74,40 @@ export default function useInboundCreate(initialInboundId = "") {
     return () => {
       ignore = true
     }
-  }, [initialInboundId])
+  }, [initialReceiptId])
 
   const selectedOrder = useMemo(
     () =>
       options.eligibleOrders.find(
-        (order) => order.orderId === Number(form.targetInboundId),
+        (order) => order.orderId === Number(form.targetReceiptId),
       ) ?? null,
-    [form.targetInboundId, options.eligibleOrders],
+    [form.targetReceiptId, options.eligibleOrders],
   )
 
-  const summary = useMemo(() => calculateInboundReceiptSummary(items), [items])
+  const summary = useMemo(() => calculateReceiptReceiptSummary(items), [items])
 
   function applySelectedOrder(order) {
     setForm((currentForm) => ({
       ...currentForm,
-      targetInboundId: String(order.orderId),
+      targetReceiptId: String(order.orderId),
       orderNumber: order.orderNumber,
       supplierName: order.supplierName,
       warehouseName: order.warehouseName,
     }))
 
-    setItems(order.items.map(createInboundReceiptItem))
+    setItems(order.items.map(createReceiptReceiptItem))
     setErrors({})
   }
 
-  function changeOrder(inboundId) {
+  function changeOrder(receiptId) {
     const order = options.eligibleOrders.find(
-      (item) => item.id === Number(inboundId),
+      (item) => item.id === Number(receiptId),
     )
 
     if (!order) {
       setForm((currentForm) => ({
         ...currentForm,
-        targetInboundId: "",
+        targetReceiptId: "",
         orderNumber: "",
         supplierName: "",
         warehouseName: "",
@@ -175,8 +175,8 @@ export default function useInboundCreate(initialInboundId = "") {
     setAttachment(event.target.files?.[0] ?? null)
   }
 
-  async function saveInbound() {
-    const nextErrors = validateInboundReceiptForm(form, items)
+  async function saveReceipt() {
+    const nextErrors = validateReceiptReceiptForm(form, items)
 
     if (Object.keys(nextErrors).length) {
       setErrors(nextErrors)
@@ -187,7 +187,7 @@ export default function useInboundCreate(initialInboundId = "") {
     setSubmitError("")
 
     try {
-      return await createInboundReceipt(
+      return await createReceiptReceipt(
         {
           ...form,
           items: items.map((item) => ({
@@ -222,6 +222,6 @@ export default function useInboundCreate(initialInboundId = "") {
     changeItemQuantity,
     fillAllRemainingQuantities,
     changeAttachment,
-    saveInbound,
+    saveReceipt,
   }
 }

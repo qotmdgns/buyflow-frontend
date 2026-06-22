@@ -1,7 +1,8 @@
 "use client"
 
 import Link from "next/link"
-import { Download, FileText, Pencil } from "lucide-react"
+import { useRouter } from "next/navigation"
+import { Download, FileText, Pencil, Trash2, XCircle } from "lucide-react"
 import usePurchaseRequestDetail from "@/features/purchase-request/hooks/usePurchaseRequestDetail"
 import { formatWon } from "@/features/purchase-request/utils/purchaseRequestUtils"
 
@@ -19,6 +20,8 @@ const PRIORITY_CLASS_NAMES = {
 }
 
 const EDITABLE_STATUS_LABELS = new Set(["승인 대기", "반려"])
+const DELETABLE_STATUS_LABELS = new Set(["승인 대기", "반려", "요청 취소"])
+const CANCELABLE_STATUS_LABELS = new Set(["승인 대기"])
 
 function StatusBadge({ status }) {
   return (
@@ -119,7 +122,7 @@ function PurchaseRequestBasicInformation({ request }) {
         </InformationItem>
 
         <InformationItem label="희망 입고일">
-          {request.desiredInboundAt}
+          {request.desiredReceiptAt}
         </InformationItem>
 
         <InformationItem label="우선순위">
@@ -299,7 +302,8 @@ function PurchaseRequestAttachments({ attachments, onDownload }) {
 }
 
 export default function PurchaseRequestDetail({ requestId }) {
-  const { request, loading, error, reload } =
+  const router = useRouter()
+  const { request, loading, error, reload, cancelRequest, deleteRequest } =
     usePurchaseRequestDetail(requestId)
 
   function handleDownload(attachment) {
@@ -314,6 +318,44 @@ export default function PurchaseRequestDetail({ requestId }) {
     window.open(attachment.downloadUrl, "_blank", "noopener,noreferrer")
   }
 
+  async function handleCancelRequest() {
+    const confirmed = window.confirm(
+      `${request.requestNumber} 구매 요청을 취소하시겠습니까?`,
+    )
+
+    if (!confirmed) {
+      return
+    }
+
+    try {
+      await cancelRequest()
+      window.alert("구매 요청을 취소했습니다.")
+    } catch (error) {
+      console.error("구매 요청 취소 중 오류가 발생했습니다.", error)
+      window.alert(error.message || "구매 요청 취소에 실패했습니다.")
+    }
+  }
+
+  async function handleDeleteRequest() {
+    const confirmed = window.confirm(
+      `${request.requestNumber} 구매 요청을 삭제하시겠습니까?\n삭제 후 목록에서 숨김 처리됩니다.`,
+    )
+
+    if (!confirmed) {
+      return
+    }
+
+    try {
+      await deleteRequest()
+      window.alert("구매 요청을 삭제했습니다.")
+      router.push("/purchase-requests")
+      router.refresh()
+    } catch (error) {
+      console.error("구매 요청 삭제 중 오류가 발생했습니다.", error)
+      window.alert(error.message || "구매 요청 삭제에 실패했습니다.")
+    }
+  }
+
   if (loading) {
     return <LoadingState />
   }
@@ -323,6 +365,8 @@ export default function PurchaseRequestDetail({ requestId }) {
   }
 
   const canEdit = EDITABLE_STATUS_LABELS.has(request.status)
+  const canDelete = DELETABLE_STATUS_LABELS.has(request.status)
+  const canCancel = CANCELABLE_STATUS_LABELS.has(request.status)
 
   return (
     <div className="w-full">
@@ -341,15 +385,39 @@ export default function PurchaseRequestDetail({ requestId }) {
           </p>
         </div>
 
-        {canEdit && (
-          <Link
-            href={`/purchase-requests/${request.id}/edit`}
-            className="inline-flex h-9 items-center gap-1.5 rounded-md bg-blue-600 px-3 text-[13px] font-semibold text-white transition hover:bg-blue-700"
-          >
-            <Pencil size={13} />
-            수정
-          </Link>
-        )}
+        <div className="flex flex-wrap items-center gap-2">
+          {canEdit && (
+            <Link
+              href={`/purchase-requests/${request.id}/edit`}
+              className="inline-flex h-9 items-center gap-1.5 rounded-md bg-blue-600 px-3 text-[13px] font-semibold text-white transition hover:bg-blue-700"
+            >
+              <Pencil size={13} />
+              수정
+            </Link>
+          )}
+
+          {canDelete && (
+            <button
+              type="button"
+              onClick={handleDeleteRequest}
+              className="inline-flex h-9 items-center gap-1.5 rounded-md border border-rose-200 bg-white px-3 text-[13px] font-semibold text-rose-500 transition hover:bg-rose-50"
+            >
+              <Trash2 size={13} />
+              삭제
+            </button>
+          )}
+
+          {canCancel && (
+            <button
+              type="button"
+              onClick={handleCancelRequest}
+              className="inline-flex h-9 items-center gap-1.5 rounded-md border border-slate-200 bg-white px-3 text-[13px] font-semibold text-slate-500 transition hover:bg-slate-50"
+            >
+              <XCircle size={13} />
+              요청 취소
+            </button>
+          )}
+        </div>
       </header>
 
       <PurchaseRequestBasicInformation request={request} />

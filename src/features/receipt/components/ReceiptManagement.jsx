@@ -20,15 +20,15 @@ import {
   Truck,
 } from "lucide-react"
 
-import useInboundManagement from "@/features/inbound/hooks/useInboundManagement"
+import useReceiptManagement from "@/features/receipt/hooks/useReceiptManagement"
 
 import {
   createPageNumbers,
-  downloadInboundCsv,
+  downloadReceiptCsv,
   formatNumber,
-  getInboundStatusMeta,
-  INBOUND_TABS,
-} from "@/features/inbound/utils/inboundUtils"
+  getReceiptStatusMeta,
+  RECEIPT_TABS,
+} from "@/features/receipt/utils/ReceiptUtils"
 
 const INPUT_CLASS_NAME =
   "h-10 w-full rounded-md border border-slate-200 bg-white px-3 text-[13px] text-slate-700 outline-none transition placeholder:text-slate-300 focus:border-blue-400 focus:ring-2 focus:ring-blue-100"
@@ -79,7 +79,7 @@ function MetricCard({ title, value, helper, icon: Icon, tone }) {
 }
 
 function StatusBadge({ status }) {
-  const meta = getInboundStatusMeta(status)
+  const meta = getReceiptStatusMeta(status)
 
   return (
     <span
@@ -119,7 +119,7 @@ function PageIconButton({ children, label, disabled, onClick }) {
   )
 }
 
-export default function InboundManagement() {
+export default function ReceiptManagement() {
   const router = useRouter()
 
   const {
@@ -127,22 +127,22 @@ export default function InboundManagement() {
     activeTab,
     filterOptions,
     summary,
-    inbounds,
+    receipts,
     pagination,
     selectedIds,
     allCurrentRowsSelected,
     loading,
     error,
     updateFilter,
-    searchInbounds,
+    searchReceipts,
     resetFilters,
     selectTab,
     movePage,
     changePageSize,
     toggleAllRows,
     toggleRow,
-    exportInbounds,
-  } = useInboundManagement()
+    exportReceipts,
+  } = useReceiptManagement()
 
   const pageNumbers = useMemo(
     () => createPageNumbers(pagination.page, pagination.totalPages),
@@ -158,11 +158,11 @@ export default function InboundManagement() {
     pagination.totalElements,
   )
 
-  function moveToDetail(inboundId) {
-    router.push(`/inbounds/${inboundId}`)
+  function moveToDetail(receiptId) {
+    router.push(`/receipts/${receiptId}`)
   }
 
-  function handleRowClick(event, inboundId) {
+  function handleRowClick(event, receiptId) {
     const interactiveElement = event.target.closest?.(
       "a, button, input, label, select, textarea",
     )
@@ -173,10 +173,10 @@ export default function InboundManagement() {
       return
     }
 
-    moveToDetail(inboundId)
+    moveToDetail(receiptId)
   }
 
-  function handleRowKeyDown(event, inboundId) {
+  function handleRowKeyDown(event, receiptId) {
     // 행 내부의 체크박스나 링크에서 발생한 이벤트는 제외합니다.
     if (event.target !== event.currentTarget) {
       return
@@ -184,14 +184,14 @@ export default function InboundManagement() {
 
     if (event.key === "Enter" || event.key === " ") {
       event.preventDefault()
-      moveToDetail(inboundId)
+      moveToDetail(receiptId)
     }
   }
 
   async function handleDownload() {
     try {
-      const filteredInbounds = await exportInbounds()
-      downloadInboundCsv(filteredInbounds)
+      const filteredReceipts = await exportReceipts()
+      downloadReceiptCsv(filteredReceipts)
     } catch (downloadError) {
       console.error(
         "입고 목록 CSV 다운로드 중 오류가 발생했습니다.",
@@ -228,7 +228,7 @@ export default function InboundManagement() {
           </button>
 
           <Link
-            href="/inbounds/new"
+            href="/receipts/new"
             className="flex h-10 items-center gap-1.5 rounded-md bg-blue-600 px-3 text-[13px] font-semibold text-white transition hover:bg-blue-700"
           >
             <Plus size={14} />
@@ -264,7 +264,7 @@ export default function InboundManagement() {
       </section>
 
       <div className="mt-4 flex gap-4 border-b border-slate-200">
-        {INBOUND_TABS.map((tab) => {
+        {RECEIPT_TABS.map((tab) => {
           const isActive = activeTab === tab.key
 
           return (
@@ -285,7 +285,7 @@ export default function InboundManagement() {
       </div>
 
       <form
-        onSubmit={searchInbounds}
+        onSubmit={searchReceipts}
         className="mt-3 rounded-lg border border-slate-200 bg-white p-4 shadow-sm"
       >
         <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
@@ -396,7 +396,7 @@ export default function InboundManagement() {
                 <option key={status} value={status}>
                   {status === "전체 상태"
                     ? status
-                    : getInboundStatusMeta(status).label}
+                    : getReceiptStatusMeta(status).label}
                 </option>
               ))}
             </select>
@@ -498,7 +498,7 @@ export default function InboundManagement() {
                 <TableMessage isError>{error}</TableMessage>
               )}
 
-              {!loading && !error && inbounds.length === 0 && (
+              {!loading && !error && receipts.length === 0 && (
                 <TableMessage>
                   검색 조건에 해당하는 입고 내역이 없습니다.
                 </TableMessage>
@@ -506,90 +506,90 @@ export default function InboundManagement() {
 
               {!loading &&
                 !error &&
-                inbounds.map((inbound) => (
+                receipts.map((receipt) => (
                   <tr
-                    key={inbound.id}
+                    key={receipt.id}
                     role="link"
                     tabIndex={0}
-                    aria-label={`${inbound.orderNumber} 입고 상세 화면으로 이동`}
-                    onClick={(event) => handleRowClick(event, inbound.id)}
-                    onKeyDown={(event) => handleRowKeyDown(event, inbound.id)}
+                    aria-label={`${receipt.orderNumber} 입고 상세 화면으로 이동`}
+                    onClick={(event) => handleRowClick(event, receipt.id)}
+                    onKeyDown={(event) => handleRowKeyDown(event, receipt.id)}
                     className={`cursor-pointer border-t border-slate-100 text-slate-600 transition hover:bg-blue-50/40 focus:bg-blue-50/40 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-200 ${
-                      inbound.status === "DELAYED" ? "bg-rose-50/60" : ""
+                      receipt.status === "DELAYED" ? "bg-rose-50/60" : ""
                     }`}
                   >
                     <td className="px-3 py-3">
                       <input
                         type="checkbox"
-                        checked={selectedIds.has(inbound.id)}
-                        onChange={() => toggleRow(inbound.id)}
+                        checked={selectedIds.has(receipt.id)}
+                        onChange={() => toggleRow(receipt.id)}
                         onClick={(event) => event.stopPropagation()}
                         className="h-3.5 w-3.5 accent-blue-600"
-                        aria-label={`${inbound.orderNumber} 선택`}
+                        aria-label={`${receipt.orderNumber} 선택`}
                       />
                     </td>
 
                     <td className="whitespace-nowrap px-3 py-3 font-semibold">
                       <Link
-                        href={`/inbounds/${inbound.id}`}
+                        href={`/receipts/${receipt.id}`}
                         className="text-blue-600 hover:underline"
                       >
-                        {inbound.orderNumber}
+                        {receipt.orderNumber}
                       </Link>
                     </td>
 
                     <td className="whitespace-nowrap px-3 py-3">
-                      {inbound.supplierName}
+                      {receipt.supplierName}
                     </td>
 
                     <td className="whitespace-nowrap px-3 py-3">
-                      {inbound.orderedAt}
+                      {receipt.orderedAt}
                     </td>
 
                     <td
                       className={`whitespace-nowrap px-3 py-3 ${
-                        inbound.status === "DELAYED"
+                        receipt.status === "DELAYED"
                           ? "font-semibold text-rose-500"
                           : ""
                       }`}
                     >
-                      {inbound.expectedInboundAt}
+                      {receipt.expectedReceiptAt}
                     </td>
 
                     <td className="whitespace-nowrap px-3 py-3">
-                      {inbound.warehouseName}
+                      {receipt.warehouseName}
                     </td>
 
                     <td className="whitespace-nowrap px-3 py-3 text-right">
-                      {formatNumber(inbound.itemCount)}
+                      {formatNumber(receipt.itemCount)}
                     </td>
 
                     <td className="whitespace-nowrap px-3 py-3 text-right">
-                      {formatNumber(inbound.orderQuantity)}
+                      {formatNumber(receipt.orderQuantity)}
                     </td>
 
                     <td className="whitespace-nowrap px-3 py-3 text-right">
-                      {formatNumber(inbound.receivedQuantity)}
+                      {formatNumber(receipt.receivedQuantity)}
                     </td>
 
                     <td
                       className={`whitespace-nowrap px-3 py-3 text-right font-semibold ${
-                        inbound.remainingQuantity > 0
+                        receipt.remainingQuantity > 0
                           ? "text-amber-600"
                           : "text-slate-400"
                       }`}
                     >
-                      {formatNumber(inbound.remainingQuantity)}
+                      {formatNumber(receipt.remainingQuantity)}
                     </td>
 
                     <td className="whitespace-nowrap px-3 py-3">
-                      <StatusBadge status={inbound.status} />
+                      <StatusBadge status={receipt.status} />
                     </td>
 
                     <td className="whitespace-nowrap px-3 py-3 text-center">
                       <Link
-                        href={`/inbounds/${inbound.id}`}
-                        aria-label={`${inbound.orderNumber} 입고 상세 보기`}
+                        href={`/receipts/${receipt.id}`}
+                        aria-label={`${receipt.orderNumber} 입고 상세 보기`}
                         className="inline-flex items-center justify-center rounded-md border border-blue-200 bg-blue-50 px-3 py-1.5 text-[13px] font-semibold text-blue-600 transition hover:bg-blue-100"
                       >
                         입고 상세

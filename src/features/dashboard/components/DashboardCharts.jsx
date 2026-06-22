@@ -42,7 +42,7 @@ function ChartCard({ title, description, children, action }) {
   )
 }
 
-export function MonthlyInboundChart({ data }) {
+export function MonthlyReceiptChart({ data }) {
   const mounted = useMounted()
 
   return (

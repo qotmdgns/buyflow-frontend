@@ -102,7 +102,7 @@ export default function usePurchaseRequestEdit(requestId) {
           requester: requestDetail.requester ?? "",
           department: requestDetail.department ?? "",
           requestDate: requestDetail.requestedAt ?? "",
-          expectedDate: requestDetail.desiredInboundAt ?? "",
+          expectedDate: requestDetail.desiredReceiptAt ?? "",
           title: requestDetail.title ?? "",
           urgency: requestDetail.priority === "긴급" ? "긴급" : "일반",
           reason: requestDetail.reason ?? "",

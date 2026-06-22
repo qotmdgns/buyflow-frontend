@@ -79,9 +79,9 @@ function createMockDate(index, hourOffset = 0) {
 
 export const mockStockHistories = mockStocks.flatMap((stock, index) => {
   const adjustmentAmount = index % 4 === 0 ? (index % 5) + 1 : 0
-  const stockAfterInbound = stock.currentStock + adjustmentAmount
+  const stockAfterReceipt = stock.currentStock + adjustmentAmount
 
-  const inboundHistory = {
+  const receiptHistory = {
     id: createHistoryId(),
     stockId: stock.id,
     occurredAt: createMockDate(index),
@@ -90,16 +90,16 @@ export const mockStockHistories = mockStocks.flatMap((stock, index) => {
     itemName: stock.itemName,
     warehouseCode: stock.warehouseCode,
     warehouseName: stock.warehouseName,
-    quantity: stockAfterInbound,
+    quantity: stockAfterReceipt,
     beforeStock: 0,
-    afterStock: stockAfterInbound,
+    afterStock: stockAfterReceipt,
     referenceNumber: `RCV-202606-${String(index + 1).padStart(4, "0")}`,
     reason: "검수 완료에 따른 입고 반영",
     processedBy: "김철수 대리",
   }
 
   if (!adjustmentAmount) {
-    return [inboundHistory]
+    return [receiptHistory]
   }
 
   const adjustmentHistory = {
@@ -112,14 +112,14 @@ export const mockStockHistories = mockStocks.flatMap((stock, index) => {
     warehouseCode: stock.warehouseCode,
     warehouseName: stock.warehouseName,
     quantity: -adjustmentAmount,
-    beforeStock: stockAfterInbound,
+    beforeStock: stockAfterReceipt,
     afterStock: stock.currentStock,
     referenceNumber: `ADJ-202606-${String(index + 1).padStart(4, "0")}`,
     reason: "실물 재고 확인에 따른 수량 조정",
     processedBy: "김철수 대리",
   }
 
-  return [inboundHistory, adjustmentHistory]
+  return [receiptHistory, adjustmentHistory]
 })
 
 export const stockFilterOptions = {
