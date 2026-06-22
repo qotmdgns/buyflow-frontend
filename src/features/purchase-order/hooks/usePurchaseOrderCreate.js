@@ -420,10 +420,10 @@ export default function usePurchaseOrderCreate() {
     }, 0)
 
     const expectedReceiptFrom =
-      form.expectedReceiptFrom || form.expectedInboundFrom || ""
+      form.expectedReceiptFrom || form.expectedReceiptFrom || ""
 
     const expectedReceiptTo =
-      form.expectedReceiptTo || form.expectedInboundTo || ""
+      form.expectedReceiptTo || form.expectedReceiptTo || ""
 
     const payloadItems = items.map((item) => {
       const quantity = Number(item.orderQuantity || item.quantity || 0)
@@ -462,8 +462,8 @@ export default function usePurchaseOrderCreate() {
       expectedReceiptFrom,
       expectedReceiptTo,
 
-      expectedInboundFrom: expectedReceiptFrom,
-      expectedInboundTo: expectedReceiptTo,
+      expectedReceiptFrom: expectedReceiptFrom,
+      expectedReceiptTo: expectedReceiptTo,
 
       warehouseCode: form.warehouseCode || "",
       memo: form.memo || "",
@@ -477,7 +477,38 @@ export default function usePurchaseOrderCreate() {
     setSubmitError("")
 
     try {
+      const totalAmountCalculated = items.reduce((acc, item) => {
+        const qty = Number(item.orderQuantity || 0);
+        const price = Number(item.unitPrice || 0);
+        return acc + (qty * price * 1.1); // 부가세 10% 포함 총액 계산
+      }, 0);
+
+      const bffRequestPayload = {
+        supplierId: (!form.supplierId || isNaN(Number(form.supplierId))) ? 2 : Number(form.supplierId), 
+        createdBy: Number(form.createdBy || 5),  
+        dueDate: form.expectedReceiptTo ? `${form.expectedReceiptTo}T23:59:59` : null, 
+        orderStatus: status,                       
+        orderNo: form.orderNo || null,           
+        requestId: form.requestId ? Number(form.requestId) : null,
+        requestNumber: form.requestNumber || "", // 찐 구매요청 번호 강제 주입
+        requestTitle: form.requestTitle || "",
+        
+        expectedReceiptFrom: form.expectedReceiptFrom || "",
+        expectedReceiptTo: form.expectedReceiptTo || "",
+        warehouseCode: form.warehouseCode || "",
+        memo: form.memo || "",
+        manager: form.manager || "-", // 공급업체 담당자명 토스
+        totalAmount: totalAmountCalculated, 
+
+        items: items.map((item) => ({
+          productId: Number(item.productId || item.id), 
+          quantity: Number(item.orderQuantity || 0),   
+          unitPrice: Number(item.unitPrice || 0)       
+        }))
+      };
+
       return await createPurchaseOrder(bffRequestPayload, attachment)
+      
     } catch (requestError) {
       setSubmitError(requestError.message || "발주를 등록하지 못했습니다.")
       return null

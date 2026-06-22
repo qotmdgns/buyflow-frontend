@@ -33,6 +33,16 @@ export default function PurchaseOrderDetailModal({
 
   const currentStatus = order.orderStatus || order.status || "DRAFT"
   const statusMeta = getPurchaseOrderStatusMeta(currentStatus)
+  const computedTotalAmount = order.items?.reduce((acc, item) => {
+    const qty = Number(item.quantity || 0);
+    const price = Number(item.unitPrice || 0);
+    return acc + (qty * price);
+  }, 0) || 0;
+
+  // 부가세 10% 포함 연산 마감
+  const finalDetailAmount = computedTotalAmount > 0 
+    ? computedTotalAmount + Math.floor(computedTotalAmount * 0.1) 
+    : (order.totalAmount || 0);
 
   return (
     <div className="fixed inset-0 z-[70] flex items-center justify-center bg-slate-900/45 px-4 py-6">
@@ -66,12 +76,12 @@ export default function PurchaseOrderDetailModal({
 
           <dl className="grid gap-4 md:grid-cols-2 bg-white p-2">
             <div className="border-b border-slate-50 pb-2">
-              <dt className="text-[12px] font-semibold text-slate-400 mb-0.5">
-                구매 요청 번호
-              </dt>
+              <dt className="text-[12px] font-semibold text-slate-400 mb-0.5">구매 요청 번호</dt>
               <dd className="font-medium text-slate-800">
-                {order.requestNo || order.requestNumber || "-"}
-              </dd>
+                {order.requestNo && order.requestNo !== "-" 
+                  ? order.requestNo 
+                  : (order.requestNumber || "-")}
+              </dd>    
             </div>
 
             <div className="border-b border-slate-50 pb-2">
@@ -90,10 +100,17 @@ export default function PurchaseOrderDetailModal({
 
             <div>
               <dt className="text-[12px] text-slate-400">발주 담당자 연락처</dt>
-              <dd className="font-medium text-slate-800">
-                {order.orderManagerPhone || "-"}
-              </dd>
+              <dd className="font-medium text-slate-800">{order.orderManagerPhone || "-"}</dd>
             </div>
+
+            {/* <div className="border-b border-slate-50 pb-2">
+              <dt className="text-[12px] font-semibold text-slate-400 mb-0.5">입고 예정일</dt>
+              <dd className="font-medium text-slate-800">
+                {order.expectedInboundFrom && order.expectedInboundTo 
+                  ? `${order.expectedInboundFrom} ~ ${order.expectedInboundTo}`
+                  : (order.dueDate ? String(order.dueDate).slice(0, 10) : "-")}
+              </dd>
+            </div> */}
 
             <div className="border-b border-slate-50 pb-2">
               <dt className="text-[12px] font-semibold text-slate-400 mb-0.5">
@@ -125,7 +142,7 @@ export default function PurchaseOrderDetailModal({
                 총 발주 금액
               </dt>
               <dd className="font-bold text-[16px] text-blue-600">
-                {formatWon(order.totalAmount)}
+                {formatWon(finalDetailAmount)}
               </dd>
             </div>
           </dl>
