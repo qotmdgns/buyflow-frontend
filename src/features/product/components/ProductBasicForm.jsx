@@ -1,5 +1,3 @@
-import Image from "next/image"
-import { ImageUp, X } from "lucide-react"
 import {
   productCategoryOptions,
   productUnitOptions,
@@ -44,86 +42,14 @@ function SelectField({ label, options, value, onChange }) {
   )
 }
 
-function ProductImageField({ imageFile, imagePreviewUrl, onChange, onRemove }) {
-  return (
-    <div>
-      <FieldLabel>품목 이미지</FieldLabel>
-
-      <label className="flex min-h-[235px] cursor-pointer flex-col items-center justify-center rounded-lg border border-dashed border-slate-200 bg-slate-50/40 px-4 text-center transition hover:border-blue-300 hover:bg-blue-50/40">
-        <input
-          type="file"
-          accept="image/png,image/jpeg"
-          onChange={onChange}
-          className="hidden"
-        />
-
-        {imagePreviewUrl ? (
-          <>
-            <Image
-              src={imagePreviewUrl}
-              alt="선택한 품목 이미지 미리보기"
-              width={144}
-              height={144}
-              unoptimized
-              className="h-36 w-36 rounded-md object-cover"
-            />
-
-            <span className="mt-3 max-w-full truncate text-[10px] text-slate-500">
-              {imageFile?.name}
-            </span>
-          </>
-        ) : (
-          <>
-            <span className="flex h-11 w-11 items-center justify-center rounded-full bg-white text-blue-600 shadow-sm">
-              <ImageUp size={21} />
-            </span>
-
-            <strong className="mt-3 text-[11px] text-slate-600">
-              이미지 업로드
-            </strong>
-
-            <span className="mt-1 text-[10px] leading-4 text-slate-400">
-              PNG, JPG 파일
-              <br />
-              (최대 5MB)
-            </span>
-
-            <span className="mt-3 rounded-md border border-slate-200 bg-white px-2 py-1 text-[10px] font-semibold text-slate-500">
-              파일 탐색기 열기
-            </span>
-          </>
-        )}
-      </label>
-
-      {imagePreviewUrl && (
-        <button
-          type="button"
-          onClick={onRemove}
-          className="mt-2 flex items-center gap-1 text-[10px] font-medium text-rose-500 hover:underline"
-        >
-          <X size={12} />
-          이미지 삭제
-        </button>
-      )}
-    </div>
-  )
-}
-
-export default function ProductBasicForm({
-  form,
-  imageFile,
-  imagePreviewUrl,
-  onChange,
-  onImageChange,
-  onImageRemove,
-}) {
+export default function ProductBasicForm({ form, onChange }) {
   return (
     <section className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
       <h2 className="border-l-[3px] border-blue-500 pl-2 text-[15px] font-bold text-slate-800">
         품목 기본정보
       </h2>
 
-      <div className="mt-3 grid gap-3 xl:grid-cols-[1fr_255px]">
+      <div className="mt-3">
         <div className="grid gap-x-3 gap-y-3 md:grid-cols-2">
           <TextField
             label="품목 코드"
@@ -177,21 +103,6 @@ export default function ProductBasicForm({
             placeholder="공급업체 또는 제조원"
           />
 
-          <TextField
-            label="바코드 (EAN-13)"
-            value={form.barcode}
-            onChange={(event) => onChange("barcode", event.target.value)}
-            placeholder="8801234567890"
-          />
-
-          <TextField
-            label="기본 안전재고"
-            type="number"
-            min="0"
-            value={form.safetyStock}
-            onChange={(event) => onChange("safetyStock", event.target.value)}
-          />
-
           <fieldset>
             <FieldLabel>사용 여부</FieldLabel>
 
@@ -232,13 +143,6 @@ export default function ProductBasicForm({
             />
           </label>
         </div>
-
-        <ProductImageField
-          imageFile={imageFile}
-          imagePreviewUrl={imagePreviewUrl}
-          onChange={onImageChange}
-          onRemove={onImageRemove}
-        />
       </div>
     </section>
   )

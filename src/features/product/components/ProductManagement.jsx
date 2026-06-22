@@ -1,12 +1,15 @@
 "use client"
 
+import { useState } from "react"
 import Link from "next/link"
+import { useRouter } from "next/navigation"
 import { Download, Plus } from "lucide-react"
 import ProductDetailModal from "@/features/product/components/ProductDetailModal"
 import ProductPagination from "@/features/product/components/ProductPagination"
 import ProductSearchForm from "@/features/product/components/ProductSearchForm"
 import ProductTable from "@/features/product/components/ProductTable"
 import useProductManagement from "@/features/product/hooks/useProductManagement"
+import { deleteProduct } from "@/features/product/api/productApi"
 import { downloadProductCsv } from "@/features/product/utils/productManagementUtils"
 
 export default function ProductManagement() {
@@ -30,52 +33,50 @@ export default function ProductManagement() {
     toggleRow,
     openProductDetail,
     closeProductDetail,
+    reloadProducts,
   } = useProductManagement()
+
+  const router = useRouter()
+  const [isDeletingProduct, setIsDeletingProduct] = useState(false)
 
   function openProductEdit(product) {
     closeProductDetail()
-    window.alert(`${product.name} 수정 화면은 추후 연결합니다.`)
+    router.push(`/products/${product.id}/edit`)
   }
 
-  async function createProduct() {
-    const productNo = prompt("품목코드")
+  async function handleDeleteProduct(product) {
+    if (!product?.id) {
+      window.alert("삭제할 품목 정보를 찾을 수 없습니다.")
+      return
+    }
 
-    if (!productNo) return
+    const isConfirmed = window.confirm(
+      `[${product.name}] 품목을 삭제하시겠습니까?\n삭제된 품목은 기본 목록에서 보이지 않습니다.`,
+    )
 
-    const productName = prompt("품목명")
+    if (!isConfirmed) {
+      return
+    }
 
-    if (!productName) return
+    setIsDeletingProduct(true)
 
     try {
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/products`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            productId: Date.now(),
-            productNo,
-            productName,
-            companyName: "직접등록",
-            unitPrice: 0,
-            unit: "개",
-            categoryName: "기타 상품",
-            spec: "",
-          }),
-        },
-      )
+      await deleteProduct(product.id)
 
-      if (!response.ok) {
-        throw new Error()
+      window.alert("품목이 삭제되었습니다.")
+
+      closeProductDetail()
+
+      if (typeof reloadProducts === "function") {
+        reloadProducts()
+      } else {
+        searchProducts()
       }
-
-      alert("저장 완료")
-      window.location.reload()
     } catch (error) {
-      alert("저장 실패")
-      console.error(error)
+      console.error("품목 삭제 중 오류가 발생했습니다.", error)
+      window.alert("품목 삭제에 실패했습니다. 다시 시도해 주세요.")
+    } finally {
+      setIsDeletingProduct(false)
     }
   }
 
@@ -154,6 +155,8 @@ export default function ProductManagement() {
         product={detailProduct}
         onClose={closeProductDetail}
         onEdit={openProductEdit}
+        onDelete={handleDeleteProduct}
+        isDeleting={isDeletingProduct}
       />
     </div>
   )

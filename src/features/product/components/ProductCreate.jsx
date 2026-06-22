@@ -3,26 +3,15 @@
 import { Save } from "lucide-react"
 import { useRouter } from "next/navigation"
 import ProductBasicForm from "@/features/product/components/ProductBasicForm"
-import ProductWarehouseSettingSection from "@/features/product/components/ProductWarehouseSettingSection"
 import useProductCreate from "@/features/product/hooks/useProductCreate"
 
-export default function ProductCreate() {
+export default function ProductCreate({ mode = "create", productId = null }) {
   const router = useRouter()
 
-  const {
-    form,
-    warehouseSettings,
-    imageFile,
-    imagePreviewUrl,
-    isSaving,
-    updateForm,
-    changeImage,
-    removeImage,
-    addWarehouseSetting,
-    updateWarehouseSetting,
-    removeWarehouseSetting,
-    saveProduct,
-  } = useProductCreate()
+  const { form, isSaving, updateForm, saveProduct } = useProductCreate({
+    mode,
+    productId,
+  })
 
   async function handleSave() {
     const isSaved = await saveProduct()
@@ -32,27 +21,17 @@ export default function ProductCreate() {
     }
   }
 
+  const isEditMode = mode === "edit"
+
   return (
     <div className="w-full">
       <header className="mb-3">
-        <h1 className="text-[22px] font-bold text-slate-900">품목 등록</h1>
+        <h1 className="text-[22px] font-bold text-slate-900">
+          {isEditMode ? "품목 수정" : "품목 등록"}
+        </h1>
       </header>
 
-      <ProductBasicForm
-        form={form}
-        imageFile={imageFile}
-        imagePreviewUrl={imagePreviewUrl}
-        onChange={updateForm}
-        onImageChange={changeImage}
-        onImageRemove={removeImage}
-      />
-
-      <ProductWarehouseSettingSection
-        settings={warehouseSettings}
-        onAdd={addWarehouseSetting}
-        onChange={updateWarehouseSetting}
-        onRemove={removeWarehouseSetting}
-      />
+      <ProductBasicForm form={form} onChange={updateForm} />
 
       <footer className="mt-3 flex justify-end gap-2 border-t border-slate-200 pt-3">
         <button
@@ -71,7 +50,7 @@ export default function ProductCreate() {
         >
           <Save size={13} />
 
-          {isSaving ? "저장 중..." : "저장"}
+          {isSaving ? "저장 중..." : isEditMode ? "수정" : "저장"}
         </button>
       </footer>
     </div>

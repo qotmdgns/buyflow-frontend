@@ -11,27 +11,26 @@ const API_BASE_URL = (
 
 const PRODUCT_API_BASE_URL = `${API_BASE_URL}/api/products`
 
+function normalizeProductItem(product) {
+  return {
+    ...product,
+    id: product.id ?? product.productId,
+    code: product.code ?? product.productNo,
+    name: product.name ?? product.productName,
+    category: product.category ?? product.categoryName,
+    manufacturer: product.manufacturer ?? product.companyName ?? "",
+    description: product.description ?? "",
+    unitPrice: product.unitPrice ?? 0,
+    safetyStock: product.safetyStock ?? 0,
+    currentStock: product.currentStock ?? 0,
+    isActive: product.isActive ?? product.useYn !== "N",
+    registeredAt: product.registeredAt ?? "",
+  }
+}
+
 function normalizeProductResponse(data) {
-  // 백엔드 ProductController의 getProducts()는 현재 List<Product>를 반환함
-  // 즉, 응답 형태가 [{ productId, productNo, productName, ... }] 배열임
   if (Array.isArray(data)) {
-    const items = data.map((product) => ({
-      ...product,
-
-      // 프론트 테이블이 사용하는 필드명으로 변환
-      id: product.productId,
-      code: product.productNo,
-      name: product.productName,
-      category: product.categoryName,
-
-      // 백엔드 PRODUCTS 테이블에는 현재재고/안전재고/사용여부/등록일이 없거나
-      // 응답에 포함되지 않을 수 있으므로 기본값 처리
-      currentStock: product.currentStock ?? 0,
-      safetyStock: product.safetyStock ?? 0,
-      isActive: product.isActive ?? true,
-      registeredAt:
-        product.registeredAt ?? product.createdAt ?? product.createdDate ?? "",
-    }))
+    const items = data.map(normalizeProductItem)
 
     return {
       items,
@@ -44,46 +43,80 @@ function normalizeProductResponse(data) {
     }
   }
 
-  // 혹시 나중에 백엔드가 { items, pagination } 형태로 바뀌는 경우
-  if (data?.items && data?.pagination) {
-    return data
-  }
-
-  // Spring Pageable 형태로 바뀌는 경우
-  if (data?.content) {
-    const items = data.content.map((product) => ({
-      ...product,
-      id: product.productId,
-      code: product.productNo,
-      name: product.productName,
-      category: product.categoryName,
-      currentStock: product.currentStock ?? 0,
-      safetyStock: product.safetyStock ?? 0,
-      isActive: product.isActive ?? true,
-      registeredAt:
-        product.registeredAt ?? product.createdAt ?? product.createdDate ?? "",
-    }))
-
-    return {
-      items,
-      pagination: {
-        page: (data.number ?? 0) + 1,
-        size: data.size ?? items.length,
-        totalElements: data.totalElements ?? items.length,
-        totalPages: Math.max(data.totalPages ?? 1, 1),
-      },
-    }
-  }
+  const rawItems = data.items ?? data.content ?? []
+  const items = rawItems.map(normalizeProductItem)
 
   return {
-    items: [],
+    items,
     pagination: {
-      page: 1,
-      size: 15,
-      totalElements: 0,
-      totalPages: 1,
+      page: data.pagination?.page ?? data.page ?? (data.number ?? 0) + 1,
+      size: data.pagination?.size ?? data.size ?? items.length,
+      totalElements:
+        data.pagination?.totalElements ?? data.totalElements ?? items.length,
+      totalPages: Math.max(
+        data.pagination?.totalPages ?? data.totalPages ?? 1,
+        1,
+      ),
     },
   }
+}
+
+function toProductRequestPayload(form) {
+  return {
+    productNo: form.code?.trim(),
+    productName: form.name?.trim(),
+    categoryName: form.category,
+    spec: form.spec?.trim(),
+    unit: form.unit,
+    unitPrice: Math.max(0, Number(form.unitPrice) || 0),
+    companyName: form.manufacturer?.trim(),
+    isActive: form.isActive,
+    description: form.description?.trim(),
+  }
+}
+
+export async function createProduct(form) {
+  const response = await fetch(PRODUCT_API_BASE_URL, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(toProductRequestPayload(form)),
+  })
+
+  if (!response.ok) {
+    throw new Error("품목 등록에 실패했습니다.")
+  }
+
+  return response.text()
+}
+
+export async function deleteProduct(productId) {
+  const response = await fetch(`${PRODUCT_API_BASE_URL}/${productId}`, {
+    method: "DELETE",
+  })
+
+  if (!response.ok) {
+    throw new Error("품목 삭제에 실패했습니다.")
+  }
+
+  return response.text()
+}
+
+export async function updateProduct(productId, form) {
+  const response = await fetch(`${PRODUCT_API_BASE_URL}/${productId}`, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(toProductRequestPayload(form)),
+  })
+
+  if (!response.ok) {
+    throw new Error("품목 수정에 실패했습니다.")
+  }
+
+  return response.text()
 }
 
 export async function fetchProducts(params = {}) {
@@ -95,6 +128,11 @@ export async function fetchProducts(params = {}) {
   const query = new URLSearchParams()
 
   Object.entries(params).forEach(([key, value]) => {
+    // 현재 PRODUCTS 기본 CRUD 단계에서는 lowStockOnly만 서버로 보내지 않음
+    if (key === "lowStockOnly") {
+      return
+    }
+
     if (value === "" || value === false || value === "전체") {
       return
     }
@@ -158,5 +196,5 @@ export async function fetchProductById(productId) {
     throw new Error("품목 상세 정보를 불러오지 못했습니다.")
   }
 
-  return response.json()
+  return normalizeProductItem(await response.json())
 }

@@ -3,8 +3,7 @@ export const DEFAULT_FILTERS = {
   itemName: "",
   category: "전체",
   unit: "전체",
-  activeStatus: "전체",
-  lowStockOnly: false,
+  activeStatus: "사용",
 }
 
 export const DEFAULT_PAGINATION = {
@@ -27,7 +26,6 @@ export const PRODUCT_TABLE_HEADERS = [
   "규격",
   "단위",
   "기준 단가",
-  "안전 재고",
   "사용 여부",
   "등록일",
   "관리",
@@ -81,7 +79,6 @@ export function downloadProductCsv(products) {
     "규격",
     "단위",
     "기준 단가",
-    "안전 재고",
     "사용 여부",
     "등록일",
   ]
@@ -93,7 +90,6 @@ export function downloadProductCsv(products) {
     product.spec,
     product.unit,
     product.unitPrice,
-    product.safetyStock,
     product.isActive ? "사용" : "미사용",
     product.registeredAt,
   ])
