@@ -335,7 +335,7 @@ export async function fetchReceiptFormOptions() {
 
 export async function fetchReceiptById(receiptId) {
   if (!USE_MOCK) {
-    const response = await fetch(createApiUrl(`/api/receipts/${receiptId}`), {
+    const response = await fetch(createApiUrl(`/api/receipts/order/${receiptId}`), {
       cache: "no-store",
     })
 

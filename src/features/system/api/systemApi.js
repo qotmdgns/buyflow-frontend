@@ -86,6 +86,7 @@ function adaptUser(item) {
   const user = item.user ?? item
   const roles = item.roles ?? []
   const primary = pickPrimaryRole(roles)
+  const roleIds = roles.map((role) => role.roleCode).filter(Boolean)
 
   return {
     id: user.userId,
@@ -95,6 +96,7 @@ function adaptUser(item) {
     department: user.departmentName ?? "",
     position: rankLabel(user),
     roleId: primary?.roleCode ?? "",
+    roleIds,
     roleName: roles.length ? roles.map((role) => role.roleName).join(", ") : "-",
     activeStatus: statusLabel(user),
     registeredAt: String(user.createdAt ?? "").slice(0, 10),
@@ -111,20 +113,35 @@ function adaptRole(role) {
   }
 }
 
+function normalizeRoleCode(roleIdOrCode) {
+  if (!roleIdOrCode || roleIdOrCode === "전체") {
+    return ""
+  }
+
+  return String(roleIdOrCode).replace(/^ROLE_/, "")
+}
+
 // ─────────────────────────────────────────────────────────────
 // 읽기: 실제 백엔드
 // ─────────────────────────────────────────────────────────────
 
-// 사용자 목록 (ADMIN 전용): GET /api/admin/users/page
-//   지원 파라미터: keyword, status, useYn, jobRank, page(0-base), size
-//   ※ department / roleId 필터는 백엔드 미지원 → 현재 서버 전송하지 않음
+// 사용자 목록: ADMIN은 전체, TEAM_MANAGER는 백엔드에서 자기 부서로 제한된다.
 export async function fetchUsers(params = {}) {
-  const { page = 1, size = 10, keyword = "", activeStatus = "전체" } = params
+  const {
+    page = 1,
+    size = 10,
+    keyword = "",
+    department = "전체",
+    roleId = "전체",
+    activeStatus = "전체",
+  } = params
 
   const query = new URLSearchParams()
   query.set("page", String(Math.max(0, Number(page) - 1)))
   query.set("size", String(size))
   if (keyword) query.set("keyword", keyword)
+  if (department && department !== "전체") query.set("department", department)
+  if (normalizeRoleCode(roleId)) query.set("roleCode", normalizeRoleCode(roleId))
   if (activeStatus === "사용 중") query.set("useYn", "Y")
   if (activeStatus === "사용 중지") query.set("useYn", "N")
 
@@ -165,10 +182,10 @@ async function fetchRoleUserCounts() {
   }
 }
 
-// 역할 목록: GET /api/roles  (활성 역할만, ROLE_ 드리프트 제외) + 인원수 집계
+// 역할 목록: 현재 사용자가 부여할 수 있는 활성 역할 + 인원수 집계
 export async function fetchRoles() {
   const [data, counts] = await Promise.all([
-    apiFetch(`/api/roles`, { method: "GET" }),
+    apiFetch(`/api/admin/users/assignable-roles`, { method: "GET" }),
     fetchRoleUserCounts(),
   ])
 
@@ -180,19 +197,14 @@ export async function fetchRoles() {
     }))
 }
 
-// 검색 필터 옵션: 역할은 실제 /api/roles, 부서/상태는 정적 목록
-//   (백엔드에 부서 distinct 엔드포인트가 없어 실제 부서명을 정적으로 둠)
 export async function fetchUserFilterOptions() {
-  const roles = await fetchRoles()
+  const [departments, roles] = await Promise.all([
+    apiFetch(`/api/admin/users/departments`, { method: "GET" }),
+    fetchRoles(),
+  ])
+
   return {
-    departments: [
-      "전체",
-      "영업팀",
-      "구매팀",
-      "시스템관리팀",
-      "물류운영팀",
-      "재고관리팀",
-    ],
+    departments: ["전체", ...(departments ?? [])],
     roles,
     activeStatuses: ["전체", "사용 중", "사용 중지"],
   }
@@ -210,15 +222,46 @@ export async function createUser() {
   )
 }
 
-// 화면 roleId(코드 'WAREHOUSE' / 'ROLE_WAREHOUSE' / 숫자) → 백엔드 숫자 roleId
-async function resolveRoleNumericId(roleIdOrCode) {
-  if (roleIdOrCode == null || roleIdOrCode === "") return null
-  if (/^\d+$/.test(String(roleIdOrCode))) return Number(roleIdOrCode)
+function payloadRoleIds(payload) {
+  const values = payload.roleIds?.length ? payload.roleIds : [payload.roleId]
+  return [...new Set(values.filter(Boolean))]
+}
 
-  const roles = await apiFetch(`/api/roles`, { method: "GET" })
-  const code = String(roleIdOrCode).replace(/^ROLE_/, "")
-  const match = (roles ?? []).find((role) => role.roleCode === code)
-  return match ? match.roleId : null
+// 화면 roleId(코드 'WAREHOUSE' / 'ROLE_WAREHOUSE' / 숫자)[] → 백엔드 숫자 roleId[]
+async function resolveRoleNumericIds(roleIdsOrCodes) {
+  const values = [...new Set((roleIdsOrCodes ?? []).filter(Boolean))]
+  if (values.length === 0) return []
+
+  const numericIds = []
+  const codeValues = []
+
+  values.forEach((value) => {
+    if (/^\d+$/.test(String(value))) {
+      numericIds.push(Number(value))
+    } else {
+      codeValues.push(value)
+    }
+  })
+
+  if (codeValues.length === 0) {
+    return numericIds
+  }
+
+  const roles = await apiFetch(`/api/admin/users/assignable-roles`, {
+    method: "GET",
+  })
+  const resolvedIds = codeValues.map((roleIdOrCode) => {
+    const code = normalizeRoleCode(roleIdOrCode)
+    const match = (roles ?? []).find((role) => role.roleCode === code)
+
+    if (!match) {
+      throw new Error("선택한 역할을 찾을 수 없습니다.")
+    }
+
+    return match.roleId
+  })
+
+  return [...numericIds, ...resolvedIds]
 }
 
 // 화면 사용여부 라벨 → 상태 PATCH body (알 수 없는 값이면 null = 상태 미변경)
@@ -235,6 +278,24 @@ function toStatusBody(activeStatus) {
 //     (역할 미변경 시 호출 생략 → 다중역할 사용자가 단일역할로 줄어드는 것 방지)
 export async function updateUser(userId, payload, options = {}) {
   let response
+
+  if (options.delegateOnly) {
+    if (options.skipRoles) {
+      return payload
+    }
+
+    const numericRoleIds = await resolveRoleNumericIds(payloadRoleIds(payload))
+    if (numericRoleIds.length === 0) {
+      throw new Error("역할을 하나 이상 선택하세요.")
+    }
+
+    response = await apiFetch(`/api/admin/users/${userId}/roles`, {
+      method: "PUT",
+      body: JSON.stringify({ roleIds: numericRoleIds }),
+    })
+
+    return adaptUser(response)
+  }
 
   // 1) 프로필 (부서 + 직급). 빈 값은 null 로 보내 덮어쓰기 방지
   response = await apiFetch(`/api/admin/users/${userId}/profile`, {
@@ -256,13 +317,13 @@ export async function updateUser(userId, payload, options = {}) {
 
   // 3) 역할 — 변경된 경우에만 교체
   if (!options.skipRoles) {
-    const numericRoleId = await resolveRoleNumericId(payload.roleId)
-    if (!numericRoleId) {
-      throw new Error("선택한 역할을 찾을 수 없습니다.")
+    const numericRoleIds = await resolveRoleNumericIds(payloadRoleIds(payload))
+    if (numericRoleIds.length === 0) {
+      throw new Error("역할을 하나 이상 선택하세요.")
     }
     response = await apiFetch(`/api/admin/users/${userId}/roles`, {
       method: "PUT",
-      body: JSON.stringify({ roleIds: [numericRoleId] }),
+      body: JSON.stringify({ roleIds: numericRoleIds }),
     })
   }
 

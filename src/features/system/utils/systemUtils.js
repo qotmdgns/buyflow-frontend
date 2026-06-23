@@ -25,6 +25,7 @@ export const EMPTY_USER_FORM = {
   department: "",
   position: "",
   roleId: "",
+  roleIds: [],
   activeStatus: "사용 중",
 }
 
@@ -66,8 +67,11 @@ export function validateUserForm(form) {
     errors.position = "직급을 입력하세요."
   }
 
-  if (!form.roleId) {
-    errors.roleId = "권한 그룹을 선택하세요."
+  const selectedRoleIds =
+    form.roleIds?.length > 0 ? form.roleIds : form.roleId ? [form.roleId] : []
+
+  if (selectedRoleIds.length === 0) {
+    errors.roleIds = "권한 그룹을 하나 이상 선택하세요."
   }
 
   return errors

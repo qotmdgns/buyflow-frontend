@@ -49,19 +49,30 @@ function safeDefaultRoleId(roles, department, position) {
   )
 }
 
+function normalizeRoleIds(base, roles) {
+  if (base.roleIds?.length > 0) {
+    return base.roleIds
+  }
+
+  const roleId = base.roleId || safeDefaultRoleId(roles, base.department, base.position)
+  return roleId ? [roleId] : []
+}
+
 export default function UserFormModal({
   mode,
   initialValue,
   roles,
+  delegateMode = false,
   onClose,
   onSubmit,
 }) {
   const base = { ...EMPTY_USER_FORM, ...initialValue }
+  const initialRoleIds = normalizeRoleIds(base, roles)
 
   const [form, setForm] = useState({
     ...base,
-    roleId:
-      base.roleId || safeDefaultRoleId(roles, base.department, base.position),
+    roleIds: initialRoleIds,
+    roleId: base.roleId || initialRoleIds[0] || "",
   })
 
   // 수정 모드이거나 admin이 권한 그룹을 직접 고르면, 부서·직급 변경에 따른
@@ -74,7 +85,7 @@ export default function UserFormModal({
   // 권한 그룹 드롭다운: ADMIN(시스템 관리자)은 숨긴다.
   // 단, 현재 선택값이 ADMIN이면(기존 admin 사용자 수정 중) 값 유지를 위해 표시.
   const selectableRoles = roles.filter(
-    (role) => !isAdminRole(role) || role.id === form.roleId,
+    (role) => !isAdminRole(role) || form.roleIds.includes(role.id),
   )
 
   const updateForm = (name, value) => {
@@ -86,6 +97,7 @@ export default function UserFormModal({
         const suggested = recommendedRoleId(roles, next.department, next.position)
         if (suggested) {
           next.roleId = suggested
+          next.roleIds = [suggested]
         }
       }
 
@@ -95,15 +107,36 @@ export default function UserFormModal({
     setErrors((current) => ({ ...current, [name]: "" }))
   }
 
-  const handleRoleChange = (value) => {
+  const handleRoleToggle = (value) => {
     setRoleTouched(true)
-    updateForm("roleId", value)
+    setForm((current) => {
+      const hasRole = current.roleIds.includes(value)
+      const roleIds = hasRole
+        ? current.roleIds.filter((roleId) => roleId !== value)
+        : [...current.roleIds, value]
+
+      return {
+        ...current,
+        roleIds,
+        roleId: roleIds[0] || "",
+      }
+    })
+
+    setErrors((current) => ({ ...current, roleId: "", roleIds: "" }))
   }
 
   const submitForm = async (event) => {
     event.preventDefault()
 
     const nextErrors = validateUserForm(form)
+
+    if (delegateMode) {
+      Object.keys(nextErrors).forEach((key) => {
+        if (key !== "roleId" && key !== "roleIds") {
+          delete nextErrors[key]
+        }
+      })
+    }
 
     if (Object.keys(nextErrors).length > 0) {
       setErrors(nextErrors)
@@ -124,7 +157,11 @@ export default function UserFormModal({
         className="w-full max-w-[680px] rounded-lg bg-white p-5 shadow-2xl"
       >
         <h2 className="mb-4 text-[17px] font-bold">
-          {mode === "edit" ? "사용자 정보 수정" : "신규 사용자 등록"}
+          {delegateMode
+            ? "사용자 역할 변경"
+            : mode === "edit"
+              ? "사용자 정보 수정"
+              : "신규 사용자 등록"}
         </h2>
 
         <div className="grid gap-3 md:grid-cols-2">
@@ -143,8 +180,9 @@ export default function UserFormModal({
               <input
                 value={form[name]}
                 placeholder={placeholder}
+                disabled={delegateMode}
                 onChange={(event) => updateForm(name, event.target.value)}
-                className="h-10 w-full rounded-md border border-slate-200 px-3 text-[13px]"
+                className="h-10 w-full rounded-md border border-slate-200 px-3 text-[13px] disabled:bg-slate-50 disabled:text-slate-400"
               />
 
               {errors[name] && (
@@ -158,17 +196,28 @@ export default function UserFormModal({
               권한 그룹
             </span>
 
-            <select
-              value={form.roleId}
-              onChange={(event) => handleRoleChange(event.target.value)}
-              className="h-10 w-full rounded-md border border-slate-200 px-3 text-[13px]"
-            >
+            <div className="grid min-h-10 gap-2 rounded-md border border-slate-200 p-2">
               {selectableRoles.map((role) => (
-                <option key={role.id} value={role.id}>
+                <label
+                  key={role.id}
+                  className="flex items-center gap-2 text-[13px]"
+                >
+                  <input
+                    type="checkbox"
+                    checked={form.roleIds.includes(role.id)}
+                    onChange={() => handleRoleToggle(role.id)}
+                    className="accent-blue-600"
+                  />
                   {role.name}
-                </option>
+                </label>
               ))}
-            </select>
+            </div>
+
+            {(errors.roleIds || errors.roleId) && (
+              <p className="mt-1 text-[12px] text-rose-500">
+                {errors.roleIds || errors.roleId}
+              </p>
+            )}
 
             {mode !== "edit" && !roleTouched && (
               <p className="mt-1 text-[12px] text-slate-400">
@@ -184,10 +233,11 @@ export default function UserFormModal({
 
             <select
               value={form.activeStatus}
+              disabled={delegateMode}
               onChange={(event) =>
                 updateForm("activeStatus", event.target.value)
               }
-              className="h-10 w-full rounded-md border border-slate-200 px-3 text-[13px]"
+              className="h-10 w-full rounded-md border border-slate-200 px-3 text-[13px] disabled:bg-slate-50 disabled:text-slate-400"
             >
               <option>사용 중</option>
               <option>사용 중지</option>
@@ -209,7 +259,7 @@ export default function UserFormModal({
           </button>
 
           <button className="rounded-md bg-blue-600 px-4 py-2 text-[13px] font-semibold text-white">
-            저장하기
+            {delegateMode ? "역할 저장" : "저장하기"}
           </button>
         </div>
       </form>
