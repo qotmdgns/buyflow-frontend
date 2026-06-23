@@ -8,10 +8,11 @@ import useProductCreate from "@/features/product/hooks/useProductCreate"
 export default function ProductCreate({ mode = "create", productId = null }) {
   const router = useRouter()
 
-  const { form, isSaving, updateForm, saveProduct } = useProductCreate({
-    mode,
-    productId,
-  })
+  const { form, isSaving, filterOptions, updateForm, saveProduct } =
+    useProductCreate({
+      mode,
+      productId,
+    })
 
   async function handleSave() {
     const isSaved = await saveProduct()
@@ -31,7 +32,12 @@ export default function ProductCreate({ mode = "create", productId = null }) {
         </h1>
       </header>
 
-      <ProductBasicForm form={form} onChange={updateForm} />
+      <ProductBasicForm
+        mode={mode}
+        form={form}
+        filterOptions={filterOptions}
+        onChange={updateForm}
+      />
 
       <footer className="mt-3 flex justify-end gap-2 border-t border-slate-200 pt-3">
         <button

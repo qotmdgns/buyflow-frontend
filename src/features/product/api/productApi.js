@@ -89,16 +89,42 @@ function normalizeProductResponse(data) {
 }
 
 function toProductRequestPayload(form) {
+  const isActive =
+    form.isActive !== undefined
+      ? form.isActive
+      : form.useYn
+        ? form.useYn !== "N"
+        : true
+
   return {
-    productNo: form.code?.trim(),
-    productName: form.name?.trim(),
-    categoryName: form.category,
-    spec: form.spec?.trim(),
-    unit: form.unit,
-    unitPrice: Math.max(0, Number(form.unitPrice) || 0),
-    companyName: form.manufacturer?.trim(),
-    isActive: form.isActive,
-    description: form.description?.trim(),
+    productNo: (form.code ?? form.productNo ?? "").trim(),
+    productName: (form.name ?? form.productName ?? "").trim(),
+
+    companyName: (form.companyName ?? form.manufacturer ?? "").trim(),
+    bizRegNo: (form.bizRegNo ?? "").trim(),
+
+    categoryName: form.category ?? form.categoryName ?? "",
+    parentCategory: (form.parentCategory ?? "").trim(),
+
+    spec: (form.spec ?? "").trim(),
+    unit: form.unit ?? "",
+
+    unitPrice:
+      form.unitPrice === "" ||
+      form.unitPrice === null ||
+      form.unitPrice === undefined
+        ? 0
+        : Math.max(0, Number(form.unitPrice) || 0),
+
+    origin: (form.origin ?? "").trim(),
+    description: (form.description ?? "").trim(),
+    competingProduct: form.competingProduct === "Y" ? "Y" : "N",
+
+    validStartDate: form.validStartDate || null,
+    validEndDate: form.validEndDate || null,
+
+    isActive,
+    useYn: isActive ? "Y" : "N",
   }
 }
 

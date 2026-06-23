@@ -4,34 +4,86 @@ import { useEffect, useState } from "react"
 import {
   createProduct,
   fetchProductById,
+  fetchProductFilterOptions,
   updateProduct,
 } from "@/features/product/api/productApi"
 
 const INITIAL_FORM = {
   code: "",
   name: "",
+  companyName: "",
+  bizRegNo: "",
   category: "",
+  parentCategory: "",
   spec: "",
-  unit: "EA",
-  unitPrice: "0",
-  manufacturer: "",
+  unit: "",
+  unitPrice: "",
+  origin: "",
+  competingProduct: "",
+  validStartDate: "",
+  validEndDate: "",
   isActive: true,
   description: "",
 }
 
+const INITIAL_FILTER_OPTIONS = {
+  categories: ["전체"],
+  units: ["전체"],
+}
+
+function normalizeDate(value) {
+  if (!value) {
+    return ""
+  }
+
+  return String(value).slice(0, 10)
+}
+
+function normalizeBoolean(value, defaultValue = false) {
+  if (value === true || value === "Y" || value === "y" || value === "true") {
+    return true
+  }
+
+  if (value === false || value === "N" || value === "n" || value === "false") {
+    return false
+  }
+
+  return defaultValue
+}
+
 function toForm(product) {
   return {
-    code: product.code ?? "",
-    name: product.name ?? "",
-    category: product.category ?? "",
+    code: product.productNo ?? product.code ?? "",
+    name: product.productName ?? product.name ?? "",
+
+    companyName:
+      product.companyName ?? product.manufacturer ?? product.company ?? "",
+
+    bizRegNo: product.bizRegNo ?? "",
+    category: product.categoryName ?? product.category ?? "",
+    parentCategory: product.parentCategory ?? "",
     spec: product.spec ?? "",
-    unit: product.unit ?? "EA",
-    unitPrice: String(product.unitPrice ?? 0),
-    manufacturer: product.manufacturer ?? "",
-    isActive: product.isActive ?? true,
+    unit: product.unit ?? "",
+    unitPrice:
+      product.unitPrice === null || product.unitPrice === undefined
+        ? ""
+        : String(product.unitPrice),
+
+    origin: product.origin ?? "",
+    competingProduct:
+      product.competingProduct === "Y" || product.competingProduct === true
+        ? "Y"
+        : "N",
+
+    validStartDate: normalizeDate(product.validStartDate),
+    validEndDate: normalizeDate(product.validEndDate),
+
+    isActive: normalizeBoolean(product.useYn, product.isActive ?? true),
+
     description: product.description ?? "",
   }
 }
+
 export default function useProductCreate({
   mode = "create",
   productId = null,
@@ -39,6 +91,32 @@ export default function useProductCreate({
   const [form, setForm] = useState(INITIAL_FORM)
   const [isSaving, setIsSaving] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
+  const [filterOptions, setFilterOptions] = useState(INITIAL_FILTER_OPTIONS)
+
+  useEffect(() => {
+    let ignore = false
+
+    async function loadFilterOptions() {
+      try {
+        const options = await fetchProductFilterOptions()
+
+        if (!ignore) {
+          setFilterOptions({
+            categories: options?.categories ?? ["전체"],
+            units: options?.units ?? ["전체"],
+          })
+        }
+      } catch (error) {
+        console.error("품목 옵션 조회 실패", error)
+      }
+    }
+
+    loadFilterOptions()
+
+    return () => {
+      ignore = true
+    }
+  }, [])
 
   useEffect(() => {
     if (mode !== "edit" || !productId) {
@@ -100,6 +178,21 @@ export default function useProductCreate({
       return "단위를 선택해 주세요."
     }
 
+    if (
+      form.unitPrice !== "" &&
+      (Number.isNaN(Number(form.unitPrice)) || Number(form.unitPrice) < 0)
+    ) {
+      return "기준 단가는 0 이상의 숫자로 입력해 주세요."
+    }
+
+    if (
+      form.validStartDate &&
+      form.validEndDate &&
+      form.validStartDate > form.validEndDate
+    ) {
+      return "유효 시작일은 유효 종료일보다 늦을 수 없습니다."
+    }
+
     return ""
   }
 
@@ -114,20 +207,18 @@ export default function useProductCreate({
     setIsSaving(true)
 
     try {
-<<<<<<< HEAD
-
-      await new Promise((resolve) => setTimeout(resolve, 300))
-
-      window.alert("품목이 등록되었습니다.")
-=======
       if (mode === "edit") {
+        if (!productId) {
+          window.alert("수정할 품목 ID를 찾을 수 없습니다.")
+          return false
+        }
+
         await updateProduct(productId, form)
         window.alert("품목이 수정되었습니다.")
       } else {
         await createProduct(form)
         window.alert("품목이 등록되었습니다.")
       }
->>>>>>> 39cfa0052cd44d8e88fdfa8b777f695a7037c9cb
 
       return true
     } catch (error) {
@@ -149,6 +240,7 @@ export default function useProductCreate({
     form,
     isSaving,
     isLoading,
+    filterOptions,
     updateForm,
     saveProduct,
   }
