@@ -21,12 +21,7 @@ function PageIconButton({ children, label, disabled, onClick }) {
   )
 }
 
-export default function ProductPagination({
-  pagination,
-  pageSize,
-  onChangePageSize,
-  onMovePage,
-}) {
+export default function ProductPagination({ pagination, onMovePage }) {
   const { page, totalPages } = pagination
 
   const pageNumbers = useMemo(
@@ -42,7 +37,7 @@ export default function ProductPagination({
           disabled={page === 1}
           onClick={() => onMovePage(1)}
         >
-          <ChevronsLeft size={15} />
+          <ChevronsLeft size={10} />
         </PageIconButton>
 
         <PageIconButton
@@ -50,7 +45,7 @@ export default function ProductPagination({
           disabled={page === 1}
           onClick={() => onMovePage(page - 1)}
         >
-          <ChevronLeft size={15} />
+          <ChevronLeft size={10} />
         </PageIconButton>
 
         {pageNumbers.map((pageNumber) => {
@@ -78,12 +73,16 @@ export default function ProductPagination({
           )
         })}
 
+        <div className="flex items-center gap-2">
+          <span>페이지당</span>
+        </div>
+
         <PageIconButton
           label="다음 페이지"
           disabled={page === totalPages}
           onClick={() => onMovePage(page + 1)}
         >
-          <ChevronRight size={15} />
+          <ChevronRight size={10} />
         </PageIconButton>
 
         <PageIconButton
@@ -91,7 +90,7 @@ export default function ProductPagination({
           disabled={page === totalPages}
           onClick={() => onMovePage(totalPages)}
         >
-          <ChevronsRight size={15} />
+          <ChevronsRight size={10} />
         </PageIconButton>
       </div>
     </div>
