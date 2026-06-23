@@ -61,10 +61,12 @@ function toFrontendPurchaseOrder(data) {
       data.expectedReceiptTo ||
       (data.dueDate ? String(data.dueDate).slice(0, 10) : "-"),
     warehouseCode: data.warehouseCode || "",
-    warehouseName: data.warehouseName || "일반 창고",
+    warehouseName: data.warehouseName || "",
     memo: data.memo || "",
     status: data.orderStatus || "",
     items: data.items || [],
+    attachmentId: data.attachmentId || null,
+    attachmentName: data.attachmentName || null,
   }
 }
 
@@ -315,14 +317,28 @@ export async function fetchPurchaseOrderById(orderId) {
 
 export async function createPurchaseOrder(payload, attachment = null) {
   if (!USE_MOCK) {
+    const formData = new FormData()
+
+    // 1-1. JSON 데이터를 Blob으로 감싸서 'data'라는 이름으로 포장
+    formData.append(
+      "data",
+      new Blob([JSON.stringify(payload)], { type: "application/json; charset=utf-8" })
+    )
+
+    // 1-2. 첨부파일이 있으면 'file'이라는 이름으로 포장
+    if (attachment) {
+      formData.append("file", attachment)
+    }
+
+    // 1-3. POST 메서드로 FormData 전송 (Content-Type 헤더는 비워둬야 합니다!)
     const response = await fetch(createApiUrl("/api/orders"), {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
+      body: formData,
     })
 
     if (!response.ok) {
-      throw new Error("발주를 등록하지 못했습니다.")
+      const errorText = await response.text().catch(() => "발주를 등록하지 못했습니다.")
+      throw new Error(errorText || "발주를 등록하지 못했습니다.")
     }
 
     return response.json()
@@ -348,31 +364,46 @@ export async function createPurchaseOrder(payload, attachment = null) {
 
 export async function updatePurchaseOrder(orderId, payload, attachment = null) {
   if (!USE_MOCK) {
-    const response = await fetch(createApiUrl(`/api/orders/${orderId}`), {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
-    })
+    const formData = new FormData();
 
-    if (!response.ok) {
-      throw new Error("발주 정보를 수정하지 못했습니다.")
+    // 1-1. JSON 데이터를 Blob으로 감싸서 'data'라는 이름으로 포장 (백엔드의 @RequestPart("data")와 매핑)
+    formData.append(
+      "data",
+      new Blob([JSON.stringify(payload)], { type: "application/json; charset=utf-8" })
+    )
+
+    // 1-2. 첨부파일이 있으면 'file'이라는 이름으로 포장 (백엔드의 @RequestPart("file")과 매핑)
+    if (attachment) {
+      formData.append("file", attachment);
     }
 
-    return response.json()
+    // 1-3. Fetch 요청 발송 (Content-Type 헤더 제거 필수!)
+    const response = await fetch(createApiUrl(`/api/orders/${orderId}`), {
+      method: "PUT",
+      body: formData, 
+    });
+
+    if (!response.ok) {
+      // 서버에서 보내주는 에러 메시지가 있다면 그걸 보여주도록 개선
+      const errorText = await response.text().catch(() => "발주 정보를 수정하지 못했습니다.");
+      throw new Error(errorText || "발주 정보를 수정하지 못했습니다.");
+    }
+
+    return response.json();
   }
 
-  await wait(200)
+  await wait(200);
 
   const previousOrder = purchaseOrderDatabase.find(
-    (item) => item.id === Number(orderId),
-  )
+    (item) => item.id === Number(orderId)
+  );
 
   if (!previousOrder) {
-    throw new Error("수정할 발주 정보를 찾을 수 없습니다.")
+    throw new Error("수정할 발주 정보를 찾을 수 없습니다.");
   }
 
   if (!canEditPurchaseOrder(previousOrder.status)) {
-    throw new Error("현재 상태에서는 발주 정보를 수정할 수 없습니다.")
+    throw new Error("현재 상태에서는 발주 정보를 수정할 수 없습니다.");
   }
 
   const safePayload = canEditPurchaseOrderCoreFields(previousOrder.status)
@@ -385,20 +416,20 @@ export async function updatePurchaseOrder(orderId, payload, attachment = null) {
         memo: payload.memo,
         status: previousOrder.status,
         items: previousOrder.items,
-      }
+      };
 
   const updatedOrder = createRecord(
     safePayload,
     Number(orderId),
     attachment,
-    previousOrder,
-  )
+    previousOrder
+  );
 
   purchaseOrderDatabase = purchaseOrderDatabase.map((order) =>
-    order.orderId === Number(orderId) ? updatedOrder : order,
-  )
+    order.orderId === Number(orderId) ? updatedOrder : order
+  );
 
-  return clone(updatedOrder)
+  return clone(updatedOrder);
 }
 
 export async function cancelPurchaseOrder(orderId, cancelReason) {

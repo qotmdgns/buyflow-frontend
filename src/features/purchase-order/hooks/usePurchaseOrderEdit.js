@@ -63,20 +63,12 @@ useEffect(() => {
 
     async function loadPurchaseOrderEditData() {
       try {
-        console.log(`=== [EDIT] ${orderId}번 발주 상세 로드 시작 ===`)
-
         const [detail, formOptions] = await Promise.all([
           fetchPurchaseOrderById(orderId),
           fetchPurchaseOrderFormOptions(),
         ])
 
         if (ignore) return
-
-        // ==================== 디버깅 로그 ====================
-        console.log("=== [EDIT] 1. RAW detail 전체 ===", detail)
-        console.log("=== [EDIT] 2. detail.items 원본 ===", detail?.items)
-        console.log("=== [EDIT] 3. items 길이 ===", detail?.items?.length ?? 0)
-        // ====================================================
 
         setOptions(formOptions)
 
@@ -156,15 +148,27 @@ useEffect(() => {
           contact: sContact,
           contactNo: sContact,
           memo: detail.memo || "",
-
           status: detail.orderStatus || detail.status || "CONFIRMED",
         }
-
+        if (detail.attachmentId) {
+            setAttachment({
+                id: detail.attachmentId,
+                name: detail.attachmentName || "첨부파일 존재"
+            });
+            console.log("=== [EDIT] 첨부파일 상태 세팅 완료 ===", {
+                id: detail.attachmentId,
+                name: detail.attachmentName
+            });
+        }
         const forceEditableCoreFields = true
         console.log("=== [EDIT] editableCoreFields 강제 설정 ===", forceEditableCoreFields)
 
         console.log("=== [EDIT] setForm 상태 ===", assignedFormState)
         setForm(assignedFormState)
+
+console.log("=== [최종 확인] detail 객체 안의 데이터 ===", detail);
+console.log("=== [최종 확인] detail.attachmentId ===", detail.attachmentId);
+console.log("=== [최종 확인] detail.attachmentName ===", detail.attachmentName);
 
         setDetailState({
           detail,
