@@ -156,7 +156,7 @@ flowchart LR
     ORDER[발주 관리]
     RECEIPT[입고 관리]
     INSPECTION[검수 관리]
-    INVENTORY[재고 현황]
+    STOCK[재고 현황]
     HISTORY[재고 이력]
 
     PRODUCT --> REQUEST
@@ -165,9 +165,9 @@ flowchart LR
     APPROVAL --> ORDER
     ORDER --> RECEIPT
     RECEIPT --> INSPECTION
-    INSPECTION --> INVENTORY
-    WAREHOUSE --> INVENTORY
-    INVENTORY --> HISTORY
+    INSPECTION --> STOCK
+    WAREHOUSE --> STOCK
+    STOCK --> HISTORY
 ```
 
 ### ERD 이미지
@@ -243,8 +243,8 @@ flowchart LR
 | 발주 관리   | 발주 목록 및 상세     | `/purchase-orders`               | 개발 예정       |
 | 입고 관리   | 입고 목록 및 등록     | `/receipts`                      | 개발 예정       |
 | 검수 관리   | 검수 목록 및 처리     | `/inspections`                   | 개발 예정       |
-| 재고 관리   | 재고 현황             | `/inventory`                     | 개발 예정       |
-| 재고 관리   | 재고 이력             | `/inventory-history`             | 개발 예정       |
+| 재고 관리   | 재고 현황             | `/stock`                         | 개발 예정       |
+| 재고 관리   | 재고 이력             | `/stock-history`                 | 개발 예정       |
 | 시스템 관리 | 사용자 및 권한 관리   | `/system`                        | 개발 예정       |
 
 ---
@@ -314,9 +314,9 @@ frontend-buyflow
 │   │   │   │   └── page.jsx
 │   │   │   ├── inspections
 │   │   │   │   └── page.jsx
-│   │   │   ├── inventory
+│   │   │   ├── stock
 │   │   │   │   └── page.jsx
-│   │   │   ├── inventory-history
+│   │   │   ├── stock-history
 │   │   │   │   └── page.jsx
 │   │   │   └── system
 │   │   │       └── page.jsx
@@ -340,7 +340,7 @@ frontend-buyflow
 │   │   ├── purchase-order
 │   │   ├── receipt
 │   │   ├── inspection
-│   │   ├── inventory
+│   │   ├── stock
 │   │   └── system
 │   │
 │   ├── lib
@@ -539,7 +539,7 @@ main
       ├── feature/approval
       ├── feature/purchase-order
       ├── feature/receipt
-      └── feature/inventory
+      └── feature/stock
 ```
 
 새로운 기능을 개발할 때는 `develop` 브랜치에서 기능 브랜치를 생성합니다.

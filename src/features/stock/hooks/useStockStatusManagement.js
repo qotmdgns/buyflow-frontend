@@ -54,7 +54,7 @@ export default function useStockStatusManagement(initialFilters = {}) {
 
     fetchStockFilterOptions()
       .then((data) => {
-        console.log("inventory-filter-options", data)
+        console.log("stock-filter-options", data)
 
         if (!ignore) {
           setFilterOptions(data)

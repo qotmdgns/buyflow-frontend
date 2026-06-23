@@ -196,12 +196,12 @@ export async function fetchStockFilterOptions() {
     return stockFilterOptions
   }
 
-const response = await fetch(
-  `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/inventories/filter-options`,
-  {
-    cache: "no-store",
-  },
-)
+  const response = await fetch(
+    `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/inventories/filter-options`,
+    {
+      cache: "no-store",
+    },
+  )
 
   if (!response.ok) {
     throw new Error("재고 이력 필터 옵션을 불러오지 못했습니다.")
@@ -217,8 +217,8 @@ export async function fetchInventories(params = {}) {
   }
 
   const query = buildQuery(params)
-  
-  console.log("inventory-query", query.toString())
+
+  console.log("stock-query", query.toString())
 
   const response = await fetch(
     `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/inventories?${query.toString()}`,
@@ -241,10 +241,10 @@ export async function fetchStockHistories(params = {}) {
 
   const query = buildQuery(params)
 
-const response = await fetch(
-  `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/stock-history?${query.toString()}`,
-  { cache: "no-store" },
-)
+  const response = await fetch(
+    `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/stock-history?${query.toString()}`,
+    { cache: "no-store" },
+  )
 
   if (!response.ok) {
     throw new Error("재고 이력을 불러오지 못했습니다.")

@@ -1,6 +1,6 @@
 import { getDashboardData } from "@/features/dashboard/api/dashboardApi"
 import {
-  InventoryStatusChart,
+  StockStatusChart,
   MonthlyReceiptChart,
 } from "@/features/dashboard/components/DashboardCharts"
 import DashboardSummaryCards from "@/features/dashboard/components/DashboardSummaryCards"
@@ -31,7 +31,7 @@ export default async function DashboardPage() {
       <div className="mt-3 grid gap-3 xl:grid-cols-[minmax(0,2fr)_minmax(280px,1fr)]">
         <MonthlyReceiptChart data={data.monthlyReceipt ?? []} />
 
-        <InventoryStatusChart data={data.inventoryStatus ?? []} />
+        <StockStatusChart data={data.stockStatus ?? []} />
       </div>
 
       <div className="mt-3 grid gap-3 xl:grid-cols-[minmax(0,1fr)_minmax(0,1.05fr)]">

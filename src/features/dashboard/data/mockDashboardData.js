@@ -149,7 +149,7 @@ export const mockDashboardData = {
     { month: "6월", quantity: 620 },
   ],
 
-  inventoryStatus: [
+  stockStatus: [
     { name: "정상", value: 65, fill: "#2f80ed" },
     { name: "안전재고 이하", value: 15, fill: "#ef4444" },
     { name: "재고 없음", value: 20, fill: "#111827" },
