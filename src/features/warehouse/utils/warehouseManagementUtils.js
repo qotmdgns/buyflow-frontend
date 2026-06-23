@@ -9,8 +9,8 @@ export const WAREHOUSE_TYPE_OPTIONS = [
 export const DEFAULT_WAREHOUSE_FILTERS = {
   type: "전체",
   warehouseName: "",
-  manager: "",
-  activeStatus: "전체",
+  managerName: "",
+  useYn: "전체",
 }
 
 export const DEFAULT_WAREHOUSE_PAGINATION = {
@@ -22,17 +22,17 @@ export const DEFAULT_WAREHOUSE_PAGINATION = {
 
 export const DEFAULT_WAREHOUSE_FILTER_OPTIONS = {
   warehouseTypes: ["전체", ...WAREHOUSE_TYPE_OPTIONS],
-  activeStatuses: ["전체", "사용 중", "사용 중지"],
+  useYn: ["전체", "사용 중", "사용 중지"],
 }
 
 export const EMPTY_WAREHOUSE_FORM = {
   code: "",
   name: "",
   type: "일반 창고",
-  activeStatus: "사용 중",
+  useYn: "사용 중",
   baseAddress: "",
   detailAddress: "",
-  manager: "",
+  managerName: "",
   userId: "",
   phone: "",
   memo: "",
@@ -128,8 +128,8 @@ export function downloadWarehouseCsv(warehouses) {
     warehouse.type,
     warehouse.name,
     warehouse.address,
-    warehouse.activeStatus,
-    warehouse.manager,
+    warehouse.useYn,
+    warehouse.managerName,
     warehouse.phone,
     warehouse.registeredAt,
     warehouse.updatedAt,

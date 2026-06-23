@@ -76,56 +76,52 @@ const loadFormOptions = useCallback(async () => {
     void loadFormOptions()
   }, [loadFormOptions])
 
-useEffect(() => {
-  let ignore = false
+  useEffect(() => {
+    let ignore = false
 
-  async function loadOrders() {
-    setLoading(true)
-    setError("")
+    async function loadOrders() {
+      setLoading(true)
+      setError("")
 
-    try {
-      const params = {
-        ...appliedFilters,
-        page: pagination.page,
-        size: pagination.size,
-      };
-      console.log("📤 [SEARCH] 최종 params:", params);
+      try {
+        const params = {
+          ...appliedFilters,
+          page: pagination.page - 1,
+          size: pagination.size,
+        };
 
-      const data = await fetchPurchaseOrders(params);
+        console.log("📤 [SEARCH] 최종 params:", params);
 
-      if (!ignore) {
-        const realContentList = data.content || data.items || data || [];
-        setOrders(realContentList);
+        const data = await fetchPurchaseOrders(params);
 
-        if (data.pagination) {
-          setPagination(data.pagination);
-        } else if (data.page) {
-          setPagination({
-            page: data.page,
-            size: data.size || pagination.size,
-            totalElements: data.totalElements || 0,
-            totalPages: data.totalPages || 1,
-          });
+        if (!ignore) {
+          const realContentList = data.content || data.items || data || [];
+          setOrders(realContentList);
+
+          const newPagination = {
+            page: data.number !== undefined ? data.number + 1 : pagination.page,
+            size: data.size ?? data.pagination?.size ?? pagination.size,
+            totalElements: data.totalElements ?? data.pagination?.totalElements ?? realContentList.length,
+            totalPages: data.totalPages ?? data.pagination?.totalPages ?? 1,
+          };
+
+          console.log("🆕 새 pagination 적용:", newPagination);
+          setPagination(newPagination);
         }
-      }
-    } catch (requestError) {
-      console.error("목록 로드 실패:", requestError);
-      if (!ignore) {
-        setError(requestError.message || "발주 목록을 불러오지 못했습니다.");
-      }
-    } finally {
-      if (!ignore) {
-        setLoading(false);
+      } catch (requestError) {
+        console.error("목록 로드 실패:", requestError);
+        if (!ignore) {
+          setError(requestError.message || "발주 목록을 불러오지 못했습니다.");
+        }
+      } finally {
+        if (!ignore) setLoading(false);
       }
     }
-  }
 
-  loadOrders();
+    loadOrders();
 
-  return () => {
-    ignore = true;
-  };
-}, [appliedFilters, pagination.page, pagination.size, refreshKey]);
+    return () => { ignore = true; };
+  }, [appliedFilters, refreshKey]);   // pagination.page, size 제거!!
 
   function updateFilter(name, value) {
     setDraftFilters((currentFilters) => ({
@@ -151,18 +147,20 @@ useEffect(() => {
   }
 
   function movePage(page) {
-    setPagination((currentPagination) => ({
-      ...currentPagination,
-      page,
-    }))
+    const newPage = Math.max(1, Math.min(page, pagination.totalPages || 1));
+    console.log(`🔄 movePage: ${pagination.page} → ${newPage}`);
+
+    setPagination(prev => ({ ...prev, page: newPage }));
+    setRefreshKey(k => k + 1);   // 강제 트리거
   }
 
   function changePageSize(size) {
-    setPagination((currentPagination) => ({
-      ...currentPagination,
+    setPagination(prev => ({
+      ...prev,
       page: 1,
-      size,
-    }))
+      size: Number(size),
+    }));
+    setRefreshKey(k => k + 1);
   }
 
   function openDetail(order) {
