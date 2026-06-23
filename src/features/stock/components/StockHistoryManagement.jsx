@@ -260,7 +260,7 @@ export default function StockHistoryManagement({ initialFilters }) {
   !error &&
   histories.map((history) => (
     <tr
-      key={history.id}
+      key={history.historyId}
       className="border-t border-slate-100 text-slate-600"
     >
       <td className="whitespace-nowrap px-3 py-3">

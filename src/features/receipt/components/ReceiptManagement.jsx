@@ -159,35 +159,7 @@ export default function ReceiptManagement() {
     pagination.totalElements,
   )
 
-  function moveToDetail(receiptId) {
-    router.push(`/receipts/${receiptId}`)
-  }
-
-  function handleRowClick(event, receiptId) {
-    const interactiveElement = event.target.closest?.(
-      "a, button, input, label, select, textarea",
-    )
-
-    // 체크박스, 링크, 버튼 등 별도 기능이 있는 영역을 눌렀다면
-    // 행 클릭 이동을 실행하지 않습니다.
-    if (interactiveElement) {
-      return
-    }
-
-    moveToDetail(receiptId)
-  }
-
-  function handleRowKeyDown(event, receiptId) {
-    // 행 내부의 체크박스나 링크에서 발생한 이벤트는 제외합니다.
-    if (event.target !== event.currentTarget) {
-      return
-    }
-
-    if (event.key === "Enter" || event.key === " ") {
-      event.preventDefault()
-      moveToDetail(receiptId)
-    }
-  }
+ 
 
   async function handleDownload() {
     try {
@@ -513,16 +485,11 @@ export default function ReceiptManagement() {
                 !error &&
                 receipts.map((receipt) => (
                   <tr
-                    key={receipt.id}
-                    role="link"
-                    tabIndex={0}
-                    aria-label={`${receipt.orderNumber} 입고 상세 화면으로 이동`}
-                    onClick={(event) => handleRowClick(event, receipt.id)}
-                    onKeyDown={(event) => handleRowKeyDown(event, receipt.id)}
-                    className={`cursor-pointer border-t border-slate-100 text-slate-600 transition hover:bg-blue-50/40 focus:bg-blue-50/40 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-200 ${
-                      receipt.status === "DELAYED" ? "bg-rose-50/60" : ""
-                    }`}
-                  >
+  key={receipt.id}
+  className={`border-t border-slate-100 text-slate-600 ${
+    receipt.status === "DELAYED" ? "bg-rose-50/60" : ""
+  }`}
+>
                     <td className="px-3 py-3">
                       <input
                         type="checkbox"
@@ -535,13 +502,8 @@ export default function ReceiptManagement() {
                     </td>
 
                     <td className="whitespace-nowrap px-3 py-3 font-semibold">
-                      <Link
-                        href={`/receipts/${receipt.id}`}
-                        className="text-blue-600 hover:underline"
-                      >
-                        {receipt.orderNumber}
-                      </Link>
-                    </td>
+  {receipt.orderNumber}
+</td>
 
                     <td className="whitespace-nowrap px-3 py-3">
                       {receipt.supplierName}

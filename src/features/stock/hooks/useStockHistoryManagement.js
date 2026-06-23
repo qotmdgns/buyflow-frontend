@@ -107,13 +107,15 @@ const [filterOptions, setFilterOptions] =
   function searchHistories(event) {
     event.preventDefault()
 
+    console.log("draftFilters =", draftFilters)
+
     setPagination((currentPagination) => ({
       ...currentPagination,
       page: 1,
     }))
 
     setAppliedFilters({ ...draftFilters })
-  }
+}
 
   function resetFilters() {
     setDraftFilters({ ...DEFAULT_HISTORY_FILTERS })

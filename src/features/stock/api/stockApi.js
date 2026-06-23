@@ -240,6 +240,7 @@ export async function fetchStockHistories(params = {}) {
   }
 
   const query = buildQuery(params)
+  console.log("query =", query.toString())
 
   const response = await fetch(
     `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/stock-history?${query.toString()}`,

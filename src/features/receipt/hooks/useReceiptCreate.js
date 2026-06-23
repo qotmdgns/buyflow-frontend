@@ -201,6 +201,10 @@ async function changeOrder(receiptId) {
   async function saveReceipt() {
     const nextErrors = validateReceiptReceiptForm(form, items)
 
+    console.log("form =", form)
+console.log("items =", items)
+console.log("nextErrors =", nextErrors)
+
     if (Object.keys(nextErrors).length) {
       setErrors(nextErrors)
       return null
@@ -210,6 +214,7 @@ async function changeOrder(receiptId) {
     setSubmitError("")
 
     try {
+      console.log("createReceiptReceipt 호출")
       return await createReceiptReceipt(
         {
           ...form,
