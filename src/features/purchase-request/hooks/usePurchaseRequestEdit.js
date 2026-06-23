@@ -10,6 +10,7 @@ import {
 import { calculateRequestTotal } from "@/features/purchase-request/utils/purchaseRequestUtils"
 
 const EDITABLE_STATUS_LABELS = new Set(["승인 대기", "반려"])
+const MAX_ATTACHMENT_SIZE = 10 * 1024 * 1024
 
 const INITIAL_FORM = {
   requestNumber: "",
@@ -174,7 +175,21 @@ export default function usePurchaseRequestEdit(requestId) {
   }
 
   function changeAttachment(event) {
-    setAttachment(event.target.files?.[0] ?? null)
+    const file = event.target.files?.[0] ?? null
+
+    if (!file) {
+      setAttachment(null)
+      return
+    }
+
+    if (file.size > MAX_ATTACHMENT_SIZE) {
+      window.alert("첨부파일은 최대 10MB까지 업로드할 수 있습니다.")
+      event.target.value = ""
+      setAttachment(null)
+      return
+    }
+
+    setAttachment(file)
   }
 
   function openItemModal() {
@@ -300,7 +315,7 @@ export default function usePurchaseRequestEdit(requestId) {
     setIsSubmitting(true)
 
     try {
-      const updatedRequest = await updatePurchaseRequest(requestId, {
+      const payload = {
         requestNumber: form.requestNumber,
         requestDate: form.requestDate,
         expectedDate: form.expectedDate,
@@ -314,7 +329,13 @@ export default function usePurchaseRequestEdit(requestId) {
           estimatedUnitPrice: Number(item.unitPrice ?? 0),
           remark: item.remark ?? "",
         })),
-      })
+      }
+
+      const updatedRequest = await updatePurchaseRequest(
+        requestId,
+        payload,
+        attachment,
+      )
 
       window.alert("구매 요청을 수정했습니다.")
       router.push(`/purchase-requests/${updatedRequest.id}`)

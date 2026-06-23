@@ -54,6 +54,8 @@ export default function usePurchaseRequestCreate() {
   const [appliedKeyword, setAppliedKeyword] = useState("")
   const [appliedCategory, setAppliedCategory] = useState("전체 카테고리")
 
+  const MAX_ATTACHMENT_SIZE = 10 * 1024 * 1024
+
   const requesterName = useMemo(() => {
     if (!isAuthReady || !user) {
       return ""
@@ -132,7 +134,21 @@ export default function usePurchaseRequestCreate() {
   }
 
   function changeAttachment(event) {
-    setAttachment(event.target.files?.[0] ?? null)
+    const file = event.target.files?.[0] ?? null
+
+    if (!file) {
+      setAttachment(null)
+      return
+    }
+
+    if (file.size > MAX_ATTACHMENT_SIZE) {
+      window.alert("첨부파일은 최대 10MB까지 업로드할 수 있습니다.")
+      event.target.value = ""
+      setAttachment(null)
+      return
+    }
+
+    setAttachment(file)
   }
 
   function openItemModal() {
@@ -271,7 +287,7 @@ export default function usePurchaseRequestCreate() {
     setIsSubmitting(true)
 
     try {
-      const createdRequest = await createPurchaseRequest({
+      const payload = {
         requestNumber: currentForm.requestNumber,
         requestorId,
         requester: currentForm.requester,
@@ -290,7 +306,9 @@ export default function usePurchaseRequestCreate() {
           ),
           remark: item.remark ?? "",
         })),
-      })
+      }
+
+      const createdRequest = await createPurchaseRequest(payload, attachment)
 
       window.alert("승인 요청을 전송했습니다.")
       router.push(`/purchase-requests/${createdRequest.id}`)

@@ -393,17 +393,33 @@ export async function fetchPurchaseRequestDetail(requestId) {
   return normalizePurchaseRequestDetailResponse(await response.json())
 }
 
-export async function createPurchaseRequest(payload) {
+function createPurchaseRequestFormData(payload, attachment) {
+  const formData = new FormData()
+
+  formData.append(
+    "data",
+    new Blob([JSON.stringify(payload)], {
+      type: "application/json",
+    }),
+  )
+
+  if (attachment) {
+    formData.append("file", attachment)
+  }
+
+  return formData
+}
+
+export async function createPurchaseRequest(payload, attachment = null) {
   const response = await fetch(createApiUrl("/api/purchase-requests"), {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(payload),
+    body: createPurchaseRequestFormData(payload, attachment),
   })
 
   if (!response.ok) {
-    throw new Error("구매 요청 등록에 실패했습니다.")
+    throw new Error(
+      await readErrorMessage(response, "구매 요청 등록에 실패했습니다."),
+    )
   }
 
   return normalizePurchaseRequestDetailResponse(await response.json())
@@ -419,7 +435,11 @@ async function readErrorMessage(response, fallbackMessage) {
   }
 }
 
-export async function updatePurchaseRequest(requestId, payload) {
+export async function updatePurchaseRequest(
+  requestId,
+  payload,
+  attachment = null,
+) {
   if (!requestId) {
     throw new Error("구매 요청 ID가 없습니다.")
   }
@@ -428,13 +448,9 @@ export async function updatePurchaseRequest(requestId, payload) {
     createApiUrl(`/api/purchase-requests/${encodeURIComponent(requestId)}`),
     {
       method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(payload),
+      body: createPurchaseRequestFormData(payload, attachment),
     },
   )
-
   if (response.status === 404) {
     throw new Error("존재하지 않는 구매 요청입니다.")
   }
