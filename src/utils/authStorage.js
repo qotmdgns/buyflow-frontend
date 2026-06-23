@@ -1,4 +1,5 @@
 const SESSION_KEY = "buyflow.auth.local-session"
+const SESSION_SESSION_KEY = "buyflow.auth.session-session"
 
 function getBrowserStorage() {
   if (typeof window === "undefined") {
@@ -27,7 +28,8 @@ function getSessionStorage() {
 export function getAuthSession() {
   const raw =
     getBrowserStorage()?.getItem(SESSION_KEY) ??
-    getSessionStorage()?.getItem(SESSION_KEY)
+    getSessionStorage()?.getItem(SESSION_KEY) ??
+    getSessionStorage()?.getItem(SESSION_SESSION_KEY)
 
   if (!raw) {
     return null
@@ -66,4 +68,5 @@ export function saveAuthSession(session, remember = true) {
 export function clearAuthSession() {
   getBrowserStorage()?.removeItem(SESSION_KEY)
   getSessionStorage()?.removeItem(SESSION_KEY)
+  getSessionStorage()?.removeItem(SESSION_SESSION_KEY)
 }

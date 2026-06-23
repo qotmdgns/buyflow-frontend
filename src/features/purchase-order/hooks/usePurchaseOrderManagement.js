@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState, useCallback } from "react"
+import { useEffect, useState } from "react"
 
 import {
   cancelPurchaseOrder,
@@ -44,37 +44,45 @@ export default function usePurchaseOrderManagement() {
 
   const detailState = usePurchaseOrderDetail(selectedOrderId)
 
-const loadFormOptions = useCallback(async () => {
-  try {
-    // 성공하는 URL로 바꿔보세요
-    const res = await fetch("http://localhost:8080/api/orders/form-options", {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      credentials: "include",
-    });
-
-    if (!res.ok) {
-      console.error("Status:", res.status);
-      throw new Error(`HTTP ${res.status}`);
-    }
-    
-    const response = await res.json();
-    console.log("✅ 성공적으로 받아옴:", response);
-
-    setFilterOptions({
-      suppliers: response.suppliers || [],
-      statuses: response.statuses || ["전체", "PENDING", "APPROVED", "CANCELLED"],
-    });
-  } catch (err) {
-    console.error("폼 옵션 로딩 실패:", err);
-  }
-}, []);
-
   useEffect(() => {
+    let ignore = false
+
+    async function loadFormOptions() {
+      try {
+        // 성공하는 URL로 바꿔보세요
+        const res = await fetch("http://localhost:8080/api/orders/form-options", {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          credentials: "include",
+        });
+
+        if (!res.ok) {
+          console.error("Status:", res.status);
+          throw new Error(`HTTP ${res.status}`);
+        }
+        
+        const response = await res.json();
+        console.log("✅ 성공적으로 받아옴:", response);
+
+        if (ignore) {
+          return
+        }
+
+        setFilterOptions({
+          suppliers: response.suppliers || [],
+          statuses: response.statuses || ["전체", "PENDING", "APPROVED", "CANCELLED"],
+        });
+      } catch (err) {
+        console.error("폼 옵션 로딩 실패:", err);
+      }
+    }
+
     void loadFormOptions()
-  }, [loadFormOptions])
+
+    return () => { ignore = true; }
+  }, [])
 
   useEffect(() => {
     let ignore = false
@@ -121,7 +129,7 @@ const loadFormOptions = useCallback(async () => {
     loadOrders();
 
     return () => { ignore = true; };
-  }, [appliedFilters, refreshKey]);   // pagination.page, size 제거!!
+  }, [appliedFilters, refreshKey, pagination.page, pagination.size]);
 
   function updateFilter(name, value) {
     setDraftFilters((currentFilters) => ({

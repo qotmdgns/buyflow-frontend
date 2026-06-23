@@ -1,6 +1,5 @@
 "use client"
 
-import { useEffect, useState } from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import {
@@ -18,36 +17,98 @@ import {
   Warehouse,
 } from "lucide-react"
 import SidebarAccount from "@/features/auth/components/SidebarAccount"
-import { hasPermission } from "@/utils/permissions"
+import { hasAnyRole, hasPermission } from "@/utils/permissions"
+import useClientReady from "@/utils/useClientReady"
 
 const menuGroups = [
   {
     label: "메인",
-    items: [{ label: "대시보드", href: "/dashboard", icon: LayoutDashboard }],
+    items: [
+      {
+        label: "대시보드",
+        href: "/dashboard",
+        icon: LayoutDashboard,
+        requireAnyPermission: ["dashboard.read"],
+      },
+    ],
   },
   {
     label: "기준정보 관리",
     items: [
-      { label: "품목 관리", href: "/products", icon: Package },
-      { label: "공급업체 관리", href: "/suppliers", icon: Building2 },
-      { label: "창고 관리", href: "/warehouses", icon: Warehouse },
+      {
+        label: "품목 관리",
+        href: "/products",
+        icon: Package,
+        requireAnyPermission: ["products.read", "products.write"],
+      },
+      {
+        label: "공급업체 관리",
+        href: "/suppliers",
+        icon: Building2,
+        requireAnyPermission: ["suppliers.read", "suppliers.write"],
+      },
+      {
+        label: "창고 관리",
+        href: "/warehouses",
+        icon: Warehouse,
+        requireAnyPermission: ["warehouses.read", "warehouses.write"],
+      },
     ],
   },
   {
     label: "구매 및 입고",
     items: [
-      { label: "구매 요청", href: "/purchase-requests", icon: ShoppingCart },
-      { label: "승인 관리", href: "/approvals", icon: CheckSquare },
-      { label: "발주 관리", href: "/purchase-orders", icon: ClipboardList },
-      { label: "입고 관리", href: "/receipts", icon: LogIn },
-      { label: "검수 관리", href: "/inspections", icon: PackageCheck },
+      {
+        label: "구매 요청",
+        href: "/purchase-requests",
+        icon: ShoppingCart,
+        requireAnyPermission: [
+          "purchase-requests.read",
+          "purchase-requests.write",
+        ],
+      },
+      {
+        label: "승인 관리",
+        href: "/approvals",
+        icon: CheckSquare,
+        requireAnyPermission: ["approvals.read", "approvals.process"],
+      },
+      {
+        label: "발주 관리",
+        href: "/purchase-orders",
+        icon: ClipboardList,
+        requireAnyPermission: ["purchase-orders.read", "purchase-orders.write"],
+      },
+      {
+        label: "입고 관리",
+        href: "/receipts",
+        icon: LogIn,
+        requireAnyPermission: ["receipts.read", "receipts.write"],
+      },
+      {
+        label: "검수 관리",
+        href: "/inspections",
+        icon: PackageCheck,
+        requireAnyPermission: ["inspections.read", "inspections.process"],
+      },
     ],
   },
   {
     label: "재고 관리",
     items: [
-      { label: "재고 현황", href: "/stock", icon: Boxes, exact: true },
-      { label: "재고 이력", href: "/stock/history", icon: History },
+      {
+        label: "재고 현황",
+        href: "/stock",
+        icon: Boxes,
+        exact: true,
+        requireAnyPermission: ["stock.read", "stock.adjust"],
+      },
+      {
+        label: "재고 이력",
+        href: "/stock/history",
+        icon: History,
+        requireAnyPermission: ["stock-history.read"],
+      },
     ],
   },
   {
@@ -57,7 +118,8 @@ const menuGroups = [
         label: "사용자 및 권한 관리",
         href: "/system",
         icon: Settings,
-        // 시스템 관리(사용자/권한) = ADMIN 전용. 둘 중 하나라도 있으면 노출.
+        // ADMIN은 전체 시스템 관리, TEAM_MANAGER는 자기 부서 역할 위임만 접근.
+        requireAnyRole: ["ADMIN", "TEAM_MANAGER"],
         requireAnyPermission: ["users.read", "roles.write"],
       },
     ],
@@ -82,15 +144,10 @@ function Logo() {
 export default function Sidebar() {
   const pathname = usePathname()
 
-  // 세션 권한은 마운트 이후에 읽는다 (SSR 하이드레이션 불일치 방지)
-  const [ready, setReady] = useState(false)
-
-  useEffect(() => {
-    setReady(true)
-  }, [])
+  const ready = useClientReady()
 
   const canSee = (item) => {
-    if (!item.requireAnyPermission) {
+    if (!item.requireAnyPermission && !item.requireAnyRole) {
       return true
     }
 
@@ -98,8 +155,9 @@ export default function Sidebar() {
       return false
     }
 
-    return item.requireAnyPermission.some((permission) =>
-      hasPermission(permission),
+    return (
+      (item.requireAnyRole && hasAnyRole(item.requireAnyRole)) ||
+      item.requireAnyPermission?.some((permission) => hasPermission(permission))
     )
   }
 

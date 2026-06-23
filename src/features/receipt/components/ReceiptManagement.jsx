@@ -592,9 +592,8 @@ export default function ReceiptManagement() {
                     </td>
 
                     <td className="whitespace-nowrap px-3 py-3 text-center">
-  {console.log("LINK DATA", receipt.id, receipt.receiptId)}
-  <Link
-                        href={`/receipts/${receipt.receiptId}`}
+                      <Link
+                        href={`/receipts/${receipt.id}`}
                         aria-label={`${receipt.orderNumber} 입고 상세 보기`}
                         className="inline-flex items-center justify-center rounded-md border border-blue-200 bg-blue-50 px-3 py-1.5 text-[13px] font-semibold text-blue-600 transition hover:bg-blue-100"
                       >
