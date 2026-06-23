@@ -56,6 +56,7 @@ function extractCheckedCodes(groups) {
 //   RoleResponse      = { roleId, roleCode, roleName, roleGroup, sortOrder, useYn }
 // ─────────────────────────────────────────────────────────────
 function statusLabel(user) {
+  if (user.status === "PENDING") return "승인 대기"
   const inactive =
     user.useYn === "N" ||
     user.status === "INACTIVE" ||
@@ -198,39 +199,15 @@ export async function fetchUserFilterOptions() {
 }
 
 // ─────────────────────────────────────────────────────────────
-// 쓰기: 아직 mock (백엔드 관리자 생성/수정 API 정리 후 전환 예정)
-//   ⚠ 읽기는 실제 DB라, mock 으로 만든 사용자는 목록 새로고침 시 사라진다.
+// 쓰기: 실제 백엔드
 // ─────────────────────────────────────────────────────────────
-function getTodayString() {
-  return new Date().toISOString().slice(0, 10)
-}
 
-function createUserRecord(payload, id, registeredAt = getTodayString()) {
-  return {
-    id,
-    employeeNo: payload.employeeNo.trim().toUpperCase(),
-    name: payload.name.trim(),
-    email: payload.email.trim().toLowerCase(),
-    department: payload.department.trim(),
-    position: payload.position.trim(),
-    roleId: payload.roleId,
-    activeStatus: payload.activeStatus,
-    registeredAt,
-  }
-}
-
-export async function createUser(payload) {
-  if (USE_MOCK_WRITE) {
-    await wait(180)
-    const nextId =
-      userDatabase.reduce((maxId, user) => Math.max(maxId, user.id), 0) + 1
-    const createdUser = createUserRecord(payload, nextId)
-    userDatabase = [createdUser, ...userDatabase]
-    return createdUser
-  }
-
-  // TODO: 백엔드에 관리자 사용자 생성 엔드포인트가 생기면 연결
-  throw new Error("사용자 생성 API가 아직 준비되지 않았습니다.")
+// 관리자 직접 "생성"은 지원하지 않는다 (백엔드에 생성 엔드포인트 없음).
+// 사용자는 회원가입(/signup) 후 관리자 승인 절차로 등록된다.
+export async function createUser() {
+  throw new Error(
+    "관리자 직접 생성은 지원하지 않습니다. 사용자는 회원가입 후 승인으로 등록됩니다.",
+  )
 }
 
 // 화면 roleId(코드 'WAREHOUSE' / 'ROLE_WAREHOUSE' / 숫자) → 백엔드 숫자 roleId
@@ -244,20 +221,59 @@ async function resolveRoleNumericId(roleIdOrCode) {
   return match ? match.roleId : null
 }
 
-// 사용자 수정: 권한 그룹(역할) 변경을 실제 저장한다.
-//   PUT /api/admin/users/{userId}/roles  body { roleIds: [숫자] }  (역할 통째 교체)
-//   ※ 부서·직급·상태 저장은 후속(프로필 PUT /status PATCH 분리). 지금은 역할만.
-export async function updateUser(userId, payload) {
-  const numericRoleId = await resolveRoleNumericId(payload.roleId)
-  if (!numericRoleId) {
-    throw new Error("선택한 역할을 찾을 수 없습니다.")
-  }
+// 화면 사용여부 라벨 → 상태 PATCH body (알 수 없는 값이면 null = 상태 미변경)
+function toStatusBody(activeStatus) {
+  if (activeStatus === "사용 중") return { status: "ACTIVE", useYn: "Y" }
+  if (activeStatus === "사용 중지") return { status: "INACTIVE", useYn: "N" }
+  return null
+}
 
-  const updated = await apiFetch(`/api/admin/users/${userId}/roles`, {
+// 사용자 수정: 프로필(부서·직급) + 상태(사용여부) + 역할(권한 그룹)을 실제 저장.
+//   PUT   /admin/users/{id}/profile  { departmentName, jobRank }
+//   PATCH /admin/users/{id}/status   { status, useYn }
+//   PUT   /admin/users/{id}/roles    { roleIds: [숫자] }   ← 역할이 바뀐 경우에만
+//     (역할 미변경 시 호출 생략 → 다중역할 사용자가 단일역할로 줄어드는 것 방지)
+export async function updateUser(userId, payload, options = {}) {
+  let response
+
+  // 1) 프로필 (부서 + 직급). 빈 값은 null 로 보내 덮어쓰기 방지
+  response = await apiFetch(`/api/admin/users/${userId}/profile`, {
     method: "PUT",
-    body: JSON.stringify({ roleIds: [numericRoleId] }),
+    body: JSON.stringify({
+      departmentName: payload.department?.trim() || null,
+      jobRank: payload.position?.trim() || null,
+    }),
   })
 
+  // 2) 상태 (사용여부) — 알려진 값일 때만
+  const statusBody = toStatusBody(payload.activeStatus)
+  if (statusBody) {
+    response = await apiFetch(`/api/admin/users/${userId}/status`, {
+      method: "PATCH",
+      body: JSON.stringify(statusBody),
+    })
+  }
+
+  // 3) 역할 — 변경된 경우에만 교체
+  if (!options.skipRoles) {
+    const numericRoleId = await resolveRoleNumericId(payload.roleId)
+    if (!numericRoleId) {
+      throw new Error("선택한 역할을 찾을 수 없습니다.")
+    }
+    response = await apiFetch(`/api/admin/users/${userId}/roles`, {
+      method: "PUT",
+      body: JSON.stringify({ roleIds: [numericRoleId] }),
+    })
+  }
+
+  return adaptUser(response)
+}
+
+// 가입 승인: PATCH /api/admin/users/{userId}/approve  → status ACTIVE, useYn Y
+export async function approveUser(userId) {
+  const updated = await apiFetch(`/api/admin/users/${userId}/approve`, {
+    method: "PATCH",
+  })
   return adaptUser(updated)
 }
 
