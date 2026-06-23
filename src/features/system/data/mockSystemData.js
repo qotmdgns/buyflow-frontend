@@ -136,12 +136,12 @@ const permissionTemplate = [
     ],
   },
   {
-    key: "inventory",
+    key: "stock",
     label: "재고 관리",
     permissions: [
-      { key: "inventory.read", label: "재고 현황 조회" },
-      { key: "inventory.adjust", label: "재고 조정" },
-      { key: "inventory-history.read", label: "재고 이력 조회" },
+      { key: "stock.read", label: "재고 현황 조회" },
+      { key: "stock.adjust", label: "재고 조정" },
+      { key: "stock-history.read", label: "재고 이력 조회" },
     ],
   },
   {
@@ -181,8 +181,8 @@ export const mockRolePermissions = {
     "approvals.process",
     "purchase-orders.write",
     "receipts.write",
-    "inventory.read",
-    "inventory-history.read",
+    "stock.read",
+    "stock-history.read",
   ]),
 
   ROLE_WAREHOUSE: createPermissionGroups([
@@ -191,9 +191,9 @@ export const mockRolePermissions = {
     "purchase-requests.read",
     "receipts.write",
     "inspections.process",
-    "inventory.read",
-    "inventory.adjust",
-    "inventory-history.read",
+    "stock.read",
+    "stock.adjust",
+    "stock-history.read",
   ]),
 
   ROLE_VIEWER: createPermissionGroups([
@@ -201,7 +201,7 @@ export const mockRolePermissions = {
     "products.read",
     "suppliers.read",
     "purchase-requests.read",
-    "inventory.read",
-    "inventory-history.read",
+    "stock.read",
+    "stock-history.read",
   ]),
 }

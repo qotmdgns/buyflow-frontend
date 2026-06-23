@@ -115,7 +115,7 @@ export function MonthlyReceiptChart({ data }) {
   )
 }
 
-export function InventoryStatusChart({ data }) {
+export function StockStatusChart({ data }) {
   const mounted = useMounted()
 
   return (

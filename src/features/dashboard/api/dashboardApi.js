@@ -11,13 +11,33 @@ export async function getDashboardData() {
     return mockDashboardData
   }
 
-  const response = await fetch(`${API_BASE_URL}/api/dashboard`, {
-    cache: "no-store",
-  })
+  const url = `${API_BASE_URL}/api/dashboard`
 
-  if (!response.ok) {
-    throw new Error("대시보드 데이터를 불러오지 못했습니다.")
+  try {
+    const response = await fetch(url, {
+      cache: "no-store",
+    })
+
+    if (!response.ok) {
+      const errorText = await response.text()
+
+      console.error("[Dashboard API Error]", {
+        url,
+        status: response.status,
+        body: errorText,
+      })
+
+      throw new Error(`대시보드 API 호출 실패: ${response.status}`)
+    }
+
+    return response.json()
+  } catch (error) {
+    console.error("[Dashboard Fetch Failed]", {
+      url,
+      message: error?.message,
+      cause: error?.cause,
+    })
+
+    throw error
   }
-
-  return response.json()
 }
