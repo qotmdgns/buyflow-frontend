@@ -154,7 +154,7 @@ flowchart LR
     REQUEST[구매 요청]
     APPROVAL[승인 관리]
     ORDER[발주 관리]
-    INBOUND[입고 관리]
+    RECEIPT[입고 관리]
     INSPECTION[검수 관리]
     INVENTORY[재고 현황]
     HISTORY[재고 이력]
@@ -163,8 +163,8 @@ flowchart LR
     SUPPLIER --> ORDER
     REQUEST --> APPROVAL
     APPROVAL --> ORDER
-    ORDER --> INBOUND
-    INBOUND --> INSPECTION
+    ORDER --> RECEIPT
+    RECEIPT --> INSPECTION
     INSPECTION --> INVENTORY
     WAREHOUSE --> INVENTORY
     INVENTORY --> HISTORY
@@ -229,23 +229,23 @@ flowchart LR
 
 대시보드 UI 시안을 기준으로 업무 기능별 상세 화면을 순차적으로 개발합니다.
 
-| 구분        | 화면                  | URL                              | 개발 상태         |
-| ----------- | --------------------- | -------------------------------- | ----------------- |
-| 인증        | 로그인                | `/login`                         | front 개발 완료     |
-| 대시보드    | 현황 요약             | `/dashboard`                     | front 개발 완료      |
-| 품목 관리   | 품목 목록 및 검색     | `/products`                      | front 개발 완료      |
-| 공급업체    | 공급업체 목록 및 상세 | `/suppliers`                     | front 개발 완료         |
-| 창고 관리   | 창고 목록 및 상세     | `/warehouses`                    | front 개발 완료         |
-| 구매 요청   | 구매 요청 목록        | `/purchase-requests`             | front 개발 완료         |
-| 구매 요청   | 구매 요청 등록        | `/purchase-requests/new`         | front 개발 완료         |
-| 구매 요청   | 구매 요청 상세        | `/purchase-requests/{requestId}` | front 개발 완료         |
-| 승인 관리   | 승인 대기 목록        | `/approvals`                     | front 개발 완료         |
-| 발주 관리   | 발주 목록 및 상세     | `/purchase-orders`               | 개발 예정         |
-| 입고 관리   | 입고 목록 및 등록     | `/inbounds`                      | 개발 예정         |
-| 검수 관리   | 검수 목록 및 처리     | `/inspections`                   | 개발 예정         |
-| 재고 관리   | 재고 현황             | `/inventory`                     | 개발 예정         |
-| 재고 관리   | 재고 이력             | `/inventory-history`             | 개발 예정         |
-| 시스템 관리 | 사용자 및 권한 관리   | `/system`                        | 개발 예정         |
+| 구분        | 화면                  | URL                              | 개발 상태       |
+| ----------- | --------------------- | -------------------------------- | --------------- |
+| 인증        | 로그인                | `/login`                         | front 개발 완료 |
+| 대시보드    | 현황 요약             | `/dashboard`                     | front 개발 완료 |
+| 품목 관리   | 품목 목록 및 검색     | `/products`                      | front 개발 완료 |
+| 공급업체    | 공급업체 목록 및 상세 | `/suppliers`                     | front 개발 완료 |
+| 창고 관리   | 창고 목록 및 상세     | `/warehouses`                    | front 개발 완료 |
+| 구매 요청   | 구매 요청 목록        | `/purchase-requests`             | front 개발 완료 |
+| 구매 요청   | 구매 요청 등록        | `/purchase-requests/new`         | front 개발 완료 |
+| 구매 요청   | 구매 요청 상세        | `/purchase-requests/{requestId}` | front 개발 완료 |
+| 승인 관리   | 승인 대기 목록        | `/approvals`                     | front 개발 완료 |
+| 발주 관리   | 발주 목록 및 상세     | `/purchase-orders`               | 개발 예정       |
+| 입고 관리   | 입고 목록 및 등록     | `/receipts`                      | 개발 예정       |
+| 검수 관리   | 검수 목록 및 처리     | `/inspections`                   | 개발 예정       |
+| 재고 관리   | 재고 현황             | `/inventory`                     | 개발 예정       |
+| 재고 관리   | 재고 이력             | `/inventory-history`             | 개발 예정       |
+| 시스템 관리 | 사용자 및 권한 관리   | `/system`                        | 개발 예정       |
 
 ---
 
@@ -310,7 +310,7 @@ frontend-buyflow
 │   │   │   │   └── page.jsx
 │   │   │   ├── purchase-orders
 │   │   │   │   └── page.jsx
-│   │   │   ├── inbounds
+│   │   │   ├── receipts
 │   │   │   │   └── page.jsx
 │   │   │   ├── inspections
 │   │   │   │   └── page.jsx
@@ -338,7 +338,7 @@ frontend-buyflow
 │   │   ├── purchase-request
 │   │   ├── approval
 │   │   ├── purchase-order
-│   │   ├── inbound
+│   │   ├── receipt
 │   │   ├── inspection
 │   │   ├── inventory
 │   │   └── system
@@ -538,7 +538,7 @@ main
       ├── feature/purchase-request
       ├── feature/approval
       ├── feature/purchase-order
-      ├── feature/inbound
+      ├── feature/receipt
       └── feature/inventory
 ```
 
@@ -652,12 +652,12 @@ develop
 
 ## 18. 팀 정보
 
-| 역할     | 담당자    | 담당 기능                      |
-| -------- | --------- | ------------------------------ |
-| Frontend | 김호현    | Next.js 화면 구현 및 API 연동  |
-| Backend  | 하지수, 김연준   | Spring Boot REST API 구현      |
-| Database | 배승훈    | ERD 및 DB 스키마 구성          |
-| DevOps   | 추후 작성 | Docker, Kubernetes, CI/CD 구성 |
+| 역할     | 담당자         | 담당 기능                      |
+| -------- | -------------- | ------------------------------ |
+| Frontend | 김호현         | Next.js 화면 구현 및 API 연동  |
+| Backend  | 하지수, 김연준 | Spring Boot REST API 구현      |
+| Database | 배승훈         | ERD 및 DB 스키마 구성          |
+| DevOps   | 추후 작성      | Docker, Kubernetes, CI/CD 구성 |
 
 ---
 
