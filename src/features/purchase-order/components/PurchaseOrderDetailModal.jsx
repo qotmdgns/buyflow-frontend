@@ -153,18 +153,16 @@ export default function PurchaseOrderDetailModal({
             </div>
           </dl>
 
-          {order.memo && (
-            <div className="rounded-md border border-slate-100 bg-slate-50/50 px-4 py-2.5 mt-2">
-              <dt className="text-[12px] font-semibold text-slate-400 mb-1">
-                비고 / 특이사항
-              </dt>
-              <dd className="text-slate-700 whitespace-pre-wrap">
-                {order.memo}
-              </dd>
-            </div>
-          )}
+        <div className="rounded-md border border-slate-200 bg-slate-50 px-4 py-3 mt-3">
+            <h3 className="text-[12px] font-bold text-slate-600 mb-1.5">
+              {currentStatus === "CANCELED" ? "🚨 취소 사유" : "📌 비고"}
+            </h3>
+            <p className="text-[13px] text-slate-700 whitespace-pre-wrap leading-relaxed min-h-[20px]">
+              {order.memo && order.memo.trim() !== "" ? order.memo : "-"}
+            </p>
+          </div>
 
-          {error && <p className="text-rose-500 font-medium">{error}</p>}
+          {error && <p className="text-rose-500 font-medium mt-3">{error}</p>}
         </div>
 
         <footer className="flex justify-between border-t bg-slate-50 px-5 py-3">

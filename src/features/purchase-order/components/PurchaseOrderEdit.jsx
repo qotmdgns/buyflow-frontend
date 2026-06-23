@@ -35,8 +35,8 @@ export default function PurchaseOrderEdit({ orderId }) {
     )
   }
 
-  async function saveOrder() {
-    const result = await purchaseOrder.saveOrder()
+  async function saveOrder(status) {
+    const result = await purchaseOrder.saveOrder(status)
 
     if (!result) {
       return

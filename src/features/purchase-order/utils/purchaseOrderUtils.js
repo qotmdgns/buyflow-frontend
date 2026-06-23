@@ -42,11 +42,11 @@ export const PURCHASE_ORDER_STATUS_META = {
 }
 
 export const DEFAULT_PURCHASE_ORDER_FILTERS = {
-  orderNumber: "",
-  requestNumber: "",
+  orderNo: "",
+  requestNo: "",
   supplierName: "전체 공급업체",
-  orderManager: "",
-  status: "전체",
+  userName: "",
+  orderStatus: "전체",
   orderedFrom: "",
   orderedTo: "",
 }

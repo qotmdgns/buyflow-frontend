@@ -110,14 +110,7 @@ export default function System() {
                 사용자 목록 · 총 {management.pagination.totalElements}건
               </span>
 
-              <button
-                type="button"
-                onClick={management.openUserCreate}
-                className="flex items-center gap-1 rounded-md bg-blue-600 px-3 py-2 text-[13px] font-semibold text-white"
-              >
-                <Plus size={14} />
-                신규 사용자 등록
-              </button>
+             
             </div>
 
             <UserTable
@@ -125,6 +118,7 @@ export default function System() {
               loading={management.userLoading}
               error={management.userError}
               onEdit={management.openUserEdit}
+              onApprove={management.approveUser}   // ← 추가
             />
 
             <SystemPagination

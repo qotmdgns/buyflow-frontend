@@ -219,13 +219,19 @@ export async function fetchWarehouses(params = {}) {
     query.set("type", params.type)
   }
 
-  if (params.activeStatus && params.activeStatus !== "전체") {
-    query.set("useYn", toUseYn(params.activeStatus))
+  // ✅ 여기 수정 (useYn 직접 사용)
+  if (params.useYn && params.useYn !== "전체") {
+    query.set("useYn", toUseYn(params.useYn))   // "사용 중" → "Y", "사용 중지" → "N"
+  }
+
+  if (params.managerName) {
+    query.set("managerName", params.managerName)
   }
 
   const response = await fetch(
-    `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/warehouses` + (query.toString() ? `?${query.toString()}` : ""),
-    { cache: "no-store" },
+    `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/warehouses` + 
+    (query.toString() ? `?${query.toString()}` : ""),
+    { cache: "no-store" }
   )
 
   if (!response.ok) {

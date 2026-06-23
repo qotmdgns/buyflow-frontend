@@ -207,6 +207,10 @@ export default function useProductCreate({
     setIsSaving(true)
 
     try {
+      await new Promise((resolve) => setTimeout(resolve, 300))
+
+      window.alert("품목이 등록되었습니다.")
+
       if (mode === "edit") {
         if (!productId) {
           window.alert("수정할 품목 ID를 찾을 수 없습니다.")

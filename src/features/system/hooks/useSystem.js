@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react"
 import {
+  approveUser as requestApproveUser,
   createUser,
   fetchRolePermissions,
   fetchRoles,
@@ -202,7 +203,9 @@ export default function useSystem() {
 
   async function saveUser(form) {
     if (formMode === "edit" && editingUser) {
-      await updateUser(editingUser.id, form)
+      await updateUser(editingUser.id, form, {
+        skipRoles: form.roleId === editingUser.roleId,
+      })
     } else {
       await createUser(form)
       setPagination((current) => ({ ...current, page: 1 }))
@@ -214,6 +217,17 @@ export default function useSystem() {
     reloadRoles().catch(() => {
       // 사용자 저장은 완료되었으므로 인원 수 갱신 실패는 무시합니다.
     })
+  }
+
+  // 가입 승인 (PENDING → ACTIVE)
+  async function approveUser(user) {
+    try {
+      await requestApproveUser(user.id)
+      setUserRefreshKey((current) => current + 1)
+      reloadRoles().catch(() => {})
+    } catch (requestError) {
+      window.alert(requestError.message || "승인에 실패했습니다.")
+    }
   }
 
   function selectRole(roleId) {
@@ -298,6 +312,7 @@ export default function useSystem() {
     openUserEdit,
     closeUserForm,
     saveUser,
+    approveUser,
     selectRole,
     togglePermission,
     savePermissions,
