@@ -21,7 +21,12 @@ function PageIconButton({ children, label, disabled, onClick }) {
   )
 }
 
-export default function ProductPagination({ pagination, onMovePage }) {
+export default function ProductPagination({
+  pagination,
+  pageSize,
+  onChangePageSize,
+  onMovePage,
+}) {
   const { page, totalPages } = pagination
 
   const pageNumbers = useMemo(

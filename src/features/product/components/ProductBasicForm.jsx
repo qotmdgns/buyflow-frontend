@@ -163,16 +163,7 @@ export default function ProductBasicForm({
             label="원산지"
             value={form.origin ?? ""}
             onChange={(event) => onChange("origin", event.target.value)}
-            placeholder="예: 대한민국"
-          />
-
-          <TextField
-            label="납품 조건"
-            value={form.deliveryCondition ?? ""}
-            onChange={(event) =>
-              onChange("deliveryCondition", event.target.value)
-            }
-            placeholder="예: 발주 후 3일 이내"
+            placeholder="예: KR"
           />
 
           <fieldset>

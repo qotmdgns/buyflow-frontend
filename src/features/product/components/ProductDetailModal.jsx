@@ -148,6 +148,22 @@ export default function ProductDetailModal({
                 value={formatWon(product.unitPrice)}
               />
               <DetailItem label="제조사" value={product.manufacturer} />
+              <DetailItem
+                label="업체명"
+                value={product.companyName ?? product.manufacturer}
+              />
+              <DetailItem label="사업자등록번호" value={product.bizRegNo} />
+              <DetailItem
+                label="상위 카테고리"
+                value={product.parentCategory}
+              />
+              <DetailItem label="원산지" value={product.origin} />
+              <DetailItem
+                label="경쟁 제품 여부"
+                value={product.competingProduct === "Y" ? "Y" : "N"}
+              />
+              <DetailItem label="유효 시작일" value={product.validStartDate} />
+              <DetailItem label="유효 종료일" value={product.validEndDate} />
 
               <DetailItem label="등록일" value={product.registeredAt} />
             </div>
