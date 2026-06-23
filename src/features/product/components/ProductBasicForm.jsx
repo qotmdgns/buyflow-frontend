@@ -1,10 +1,8 @@
-import {
-  productCategoryOptions,
-  productUnitOptions,
-} from "@/features/product/data/productCreateOptions"
-
 const INPUT_CLASS_NAME =
   "h-10 w-full rounded-md border border-slate-200 bg-white px-3 text-[14px] text-slate-600 outline-none transition placeholder:text-slate-300 focus:border-blue-400 focus:ring-2 focus:ring-blue-100"
+
+const TEXTAREA_CLASS_NAME =
+  "w-full resize-none rounded-md border border-slate-200 bg-white px-3 py-2 text-[14px] text-slate-600 outline-none transition placeholder:text-slate-300 focus:border-blue-400 focus:ring-2 focus:ring-blue-100"
 
 function FieldLabel({ children, required = false }) {
   return (
@@ -26,13 +24,13 @@ function TextField({ label, required, ...inputProps }) {
   )
 }
 
-function SelectField({ label, options, value, onChange }) {
+function SelectField({ label, required, options, value, onChange }) {
   return (
     <label>
-      <FieldLabel>{label}</FieldLabel>
+      <FieldLabel required={required}>{label}</FieldLabel>
 
       <select value={value} onChange={onChange} className={INPUT_CLASS_NAME}>
-        {options.map((option) => (
+        {(options ?? []).map((option) => (
           <option key={option.value} value={option.value}>
             {option.label}
           </option>
@@ -42,7 +40,48 @@ function SelectField({ label, options, value, onChange }) {
   )
 }
 
-export default function ProductBasicForm({ form, onChange }) {
+function TextAreaField({ label, value, onChange, placeholder, rows = 3 }) {
+  return (
+    <label className="md:col-span-2">
+      <FieldLabel>{label}</FieldLabel>
+
+      <textarea
+        value={value ?? ""}
+        onChange={onChange}
+        placeholder={placeholder}
+        rows={rows}
+        className={TEXTAREA_CLASS_NAME}
+      />
+    </label>
+  )
+}
+
+function toSelectOptions(values = [], placeholder = "선택") {
+  return [
+    { value: "", label: placeholder },
+    ...values
+      .filter((value) => value && value !== "전체")
+      .map((value) => ({
+        value,
+        label: value,
+      })),
+  ]
+}
+
+export default function ProductBasicForm({
+  mode = "create",
+  form,
+  filterOptions,
+  onChange,
+}) {
+  const isEditMode = mode === "edit"
+  const categoryOptions = toSelectOptions(
+    filterOptions?.categories,
+    "카테고리 선택",
+  )
+
+  const unitOptions = toSelectOptions(filterOptions?.units, "단위 선택")
+
   return (
     <section className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
       <h2 className="border-l-[3px] border-blue-500 pl-2 text-[15px] font-bold text-slate-800">
@@ -54,37 +93,60 @@ export default function ProductBasicForm({ form, onChange }) {
           <TextField
             label="품목 코드"
             required
-            value={form.code}
+            value={form.code ?? ""}
             onChange={(event) => onChange("code", event.target.value)}
-            placeholder="자동 생성 또는 직접 입력"
+            placeholder="예: P-0001"
           />
 
           <TextField
             label="품목명"
             required
-            value={form.name}
+            value={form.name ?? ""}
             onChange={(event) => onChange("name", event.target.value)}
             placeholder="상품 또는 자재 명칭"
           />
 
+          <TextField
+            label="업체명"
+            value={form.companyName ?? ""}
+            onChange={(event) => onChange("companyName", event.target.value)}
+            placeholder="공급업체 또는 제조사명"
+          />
+
+          <TextField
+            label="사업자등록번호"
+            value={form.bizRegNo ?? ""}
+            onChange={(event) => onChange("bizRegNo", event.target.value)}
+            placeholder="예: 123-45-67890"
+          />
+
           <SelectField
             label="카테고리"
-            options={productCategoryOptions}
-            value={form.category}
+            required
+            options={categoryOptions}
+            value={form.category ?? ""}
             onChange={(event) => onChange("category", event.target.value)}
           />
 
           <TextField
+            label="상위 카테고리"
+            value={form.parentCategory ?? ""}
+            onChange={(event) => onChange("parentCategory", event.target.value)}
+            placeholder="예: 기계/설비"
+          />
+
+          <TextField
             label="규격"
-            value={form.spec}
+            value={form.spec ?? ""}
             onChange={(event) => onChange("spec", event.target.value)}
             placeholder="예: 250ml, 50kg, 1200x800"
           />
 
           <SelectField
             label="단위"
-            options={productUnitOptions}
-            value={form.unit}
+            required
+            options={unitOptions}
+            value={form.unit ?? ""}
             onChange={(event) => onChange("unit", event.target.value)}
           />
 
@@ -92,56 +154,97 @@ export default function ProductBasicForm({ form, onChange }) {
             label="기준 단가(₩)"
             type="number"
             min="0"
-            value={form.unitPrice}
+            value={form.unitPrice ?? ""}
             onChange={(event) => onChange("unitPrice", event.target.value)}
+            placeholder="예: 10000"
           />
 
           <TextField
-            label="제조사"
-            value={form.manufacturer}
-            onChange={(event) => onChange("manufacturer", event.target.value)}
-            placeholder="공급업체 또는 제조원"
+            label="원산지"
+            value={form.origin ?? ""}
+            onChange={(event) => onChange("origin", event.target.value)}
+            placeholder="예: KR"
           />
 
           <fieldset>
-            <FieldLabel>사용 여부</FieldLabel>
+            <FieldLabel>경쟁 제품 여부</FieldLabel>
 
             <div className="flex h-9 items-center gap-4 text-[14px] text-slate-600">
               <label className="flex items-center gap-1.5">
                 <input
                   type="radio"
-                  name="isActive"
-                  checked={form.isActive}
-                  onChange={() => onChange("isActive", true)}
+                  name="competingProduct"
+                  checked={form.competingProduct === "Y"}
+                  onChange={() => onChange("competingProduct", "Y")}
                   className="accent-blue-600"
                 />
-                사용
+                Y
               </label>
 
               <label className="flex items-center gap-1.5">
                 <input
                   type="radio"
-                  name="isActive"
-                  checked={!form.isActive}
-                  onChange={() => onChange("isActive", false)}
+                  name="competingProduct"
+                  checked={form.competingProduct !== "Y"}
+                  onChange={() => onChange("competingProduct", "N")}
                   className="accent-blue-600"
                 />
-                미사용
+                N
               </label>
             </div>
           </fieldset>
 
-          <label className="md:col-span-2">
-            <FieldLabel>품목 설명</FieldLabel>
+          <TextField
+            label="유효 시작일"
+            type="date"
+            value={form.validStartDate ?? ""}
+            onChange={(event) => onChange("validStartDate", event.target.value)}
+          />
 
-            <textarea
-              value={form.description}
-              onChange={(event) => onChange("description", event.target.value)}
-              placeholder="상세 규격이나 보관 주의사항 등을 입력하세요"
-              rows={4}
-              className="w-full resize-none rounded-md border border-slate-200 bg-white px-3 py-2 text-[14px] text-slate-600 outline-none transition placeholder:text-slate-300 focus:border-blue-400 focus:ring-2 focus:ring-blue-100"
-            />
-          </label>
+          <TextField
+            label="유효 종료일"
+            type="date"
+            value={form.validEndDate ?? ""}
+            onChange={(event) => onChange("validEndDate", event.target.value)}
+          />
+
+          {isEditMode && (
+            <fieldset>
+              <FieldLabel>사용 여부</FieldLabel>
+
+              <div className="flex h-9 items-center gap-4 text-[14px] text-slate-600">
+                <label className="flex items-center gap-1.5">
+                  <input
+                    type="radio"
+                    name="isActive"
+                    checked={form.isActive === true}
+                    onChange={() => onChange("isActive", true)}
+                    className="accent-blue-600"
+                  />
+                  사용
+                </label>
+
+                <label className="flex items-center gap-1.5">
+                  <input
+                    type="radio"
+                    name="isActive"
+                    checked={form.isActive !== true}
+                    onChange={() => onChange("isActive", false)}
+                    className="accent-blue-600"
+                  />
+                  미사용
+                </label>
+              </div>
+            </fieldset>
+          )}
+
+          <TextAreaField
+            label="품목 설명"
+            value={form.description}
+            onChange={(event) => onChange("description", event.target.value)}
+            placeholder="상세 규격이나 보관 주의사항 등을 입력하세요"
+            rows={4}
+          />
         </div>
       </div>
     </section>

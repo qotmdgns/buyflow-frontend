@@ -17,7 +17,36 @@ import {
   DEFAULT_USER_PAGINATION,
 } from "@/features/system/utils/systemUtils"
 
-export default function useSystem() {
+function roleCodeOf(role) {
+  if (typeof role === "string" || typeof role === "number") {
+    return String(role).replace(/^ROLE_/, "")
+  }
+
+  return String(role?.id ?? role?.code ?? role?.roleCode ?? "").replace(
+    /^ROLE_/,
+    "",
+  )
+}
+
+function isPermissionManagedRole(role) {
+  return roleCodeOf(role) !== "TEAM_MANAGER"
+}
+
+function normalizedRoleIds(value) {
+  return [...new Set((value ?? []).filter(Boolean).map(roleCodeOf))].sort()
+}
+
+function isSameRoleSet(left, right) {
+  const leftRoles = normalizedRoleIds(left)
+  const rightRoles = normalizedRoleIds(right)
+
+  return (
+    leftRoles.length === rightRoles.length &&
+    leftRoles.every((roleId, index) => roleId === rightRoles[index])
+  )
+}
+
+export default function useSystem({ delegateOnly = false } = {}) {
   const [activeTab, setActiveTab] = useState("users")
 
   const [draftFilters, setDraftFilters] = useState(DEFAULT_USER_FILTERS)
@@ -59,8 +88,9 @@ export default function useSystem() {
         setFilterOptions(nextFilterOptions)
         setRoles(nextRoles)
 
-        if (nextRoles.length > 0) {
-          setSelectedRoleId(nextRoles[0].id)
+        const nextPermissionRoles = nextRoles.filter(isPermissionManagedRole)
+        if (nextPermissionRoles.length > 0) {
+          setSelectedRoleId(nextPermissionRoles[0].id)
         }
       } catch {
         if (!ignore) {
@@ -203,8 +233,14 @@ export default function useSystem() {
 
   async function saveUser(form) {
     if (formMode === "edit" && editingUser) {
+      const nextRoleIds = form.roleIds?.length ? form.roleIds : [form.roleId]
+      const currentRoleIds = editingUser.roleIds?.length
+        ? editingUser.roleIds
+        : [editingUser.roleId]
+
       await updateUser(editingUser.id, form, {
-        skipRoles: form.roleId === editingUser.roleId,
+        delegateOnly,
+        skipRoles: isSameRoleSet(nextRoleIds, currentRoleIds),
       })
     } else {
       await createUser(form)
@@ -297,6 +333,7 @@ export default function useSystem() {
     formMode,
     editingUser,
     roles,
+    permissionRoles: roles.filter(isPermissionManagedRole),
     selectedRoleId,
     permissionGroups,
     permissionLoading,
