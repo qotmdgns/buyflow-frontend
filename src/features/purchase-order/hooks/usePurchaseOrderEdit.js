@@ -132,7 +132,6 @@ useEffect(() => {
           expectedReceiptTo: detail.expectedReceiptTo || "",
           warehouseCode: detail.warehouseCode || "",
           warehouseName: detail.warehouseName || "",
-          memo: detail.memo || "",
           
           supplierId: Number(currentSupplierId),
           supplierCode: String(currentSupplierId),
@@ -156,9 +155,11 @@ useEffect(() => {
           supplierContactNo: sContact,
           contact: sContact,
           contactNo: sContact,
-          
+          memo: detail.memo || "",
+
           status: detail.orderStatus || detail.status || "CONFIRMED",
         }
+
         const forceEditableCoreFields = true
         console.log("=== [EDIT] editableCoreFields 강제 설정 ===", forceEditableCoreFields)
 
@@ -211,9 +212,9 @@ useEffect(() => {
 
   const editable = canEditPurchaseOrder(form.status)
 
-  const editableCoreFields = true;
+  const editableCoreFields = form.status === "CONFIRMED";
 
-console.log("=== [EDIT] editableCoreFields 강제 true 적용 ===", editableCoreFields);
+  console.log("=== [EDIT] editableCoreFields 강제 true 적용 ===", editableCoreFields);
 
   function updateForm(name, value) {
     setForm((currentForm) => ({
@@ -284,7 +285,7 @@ function removeItem(requestItemId) {
     setAttachment(event.target.files?.[0] ?? null)
   }
 
-  async function saveOrder() {
+  async function saveOrder(status) {
 
     const nextForm = {
       ...form,
@@ -295,7 +296,7 @@ function removeItem(requestItemId) {
 
     if (Object.keys(nextErrors).length > 0) {
       setErrors(nextErrors)
-      return null
+      return null;
     }
 
     setErrors({})
@@ -307,7 +308,7 @@ function removeItem(requestItemId) {
         supplierId: Number(form.supplierId || detailState.detail?.supplierId || 21),
         createdBy: Number(form.createdBy || 5),
         dueDate: form.expectedReceiptTo ? `${form.expectedReceiptTo}T23:59:59` : null,
-        orderStatus: form.status || "CONFIRMED",
+        orderStatus: status || form.status || "CONFIRMED",
         orderNo: form.orderNo || form.orderNumber || null,
         requestId: form.requestId ? Number(form.requestId) : null,
         requestNumber: form.requestNumber || "",

@@ -173,28 +173,15 @@ export default function PurchaseOrderForm({
           >
             취소
           </button>
-
-          {/* {editable && (
-            <button
-              type="button"
-              onClick={() => onSave("")}
-              disabled={submitting}
-              className="flex h-10 items-center gap-1.5 rounded-md border border-blue-200 bg-white px-4 text-[13px] font-semibold text-blue-600 hover:bg-blue-50 disabled:opacity-50"
-            >
-              <Save size={14} />
-              저장
-            </button>
-          )} */}
-
           {editableCoreFields && (
             <button
               type="button"
-              onClick={() => onSave("CONFIRMED")}
+              onClick={() => onSave(isEditMode ? "ORDERED" : "CONFIRMED")}
               disabled={submitting}
               className="flex h-10 items-center gap-1.5 rounded-md bg-blue-600 px-4 text-[13px] font-semibold text-white hover:bg-blue-700 disabled:opacity-50"
             >
               <Send size={14} />
-              발주 확정
+              {isEditMode? "발주 완료" : "발주 확정"}
             </button>
           )}
         </div>
@@ -231,40 +218,45 @@ export default function PurchaseOrderForm({
             </label>
 
             <label className="block">
-              <FieldLabel required>구매 요청 번호</FieldLabel>
-              <select
-                value={form.requestId || ""}
-                onChange={(event) => {
-                  const value = event.target.value;
-                  if (typeof onApplyPurchaseRequest === "function") {
-                    onApplyPurchaseRequest(value);
-                  } else {
-                    console.warn("[PurchaseOrderForm] onApplyPurchaseRequest prop이 전달되지 않았습니다.");
-                    if (typeof onChange === "function") {
-                      onChange("requestId", value);
-                    }
-                  }
-                }}  
-                  // onApplyPurchaseRequest(event.target.value)}
-                disabled={!editableCoreFields}
-                className={INPUT_CLASS_NAME}
-              >
-                <option value="">승인 완료 구매 요청 선택</option>
-                {approvedPurchaseRequests.map((request, index) => (
-                  <option 
-                    key={request.id || request.requestId || index} 
-                    value={request.id || request.requestId}
+              <FieldLabel required={!isEditMode}>구매 요청 번호</FieldLabel>
+              {isEditMode ? (
+                <input
+                  value={form.requestNumber && form.requestNumber !== "-" ? `${form.requestNumber} / ${form.requestTitle || "제목 없음"}` : "-"}
+                  disabled
+                  className={INPUT_CLASS_NAME}
+                />
+              ) : (
+                <>
+                  <select
+                    value={form.requestId || ""}
+                    onChange={(event) => {
+                      const value = event.target.value;
+                      if (typeof onApplyPurchaseRequest === "function") {
+                        onApplyPurchaseRequest(value);
+                      } else {
+                        console.warn("[PurchaseOrderForm] onApplyPurchaseRequest prop이 전달되지 않았습니다.");
+                        if (typeof onChange === "function") {
+                          onChange("requestId", value);
+                        }
+                      }
+                    }}  
+                    disabled={!editableCoreFields}
+                    className={INPUT_CLASS_NAME}
                   >
-                    {request.requestNumber} / {request.title || "제목 없음"}
-                  </option>
-                  // <option key={request.id || index} value={request.id}>
-                  //   {request.requestNumber} / {request.title}
-                  // </option>
-                ))}
-              </select>
-              <FieldError message={errors.requestId} />
+                    <option value="">승인 완료 구매 요청 선택</option>
+                    {approvedPurchaseRequests.map((request, index) => (
+                      <option 
+                        key={request.id || request.requestId || index} 
+                        value={request.id || request.requestId}
+                      >
+                        {request.requestNumber} / {request.title || "제목 없음"}
+                      </option>
+                    ))}
+                  </select>
+                  <FieldError message={errors.requestId} />
+                </>
+              )}
             </label>
-
             <label className="block">
               <FieldLabel>구매 요청 제목</FieldLabel>
               <input
@@ -274,38 +266,48 @@ export default function PurchaseOrderForm({
               />
             </label>
             <label className="block">
-              <FieldLabel required>공급업체</FieldLabel>
-              <select 
-                value={selectedSupplierValue} 
-                onChange={(event) => {
-                  const val = event.target.value;
-                  handleChangeSupplier(val);   // 기존에 정의된 함수 사용
-                }} 
-                disabled={!editableCoreFields} 
-                className={INPUT_CLASS_NAME}
-              >
-                <option value="">공급업체 선택</option>
-                {suppliers.map((supplier, index) => {
-                  const supplierValue = getSupplierValue(supplier, index);
-                  const supplierName = getSupplierName(supplier, index);
+              <FieldLabel required={!isEditMode}>공급업체</FieldLabel>
+              {isEditMode ? (
+                <input
+                  value={form.supplierName || "-"}
+                  disabled
+                  className={INPUT_CLASS_NAME}
+                />
+              ) : (
+                <>
+                  <select 
+                    value={selectedSupplierValue} 
+                    onChange={(event) => {
+                      const val = event.target.value;
+                      handleChangeSupplier(val);   // 기존에 정의된 함수 사용
+                    }} 
+                    disabled={!editableCoreFields} 
+                    className={INPUT_CLASS_NAME}
+                  >
+                    <option value="">공급업체 선택</option>
+                    {suppliers.map((supplier, index) => {
+                      const supplierValue = getSupplierValue(supplier, index);
+                      const supplierName = getSupplierName(supplier, index);
 
-                  return (
-                    <option
-                      key={supplierValue}
-                      value={supplierValue}
-                    >
-                      {supplierName}
-                    </option>
-                  );
-                })}
-              </select>
-              <FieldError
-                message={
-                  errors.supplierId ||
-                  errors.supplierName ||
-                  errors.supplierCode
-                }
-              />
+                      return (
+                        <option
+                          key={supplierValue}
+                          value={supplierValue}
+                        >
+                          {supplierName}
+                        </option>
+                      );
+                    })}
+                  </select>
+                  <FieldError
+                    message={
+                      errors.supplierId ||
+                      errors.supplierName ||
+                      errors.supplierCode
+                    }
+                  />
+                </>
+              )}
             </label>
             <label className="block">
               <FieldLabel>공급업체 담당자</FieldLabel>
@@ -333,16 +335,26 @@ export default function PurchaseOrderForm({
             </div>
 
             <label className="block">
-              <FieldLabel required>발주 담당자</FieldLabel>
-              <input
-                value={form.orderManager || ""}
-                onChange={(event) =>
-                  onChange("orderManager", event.target.value)
-                }
-                disabled={!editableCoreFields}
-                className={INPUT_CLASS_NAME}
-              />
-              <FieldError message={errors.orderManager} />
+              <FieldLabel required={!isEditMode}>발주 담당자</FieldLabel>
+              {isEditMode ? (
+                <input
+                  value={form.orderManager || "-"}
+                  disabled
+                  className={INPUT_CLASS_NAME}
+                />
+              ) : (
+                <>
+                  <input
+                    value={form.orderManager || ""}
+                    onChange={(event) =>
+                      onChange("orderManager", event.target.value)
+                    }
+                    disabled={!editableCoreFields}
+                    className={INPUT_CLASS_NAME}
+                  />
+                  <FieldError message={errors.orderManager} />
+                </>
+              )}
             </label>
 
             <label className="block">

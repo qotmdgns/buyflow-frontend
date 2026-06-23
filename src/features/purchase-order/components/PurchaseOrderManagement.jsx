@@ -9,12 +9,9 @@ import {
   RefreshCcw,
   Search,
 } from "lucide-react"
-
 import PurchaseOrderCancelModal from "@/features/purchase-order/components/PurchaseOrderCancelModal"
 import PurchaseOrderDetailModal from "@/features/purchase-order/components/PurchaseOrderDetailModal"
-
 import usePurchaseOrderManagement from "@/features/purchase-order/hooks/usePurchaseOrderManagement"
-
 import {
   formatWon,
   getPurchaseOrderStatusLabel,
@@ -174,9 +171,9 @@ export default function PurchaseOrderManagement() {
             </span>
 
             <input
-              value={draftFilters.orderNumber}
+              value={draftFilters.orderNo}
               onChange={(event) =>
-                updateFilter("orderNumber", event.target.value)
+                updateFilter("orderNo", event.target.value)
               }
               placeholder="PO-YYYY-XXXX"
               className={INPUT_CLASS_NAME}
@@ -189,9 +186,9 @@ export default function PurchaseOrderManagement() {
             </span>
 
             <input
-              value={draftFilters.requestNumber}
+              value={draftFilters.requestNo}
               onChange={(event) =>
-                updateFilter("requestNumber", event.target.value)
+                updateFilter("requestNo", event.target.value)
               }
               placeholder="PR-YYYY-XXXX"
               className={INPUT_CLASS_NAME}
@@ -201,7 +198,6 @@ export default function PurchaseOrderManagement() {
             <span className="mb-1 block text-[13px] font-semibold text-slate-600">
               공급업체
             </span>
-
             <select
               value={draftFilters.supplierName || ""}
               onChange={(event) =>
@@ -227,9 +223,9 @@ export default function PurchaseOrderManagement() {
             </span>
 
             <input
-              value={draftFilters.orderManager}
+              value={draftFilters.userName}
               onChange={(event) =>
-                updateFilter("orderManager", event.target.value)
+                updateFilter("userName", event.target.value)
               }
               placeholder="담당자 이름 입력"
               className={INPUT_CLASS_NAME}
@@ -240,21 +236,20 @@ export default function PurchaseOrderManagement() {
               발주 상태
             </span>
             <select
-              value={draftFilters.status}
-              onChange={(event) => updateFilter("status", event.target.value)}
+              value={draftFilters.orderStatus}
+              onChange={(event) => updateFilter("orderStatus", event.target.value)}
               className={INPUT_CLASS_NAME}
             >
-              {(filterOptions?.statuses ?? []).map((status) => (
-                <option key={status} value={status}>
-                  {status === "전체"
-                    ? status
-                    : getPurchaseOrderStatusLabel(status)}
+              {(filterOptions?.statuses ?? []).map((orderStatus) => (
+                <option key={orderStatus} value={orderStatus}>
+                  {orderStatus === "전체"
+                    ? orderStatus
+                    : getPurchaseOrderStatusLabel(orderStatus)}
                 </option>
               ))}
             </select>
           </label>
         </div>
-
         <div className="mt-3 flex justify-end gap-2 border-t border-slate-100 pt-3">
           <button
             type="button"
@@ -274,17 +269,15 @@ export default function PurchaseOrderManagement() {
           </button>
         </div>
       </form>
-
       <section className="mt-3 overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm">
         <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 px-4 py-3">
           <div>
             <h2 className="text-[15px] font-bold text-slate-800">발주 목록</h2>
 
             <p className="mt-0.5 text-[13px] text-slate-400">
-              총 {pagination.totalElements}건
+              총 <span className="font-medium text-slate-700"> {pagination.totalElements}</span>건
             </p>
           </div>
-
           <Link
             href="/purchase-orders/new"
             className="flex h-10 items-center gap-1.5 rounded-md bg-blue-600 px-4 text-[13px] font-semibold text-white transition hover:bg-blue-700"
