@@ -52,7 +52,7 @@ function TableMessage({ children, isError = false }) {
   return (
     <tr>
       <td
-        colSpan={12}
+        colSpan={13}
         className={`h-48 text-center text-[14px] ${
           isError ? "text-rose-500" : "text-slate-400"
         }`}
@@ -222,7 +222,7 @@ export default function ApprovalListManagement() {
 
         <div className="overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm">
           <div className="overflow-x-auto">
-            <table className="w-full min-w-[1380px] text-left text-[13px]">
+            <table className="w-full min-w-[1550px] text-left text-[13px]">
               <thead className="bg-slate-50 text-slate-500">
                 <tr>
                   {[
@@ -230,7 +230,8 @@ export default function ApprovalListManagement() {
                     "요청 제목",
                     "요청자",
                     "요청 부서",
-                    "요청일",
+                    "등록일",
+                    "수정일",
                     "희망 입고일",
                     "총 요청 금액",
                     "우선순위",
@@ -298,11 +299,15 @@ export default function ApprovalListManagement() {
                       </td>
 
                       <td className="whitespace-nowrap px-3 py-3">
-                        {approval.requestedAt}
+                        {approval.createdAt || approval.requestedAt || "-"}
                       </td>
 
                       <td className="whitespace-nowrap px-3 py-3">
-                        {approval.desiredInboundAt}
+                        {approval.updatedAt || "-"}
+                      </td>
+
+                      <td className="whitespace-nowrap px-3 py-3">
+                        {approval.desiredReceiptAt}
                       </td>
 
                       <td className="whitespace-nowrap px-3 py-3 text-right font-semibold text-slate-700">
@@ -333,19 +338,7 @@ export default function ApprovalListManagement() {
             </table>
           </div>
 
-          <div className="flex flex-wrap items-center justify-between gap-3 border-t border-slate-100 px-4 py-3 text-[13px] text-slate-400">
-            <select
-              value={pageSize}
-              onChange={(event) => changePageSize(Number(event.target.value))}
-              className="h-8 rounded-md border border-slate-200 bg-white px-2 text-[13px] text-slate-500 outline-none"
-            >
-              {[10, 15, 20, 50].map((size) => (
-                <option key={size} value={size}>
-                  {size}개씩 보기
-                </option>
-              ))}
-            </select>
-
+          <div className="flex flex-wrap items-center justify-end gap-3 border-t border-slate-100 px-4 py-3 text-[13px] text-slate-400">
             <div className="flex items-center gap-2">
               <button
                 type="button"

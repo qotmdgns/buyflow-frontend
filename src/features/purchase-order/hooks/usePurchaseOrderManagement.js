@@ -64,8 +64,25 @@ export default function usePurchaseOrderManagement() {
         })
 
         if (!ignore) {
-          setOrders(data.items)
-          setPagination(data.pagination)
+          // 🚀 [최종 지뢰 진압 완료]: 백엔드 자바 컨트롤러에서 사출해 준 
+          // PageResponse 표준 족보 주머니 이름인 'content' 또는 'items' 가드 매핑!
+          const realContentList = data.content || data.items || data || [];
+          setOrders(realContentList)
+
+          console.log("현재 page", pagination.page)
+          console.log("현재 size", pagination.size)
+
+          // 페이징 객체 안전핀 가드레일 매핑
+          if (data.pagination) {
+            setPagination(data.pagination)
+          } else if (data.page) {
+            setPagination({
+              page: data.page,
+              size: data.size,
+              totalElements: data.totalElements,
+              totalPages: data.totalPages
+            })
+          }
         }
       } catch (requestError) {
         if (!ignore) {
@@ -124,7 +141,7 @@ export default function usePurchaseOrderManagement() {
   }
 
   function openDetail(order) {
-    setSelectedOrderId(order.id)
+    setSelectedOrderId(order.orderId || order.id)
   }
 
   function closeDetail() {
@@ -149,7 +166,7 @@ export default function usePurchaseOrderManagement() {
     setCanceling(true)
 
     try {
-      await cancelPurchaseOrder(cancelTarget.id, cancelReason)
+      await cancelPurchaseOrder(cancelTarget.id || cancelTarget.orderId, cancelReason)
 
       setCancelTarget(null)
       setSelectedOrderId(null)

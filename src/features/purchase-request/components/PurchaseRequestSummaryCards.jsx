@@ -1,10 +1,10 @@
 const summaryItems = [
   { key: "total", label: "전체", status: "전체", tone: "default" },
-  { key: "draft", label: "임시 저장", status: "임시 저장", tone: "muted" },
   { key: "pending", label: "승인 대기", status: "승인 대기", tone: "muted" },
   { key: "approved", label: "승인 완료", status: "승인 완료", tone: "primary" },
   { key: "rejected", label: "반려", status: "반려", tone: "danger" },
   { key: "ordered", label: "발주 완료", status: "발주 완료", tone: "muted" },
+  { key: "canceled", label: "요청 취소", status: "요청 취소", tone: "muted" },
 ]
 
 const toneStyles = {

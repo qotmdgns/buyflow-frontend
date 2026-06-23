@@ -51,6 +51,60 @@ function TableMessage({ children, isError = false }) {
   )
 }
 
+function formatDate(value) {
+  if (!value) return "-"
+  return String(value).substring(0, 10)
+}
+
+function getRequestNumber(order) {
+  return (
+    order.requestNo ||
+    order.requestNumber ||
+    order.purchaseRequest?.requestNo ||
+    order.purchaseRequest?.requestNumber ||
+    "-"
+  )
+}
+
+function getExpectedReceiptText(order) {
+  const from = order.expectedReceiptFrom || order.expectedInboundFrom || "-"
+  const to = order.expectedReceiptTo || order.expectedInboundTo || "-"
+
+  return `${from} ~ ${to}`
+}
+
+function getItemCount(order) {
+  if (order.itemCount !== undefined && order.itemCount !== null) {
+    return order.itemCount
+  }
+
+  return order.items?.length ?? 0
+}
+
+function getOrderTotalAmount(order) {
+  const directTotal = Number(order.totalAmount ?? order.totalPrice ?? 0)
+
+  if (Number.isFinite(directTotal) && directTotal > 0) {
+    return directTotal
+  }
+
+  const supplyAmount =
+    order.items?.reduce((acc, item) => {
+      const quantity = Number(
+        item.orderQuantity ?? item.quantity ?? item.requestedQuantity ?? 0,
+      )
+      const unitPrice = Number(item.unitPrice ?? item.price ?? 0)
+
+      return acc + quantity * unitPrice
+    }, 0) ?? 0
+
+  if (!Number.isFinite(supplyAmount) || supplyAmount <= 0) {
+    return 0
+  }
+
+  return supplyAmount + Math.floor(supplyAmount * 0.1)
+}
+
 export default function PurchaseOrderManagement() {
   const router = useRouter()
 
@@ -70,7 +124,6 @@ export default function PurchaseOrderManagement() {
     searchOrders,
     resetFilters,
     movePage,
-    changePageSize,
     openDetail,
     closeDetail,
     openCancel,
@@ -80,8 +133,7 @@ export default function PurchaseOrderManagement() {
 
   function moveToEdit(order) {
     closeDetail()
-
-    router.push(`/purchase-orders/${order.id}/edit`)
+    router.push(`/purchase-orders/${order.orderId}/edit`)
   }
 
   return (
@@ -141,7 +193,7 @@ export default function PurchaseOrderManagement() {
               }
               className={INPUT_CLASS_NAME}
             >
-              {filterOptions.suppliers.map((supplier) => (
+              {(filterOptions?.suppliers ?? []).map((supplier) => (
                 <option key={supplier} value={supplier}>
                   {supplier}
                 </option>
@@ -174,7 +226,7 @@ export default function PurchaseOrderManagement() {
               onChange={(event) => updateFilter("status", event.target.value)}
               className={INPUT_CLASS_NAME}
             >
-              {filterOptions.statuses.map((status) => (
+              {(filterOptions?.statuses ?? []).map((status) => (
                 <option key={status} value={status}>
                   {status === "전체"
                     ? status
@@ -268,44 +320,44 @@ export default function PurchaseOrderManagement() {
                 !error &&
                 orders.map((order) => (
                   <tr
-                    key={order.id}
+                    key={order.orderId}
                     onClick={() => openDetail(order)}
                     className="cursor-pointer border-t border-slate-100 text-slate-600 transition hover:bg-blue-50/50"
                   >
                     <td className="whitespace-nowrap px-3 py-3 font-semibold text-blue-600">
-                      {order.orderNumber}
+                      {order.orderNo || order.orderNumber || "-"}
                     </td>
 
                     <td className="whitespace-nowrap px-3 py-3">
-                      {order.requestNumber}
+                      {getRequestNumber(order)}
                     </td>
 
                     <td className="whitespace-nowrap px-3 py-3 font-medium text-slate-700">
-                      {order.supplierName}
+                      {order.supplierName || "-"}
                     </td>
 
                     <td className="whitespace-nowrap px-3 py-3">
-                      {order.orderManager}
+                      {order.orderManager || order.userName || "-"}
                     </td>
 
                     <td className="whitespace-nowrap px-3 py-3">
-                      {order.orderedAt}
+                      {formatDate(order.orderedAt || order.createdAt)}
                     </td>
 
                     <td className="whitespace-nowrap px-3 py-3">
-                      {order.expectedInboundFrom} ~ {order.expectedInboundTo}
+                      {getExpectedReceiptText(order)}
                     </td>
 
                     <td className="whitespace-nowrap px-3 py-3 text-right">
-                      {order.itemCount}건
+                      {getItemCount(order)}건
                     </td>
 
                     <td className="whitespace-nowrap px-3 py-3 text-right font-semibold text-slate-800">
-                      {formatWon(order.totalAmount)}
+                      {formatWon(getOrderTotalAmount(order))}
                     </td>
 
                     <td className="whitespace-nowrap px-3 py-3">
-                      <StatusBadge status={order.status} />
+                      <StatusBadge status={order.orderStatus || order.status} />
                     </td>
                   </tr>
                 ))}
@@ -313,19 +365,7 @@ export default function PurchaseOrderManagement() {
           </table>
         </div>
 
-        <div className="flex flex-wrap items-center justify-between gap-3 border-t border-slate-100 px-4 py-3">
-          <select
-            value={pagination.size}
-            onChange={(event) => changePageSize(Number(event.target.value))}
-            className="h-9 rounded-md border border-slate-200 bg-white px-2 text-[13px] text-slate-600 outline-none"
-          >
-            {[10, 15, 20, 50].map((size) => (
-              <option key={size} value={size}>
-                {size}개씩 보기
-              </option>
-            ))}
-          </select>
-
+        <div className="flex flex-wrap items-center justify-end gap-3 border-t border-slate-100 px-4 py-3">
           <div className="flex items-center gap-2">
             <button
               type="button"
@@ -367,7 +407,7 @@ export default function PurchaseOrderManagement() {
 
       {cancelTarget && (
         <PurchaseOrderCancelModal
-          key={cancelTarget.id}
+          key={cancelTarget.id || cancelTarget.orderId}
           order={cancelTarget}
           submitting={canceling}
           error={cancelError}

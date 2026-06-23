@@ -22,7 +22,89 @@ function getTodayString() {
   return new Date().toISOString().slice(0, 10)
 }
 
+function formatDate(value) {
+  if (!value) {
+    return ""
+  }
+
+  return String(value).slice(0, 10)
+}
+
+function toUseYn(activeStatus) {
+  return activeStatus === "사용 중지" ? "N" : "Y"
+}
+
+function toActiveStatus(useYn) {
+  return useYn === "N" ? "사용 중지" : "사용 중"
+}
+
+function toBackendPayload(payload, includeCode = true) {
+  const result = {
+    warehouseName: payload.name ? payload.name.trim() : (payload.warehouseName ? payload.warehouseName.trim() : ""),
+    zipcode: payload.zipcode ? payload.zipcode.trim() : "",
+    address: payload.baseAddress ? payload.baseAddress.trim() : (payload.address ? payload.address.trim() : ""),
+    detailAddress: payload.detailAddress ? payload.detailAddress.trim() : "",
+    contact: payload.phone ? payload.phone.trim() : (payload.contact ? payload.contact.trim() : ""),
+    useYn: toUseYn(payload.activeStatus),
+    type: payload.type,
+    memo: payload.memo ? payload.memo.trim() : ""
+  }
+
+  result.warehouseCode = payload.code ? payload.code.trim().toUpperCase() : (payload.warehouseCode ? payload.warehouseCode.trim().toUpperCase() : "");
+
+  // if (includeCode) {
+  //   result.warehouseCode = payload.code.trim().toUpperCase()
+  // }
+
+  if (payload.userId) {
+    result.userId = payload.userId
+  }
+
+  if (payload.manager || payload.managerName) {
+    const mgr = payload.manager || payload.managerName
+    result.managerName = mgr.trim()
+    result.manager = mgr.trim()
+  }
+
+  return result
+}
+
+function toFrontendWarehouse(data) {
+  const baseAddress = data.baseAddress ?? data.address ?? ""
+  const detailAddress = data.detailAddress ?? ""
+
+  return {
+    id: data.id ?? data.warehouseCode ?? data.code,
+    code: data.code ?? data.warehouseCode ?? "",
+    name: data.name ?? data.warehouseName ?? "",
+    type: data.type ?? "",
+    zipcode: data.zipcode ?? "",
+    baseAddress,
+    detailAddress,
+    address: buildWarehouseAddress(baseAddress, detailAddress),
+    activeStatus: data.activeStatus ?? toActiveStatus(data.useYn),
+    manager: data.manager ?? data.managerName ?? "",
+    userId: data.userId ?? data.user?.userId ?? "",
+    phone: data.phone ?? data.contact ?? "",
+    memo: data.memo ?? "",
+    registeredAt: data.registeredAt ?? formatDate(data.createdAt),
+    updatedAt: data.updatedAt ? formatDate(data.updatedAt) : "",
+  }
+}
+
+async function readJsonOrNull(response) {
+  const text = await response.text()
+
+  if (!text) {
+    return null
+  }
+
+    return JSON.parse(text)
+  }
+
+
 function createWarehouseRecord(payload, id, registeredAt = getTodayString()) {
+  const zipcode = payload.zipcode.trim()
   const baseAddress = payload.baseAddress.trim()
   const detailAddress = payload.detailAddress.trim()
 
@@ -31,11 +113,13 @@ function createWarehouseRecord(payload, id, registeredAt = getTodayString()) {
     code: payload.code.trim().toUpperCase(),
     name: payload.name.trim(),
     type: payload.type,
+    zipcode,
     activeStatus: payload.activeStatus,
     baseAddress,
     detailAddress,
     address: buildWarehouseAddress(baseAddress, detailAddress),
     manager: payload.manager.trim(),
+    userId: payload.userId,
     phone: payload.phone.trim(),
     memo: payload.memo.trim(),
     registeredAt,
@@ -89,12 +173,27 @@ function getMockWarehouses(params) {
 }
 
 function normalizeWarehouseResponse(data) {
+  if (Array.isArray(data)) {
+    return {
+      items: data.map(toFrontendWarehouse),
+      pagination: {
+        page: 1,
+        size: data.length,
+        totalElements: data.length,
+        totalPages: 1,
+      },
+    }
+  }
+
   if (Array.isArray(data.items) && data.pagination) {
-    return data
+    return {
+      items: data.items.map(toFrontendWarehouse),
+      pagination: data.pagination,
+    }
   }
 
   return {
-    items: data.content ?? [],
+    items: (data.content ?? []).map(toFrontendWarehouse),
     pagination: {
       page: (data.number ?? 0) + 1,
       size: data.size ?? 10,
@@ -112,16 +211,20 @@ export async function fetchWarehouses(params = {}) {
 
   const query = new URLSearchParams()
 
-  Object.entries(params).forEach(([key, value]) => {
-    if (value === "" || value === "전체") {
-      return
-    }
+  if (params.warehouseName) {
+    query.set("warehouseName", params.warehouseName)
+  }
 
-    query.set(key, key === "page" ? String(Number(value) - 1) : String(value))
-  })
+  if (params.type && params.type !== "전체") {
+    query.set("type", params.type)
+  }
+
+  if (params.activeStatus && params.activeStatus !== "전체") {
+    query.set("useYn", toUseYn(params.activeStatus))
+  }
 
   const response = await fetch(
-    `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/warehouses?${query.toString()}`,
+    `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/warehouses` + (query.toString() ? `?${query.toString()}` : ""),
     { cache: "no-store" },
   )
 
@@ -149,12 +252,12 @@ export async function fetchWarehouseFilterOptions() {
   return response.json()
 }
 
-export async function fetchWarehouseById(warehouseId) {
+export async function fetchWarehouseById(warehouseCode) {
   if (USE_MOCK) {
     await wait(100)
 
     const warehouse = warehouseDatabase.find(
-      (item) => item.id === Number(warehouseId),
+      (item) => item.id === Number(warehouseCode),
     )
 
     if (!warehouse) {
@@ -165,7 +268,7 @@ export async function fetchWarehouseById(warehouseId) {
   }
 
   const response = await fetch(
-    `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/warehouses/${warehouseId}`,
+    `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/warehouses/${warehouseCode}`,
     { cache: "no-store" },
   )
 
@@ -173,7 +276,7 @@ export async function fetchWarehouseById(warehouseId) {
     throw new Error("창고 상세 정보를 불러오지 못했습니다.")
   }
 
-  return response.json()
+  return toFrontendWarehouse(await response.json())
 }
 
 export async function createWarehouse(payload) {
@@ -210,7 +313,7 @@ export async function createWarehouse(payload) {
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify(payload),
+      body: JSON.stringify(toBackendPayload(payload)),
     },
   )
 
@@ -218,15 +321,21 @@ export async function createWarehouse(payload) {
     throw new Error("신규 창고를 등록하지 못했습니다.")
   }
 
-  return response.json()
+  const data = await readJsonOrNull(response)
+
+  if (data) {
+    return toFrontendWarehouse(data)
+  }
+
+  return createWarehouseRecord(payload, payload.code.trim().toUpperCase())
 }
 
-export async function updateWarehouse(warehouseId, payload) {
+export async function updateWarehouse(warehouseCode, payload) {
   if (USE_MOCK) {
     await wait(200)
 
     const targetIndex = warehouseDatabase.findIndex(
-      (warehouse) => warehouse.id === Number(warehouseId),
+      (warehouse) => warehouse.id === Number(warehouseCode),
     )
 
     if (targetIndex === -1) {
@@ -237,7 +346,7 @@ export async function updateWarehouse(warehouseId, payload) {
 
     const duplicated = warehouseDatabase.some(
       (warehouse) =>
-        warehouse.id !== Number(warehouseId) &&
+        warehouse.id !== Number(warehouseCode) &&
         warehouse.code.toUpperCase() === normalizedCode,
     )
 
@@ -249,25 +358,25 @@ export async function updateWarehouse(warehouseId, payload) {
 
     const updatedWarehouse = createWarehouseRecord(
       payload,
-      Number(warehouseId),
-      previousWarehouse.registeredAt,
+      Number(warehouseCode),
+      previousWarehouse.updatedAt,
     )
 
     warehouseDatabase = warehouseDatabase.map((warehouse) =>
-      warehouse.id === Number(warehouseId) ? updatedWarehouse : warehouse,
+      warehouse.id === Number(warehouseCode) ? updatedWarehouse : warehouse,
     )
 
     return updatedWarehouse
   }
 
   const response = await fetch(
-    `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/warehouses/${warehouseId}`,
+    `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/warehouses/${warehouseCode}`,
     {
-      method: "PUT",
+      method: "PATCH",
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify(payload),
+      body: JSON.stringify(toBackendPayload(payload, false)),
     },
   )
 
@@ -275,15 +384,21 @@ export async function updateWarehouse(warehouseId, payload) {
     throw new Error("창고 정보를 수정하지 못했습니다.")
   }
 
-  return response.json()
+  const data = await readJsonOrNull(response)
+
+  if (data) {
+    return toFrontendWarehouse(data)
+  }
+
+  return createWarehouseRecord(payload, warehouseCode)
 }
 
-export async function deleteWarehouse(warehouseId) {
+export async function deleteWarehouse(warehouseCode) {
   if (USE_MOCK) {
     await wait(150)
 
     const exists = warehouseDatabase.some(
-      (warehouse) => warehouse.id === Number(warehouseId),
+      (warehouse) => warehouse.id === Number(warehouseCode),
     )
 
     if (!exists) {
@@ -291,14 +406,14 @@ export async function deleteWarehouse(warehouseId) {
     }
 
     warehouseDatabase = warehouseDatabase.filter(
-      (warehouse) => warehouse.id !== Number(warehouseId),
+      (warehouse) => warehouse.id !== Number(warehouseCode),
     )
 
     return
   }
 
   const response = await fetch(
-    `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/warehouses/${warehouseId}`,
+    `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/warehouses/${warehouseCode}`,
     {
       method: "DELETE",
     },

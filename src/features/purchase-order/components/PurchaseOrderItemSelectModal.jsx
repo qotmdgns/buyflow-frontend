@@ -1,7 +1,6 @@
 "use client"
 
 import { X } from "lucide-react"
-
 import { formatWon } from "@/features/purchase-order/utils/purchaseOrderUtils"
 
 export default function PurchaseOrderItemSelectModal({
@@ -19,7 +18,6 @@ export default function PurchaseOrderItemSelectModal({
             <h2 className="text-[16px] font-bold text-slate-800">
               발주 품목 선택
             </h2>
-
             <p className="mt-1 text-[13px] text-slate-400">
               승인 완료된 구매 요청에 포함된 품목만 선택할 수 있습니다.
             </p>
@@ -50,43 +48,47 @@ export default function PurchaseOrderItemSelectModal({
             </thead>
 
             <tbody>
-              {requestItems.map((item) => (
-                <tr
-                  key={item.id}
-                  className="border-t border-slate-100 text-slate-600"
-                >
-                  <td className="px-4 py-3 text-center">
-                    <input
-                      type="checkbox"
-                      checked={selectedIds.has(Number(item.id))}
-                      onChange={() => onToggle(Number(item.id))}
-                      className="h-4 w-4 accent-blue-600"
-                    />
-                  </td>
+              {requestItems.map((item) => {
+                const currentId = item.requestItemId || item.id;
 
-                  <td className="whitespace-nowrap px-3 py-3 font-semibold text-blue-600">
-                    {item.itemCode}
-                  </td>
+                return (
+                  <tr
+                    key={currentId}
+                    className="border-t border-slate-100 text-slate-600"
+                  >
+                    <td className="px-4 py-3 text-center">
+                      <input
+                        type="checkbox"
+                        checked={selectedIds.has(Number(currentId))}
+                        onChange={() => onToggle(Number(currentId))}
+                        className="h-4 w-4 accent-blue-600 cursor-pointer"
+                      />
+                    </td>
 
-                  <td className="px-3 py-3 font-medium text-slate-700">
-                    {item.itemName}
-                  </td>
+                    <td className="whitespace-nowrap px-3 py-3 font-semibold text-blue-600">
+                      {item.itemCode}
+                    </td>
 
-                  <td className="px-3 py-3 text-slate-500">
-                    {item.specification}
-                  </td>
+                    <td className="px-3 py-3 font-medium text-slate-700">
+                      {item.itemName}
+                    </td>
 
-                  <td className="px-3 py-3 text-right">
-                    {item.requestedQuantity}
-                  </td>
+                    <td className="px-3 py-3 text-slate-500">
+                      {item.specification}
+                    </td>
 
-                  <td className="px-3 py-3">{item.unit}</td>
+                    <td className="px-3 py-3 text-right">
+                      {item.requestQuantity || item.requestedQuantity}
+                    </td>
 
-                  <td className="px-3 py-3 text-right">
-                    {formatWon(item.defaultUnitPrice)}
-                  </td>
-                </tr>
-              ))}
+                    <td className="px-3 py-3">{item.unit}</td>
+
+                    <td className="px-3 py-3 text-right">
+                      {formatWon(item.estimatedUnitPrice || item.defaultUnitPrice || 0)}
+                    </td>
+                  </tr>
+                );
+              })}
 
               {requestItems.length === 0 && (
                 <tr>

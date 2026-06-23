@@ -1,6 +1,8 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useState, useRef } from "react"
+import Script from "next/script"
+import { useAuth } from "@/features/auth/context/AuthContext"
 import {
   Building2,
   MapPin,
@@ -36,6 +38,14 @@ function FieldError({ message }) {
   return <p className="mt-1 text-[12px] text-rose-500">{message}</p>
 }
 
+function getCurrentUserId(user) {
+  return user?.userId ?? user?.id ?? user?.sub ?? ""
+}
+
+function getCurrentUserName(user) {
+  return user?.userName ?? user?.name ?? user?.username ?? ""
+}
+
 function createFormValue(initialValue) {
   return {
     ...EMPTY_WAREHOUSE_FORM,
@@ -49,12 +59,24 @@ export default function WarehouseFormModal({
   onClose,
   onSubmit,
 }) {
+  const { user, isAuthReady } = useAuth()
   const [form, setForm] = useState(() => createFormValue(initialValue))
+
+  const currentUserId = getCurrentUserId(user)
+  const currentUserName = getCurrentUserName(user)
+  const isEditMode = mode === "edit"
+
+  const resolvedManager =
+    !isEditMode && isAuthReady ? form.manager || currentUserName : form.manager
+
+  const resolvedUserId =
+    !isEditMode && isAuthReady ? form.userId || currentUserId : form.userId
+
   const [errors, setErrors] = useState({})
   const [submitError, setSubmitError] = useState("")
   const [submitting, setSubmitting] = useState(false)
 
-  const isEditMode = mode === "edit"
+  const detailAddressRef = useRef(null)
 
   useEffect(() => {
     const previousOverflow = document.body.style.overflow
@@ -88,38 +110,76 @@ export default function WarehouseFormModal({
   }
 
   function findAddress() {
-    const searchedAddress = window.prompt(
-      "주소 검색 API 연결 전 임시 기능입니다.\n기본 주소를 입력하세요.",
-      form.baseAddress,
-    )
-
-    if (searchedAddress) {
-      updateForm("baseAddress", searchedAddress)
-    }
-  }
-
-  async function submitForm(event) {
-    event.preventDefault()
-
-    const nextErrors = validateWarehouseForm(form)
-
-    if (Object.keys(nextErrors).length > 0) {
-      setErrors(nextErrors)
+    if (!window.kakao || !window.kakao.Postcode) {
+      setSubmitError(
+        "주소 검색 API를 불러오는 중입니다. 잠시 후 다시 시도해주세요.",
+      )
       return
     }
 
-    setSubmitting(true)
-    setSubmitError("")
+    new window.kakao.Postcode({
+      oncomplete(data) {
+        let selectedAddress = ""
+
+        if (data.userSelectedType === "R") {
+          selectedAddress = data.roadAddress
+        } else {
+          selectedAddress = data.jibunAddress
+        }
+
+        updateForm("zipcode", data.zonecode)
+        updateForm("baseAddress", selectedAddress)
+        updateForm("detailAddress", "")
+
+        window.setTimeout(() => {
+          detailAddressRef.current?.focus()
+        }, 0)
+      },
+    }).open()
+  }
+
+async function submitForm(event) {
+    event.preventDefault();
+
+    const finalManager = form.manager || form.managerName || resolvedManager || "";
+    const finalUserId = form.userId || resolvedUserId || "";
+    const finalDetailAddress = form.detailAddress || form.detailAddres || "";
+    
+    const finalCode = form.code ? form.code.trim().toUpperCase() : ""; 
+    const finalName = form.name || form.warehouseName || "";
+
+    const submitPayload = {
+      ...form,
+      code: finalCode,
+      name: finalName,
+      warehouseCode: finalCode,
+      warehouseName: finalName,
+      detailAddress: finalDetailAddress,
+      detailAddres: finalDetailAddress,
+      userId: finalUserId,
+      manager: finalManager,
+      managerName: finalManager
+    };
+
+    const nextErrors = validateWarehouseForm(submitPayload);
+
+    if (Object.keys(nextErrors).length > 0) {
+      setErrors(nextErrors);
+      return;
+    }
+
+    setSubmitting(true);
+    setSubmitError("");
 
     try {
-      await onSubmit(form)
+      await onSubmit(submitPayload);
     } catch (requestError) {
       setSubmitError(
         requestError.message ||
           `${isEditMode ? "창고 정보를 수정" : "신규 창고를 등록"}하지 못했습니다.`,
-      )
+      );
     } finally {
-      setSubmitting(false)
+      setSubmitting(false);
     }
   }
 
@@ -139,6 +199,10 @@ export default function WarehouseFormModal({
       }}
       className="fixed inset-0 z-[70] flex items-center justify-center bg-slate-900/45 px-4 py-6 backdrop-blur-[1px]"
     >
+      <Script
+        src="https://t1.kakaocdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"
+        strategy="afterInteractive"
+      />
       <section
         role="dialog"
         aria-modal="true"
@@ -171,7 +235,8 @@ export default function WarehouseFormModal({
                 <FieldLabel required>창고 코드</FieldLabel>
 
                 <input
-                  value={form.code}
+                  value={form.code || ""}
+                  disabled={isEditMode}
                   onChange={(event) => updateForm("code", event.target.value)}
                   placeholder="WH-XXXX"
                   className={INPUT_CLASS_NAME}
@@ -190,7 +255,7 @@ export default function WarehouseFormModal({
                   />
 
                   <input
-                    value={form.name}
+                    value={form.name || ""}
                     onChange={(event) => updateForm("name", event.target.value)}
                     placeholder="창고 이름을 입력하세요"
                     className={`${INPUT_CLASS_NAME} pl-9`}
@@ -204,7 +269,7 @@ export default function WarehouseFormModal({
                 <FieldLabel>창고 유형</FieldLabel>
 
                 <select
-                  value={form.type}
+                  value={form.type || ""}
                   onChange={(event) => updateForm("type", event.target.value)}
                   className={INPUT_CLASS_NAME}
                 >
@@ -220,7 +285,7 @@ export default function WarehouseFormModal({
                 <FieldLabel>사용 여부</FieldLabel>
 
                 <select
-                  value={form.activeStatus}
+                  value={form.activeStatus || ""}
                   onChange={(event) =>
                     updateForm("activeStatus", event.target.value)
                   }
@@ -235,42 +300,65 @@ export default function WarehouseFormModal({
             <div>
               <FieldLabel required>주소</FieldLabel>
 
-              <div className="flex gap-2">
-                <div className="relative flex-1">
+              <div className="space-y-2">
+                <div className="grid grid-cols-[1fr_86px] gap-2">
+                  <input
+                    value={form.zipcode || ""}
+                    onChange={(event) =>
+                      updateForm(
+                        "zipcode",
+                        event.target.value.replace(/\D/g, "").slice(0, 5),
+                      )
+                    }
+                    placeholder="우편번호"
+                    inputMode="numeric"
+                    maxLength={5}
+                    className={INPUT_CLASS_NAME}
+                  />
+
+                  <button
+                    type="button"
+                    onClick={findAddress}
+                    className="h-10 rounded-md border border-slate-200 bg-white px-3 text-[13px] font-semibold text-slate-600 transition hover:bg-slate-50"
+                  >
+                    주소 찾기
+                  </button>
+                </div>
+
+                <FieldError message={errors.zipcode} />
+
+                <div className="relative">
                   <MapPin
                     size={14}
                     className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
                   />
 
                   <input
-                    value={form.baseAddress}
+                    value={form.baseAddress || ""}
+                    onClick={findAddress}
                     onChange={(event) =>
                       updateForm("baseAddress", event.target.value)
                     }
                     placeholder="기본 주소 검색"
-                    className={`${INPUT_CLASS_NAME} pl-9`}
+                    readOnly
+                    className={`${INPUT_CLASS_NAME} pl-9 cursor-pointer bg-slate-50`}
                   />
                 </div>
 
-                <button
-                  type="button"
-                  onClick={findAddress}
-                  className="h-10 shrink-0 rounded-md border border-slate-200 bg-white px-4 text-[13px] font-semibold text-slate-600 transition hover:bg-slate-50"
-                >
-                  주소 찾기
-                </button>
+                <FieldError message={errors.baseAddress} />
+
+                <input
+                  ref={detailAddressRef}
+                  value={form.detailAddress || ""}
+                  onChange={(event) =>
+                    updateForm("detailAddress", event.target.value)
+                  }
+                  placeholder="상세 주소를 입력하세요"
+                  className={INPUT_CLASS_NAME}
+                />
+
+                <FieldError message={errors.detailAddress} />
               </div>
-
-              <FieldError message={errors.baseAddress} />
-
-              <input
-                value={form.detailAddress}
-                onChange={(event) =>
-                  updateForm("detailAddress", event.target.value)
-                }
-                placeholder="상세 주소를 입력하세요"
-                className={`${INPUT_CLASS_NAME} mt-2`}
-              />
             </div>
 
             <div className="grid gap-4 md:grid-cols-2">
@@ -284,7 +372,7 @@ export default function WarehouseFormModal({
                   />
 
                   <input
-                    value={form.manager}
+                    value={resolvedManager}
                     onChange={(event) =>
                       updateForm("manager", event.target.value)
                     }
@@ -304,7 +392,7 @@ export default function WarehouseFormModal({
                   />
 
                   <input
-                    value={form.phone}
+                    value={form.phone || ""}
                     onChange={(event) =>
                       updateForm("phone", event.target.value)
                     }

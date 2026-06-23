@@ -49,9 +49,9 @@ export const EMPTY_PURCHASE_ORDER_FORM = {
   supplierContact: "",
   orderManager: "김철수",
   orderedAt: "",
-  expectedInboundFrom: "",
-  expectedInboundTo: "",
-  warehouseId: "",
+  expectedReceiptFrom: "",
+  expectedReceiptTo: "",
+  warehouseCode: "",
   memo: "",
   status: "DRAFT",
 }
@@ -123,18 +123,28 @@ export function calculatePurchaseOrderSummary(items = []) {
 }
 
 export function createOrderItemFromRequestItem(item, previousItem = null) {
+  const targetId = item.requestItemId || item.id
+
   return {
-    id: previousItem?.id ?? `temp-${item.id}`,
-    requestItemId: item.id,
-    itemCode: item.itemCode,
-    itemName: item.itemName,
-    specification: item.specification,
-    requestedQuantity: Number(item.requestedQuantity ?? 0),
-    orderQuantity: Number(
-      previousItem?.orderQuantity ?? item.requestedQuantity ?? 0,
-    ),
-    unit: item.unit,
-    unitPrice: Number(previousItem?.unitPrice ?? item.defaultUnitPrice ?? 0),
+    id: targetId,
+    requestItemId: targetId,
+    productId: item.productId,
+    itemCode: item.itemCode || "-",
+    itemName: item.itemName || "이름 없음",
+    specification: item.specification || "-",
+    requestedQuantity: item.requestedQuantity || 0,
+    orderQuantity: previousItem
+      ? previousItem.orderQuantity
+      : item.requestQuantity > 0
+        ? item.requestQuantity
+        : 1,
+    unit: item.unit || "EA",
+    unitPrice: previousItem
+      ? previousItem.unitPrice
+      : item.estimatedUnitPrice > 0
+        ? item.estimatedUnitPrice
+        : 1000,
+    remark: item.remark || "",
   }
 }
 
@@ -157,9 +167,9 @@ export function createPurchaseOrderForm(detail = null) {
     supplierContact: detail.supplierContact ?? "",
     orderManager: detail.orderManager ?? "",
     orderedAt: detail.orderedAt ?? "",
-    expectedInboundFrom: detail.expectedInboundFrom ?? "",
-    expectedInboundTo: detail.expectedInboundTo ?? "",
-    warehouseId: String(detail.warehouseId ?? ""),
+    expectedReceiptFrom: detail.expectedReceiptFrom ?? "",
+    expectedReceiptTo: detail.expectedReceiptTo ?? "",
+    warehouseCode: String(detail.warehouseCode ?? ""),
     memo: detail.memo ?? "",
     status: detail.status ?? "DRAFT",
   }
@@ -180,14 +190,14 @@ export function validatePurchaseOrderForm(form, items) {
     errors.orderManager = "발주 담당자를 입력하세요."
   }
 
-  if (!form.expectedInboundFrom || !form.expectedInboundTo) {
-    errors.expectedInbound = "입고 예정일 범위를 입력하세요."
-  } else if (form.expectedInboundFrom > form.expectedInboundTo) {
-    errors.expectedInbound = "입고 예정일 범위를 확인하세요."
+  if (!form.expectedReceiptFrom || !form.expectedReceiptTo) {
+    errors.expectedReceipt = "입고 예정일 범위를 입력하세요."
+  } else if (form.expectedReceiptFrom > form.expectedReceiptTo) {
+    errors.expectedReceipt = "입고 예정일 범위를 확인하세요."
   }
 
-  if (!form.warehouseId) {
-    errors.warehouseId = "입고 창고를 선택하세요."
+  if (!form.warehouseCode) {
+    errors.warehouseCode = "입고 창고를 선택하세요."
   }
 
   if (!items.length) {

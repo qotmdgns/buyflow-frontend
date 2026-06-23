@@ -17,7 +17,6 @@ export default function PurchaseRequestManagement() {
     summary,
     requests,
     pagination,
-    pageSize,
     selectedIds,
     allCurrentRowsSelected,
     loading,
@@ -27,8 +26,8 @@ export default function PurchaseRequestManagement() {
     resetFilters,
     selectSummaryStatus,
     movePage,
-    changePageSize,
     exportRequests,
+    deleteRequest,
     toggleAllRows,
     toggleRow,
   } = usePurchaseRequestManagement()
@@ -40,6 +39,25 @@ export default function PurchaseRequestManagement() {
     } catch (error) {
       console.error("구매 요청 목록 다운로드 중 오류가 발생했습니다.", error)
       window.alert("구매 요청 목록을 다운로드하지 못했습니다.")
+    }
+  }
+
+  async function handleDeleteRequest(request) {
+    const confirmed = window.confirm(
+      `${request.requestNumber} 구매 요청을 삭제하시겠습니까?
+삭제 후 목록에서 숨김 처리됩니다.`,
+    )
+
+    if (!confirmed) {
+      return
+    }
+
+    try {
+      await deleteRequest(request.id)
+      window.alert("구매 요청을 삭제했습니다.")
+    } catch (error) {
+      console.error("구매 요청 삭제 중 오류가 발생했습니다.", error)
+      window.alert(error.message || "구매 요청 삭제에 실패했습니다.")
     }
   }
 
@@ -105,12 +123,11 @@ export default function PurchaseRequestManagement() {
             allCurrentRowsSelected={allCurrentRowsSelected}
             onToggleAll={toggleAllRows}
             onToggleRow={toggleRow}
+            onDeleteRequest={handleDeleteRequest}
           />
 
           <PurchaseRequestPagination
             pagination={pagination}
-            pageSize={pageSize}
-            onChangePageSize={changePageSize}
             onMovePage={movePage}
           />
         </div>

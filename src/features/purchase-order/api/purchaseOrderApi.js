@@ -13,7 +13,7 @@ import {
   getTodayString,
 } from "@/features/purchase-order/utils/purchaseOrderUtils"
 
-const USE_MOCK = process.env.NEXT_PUBLIC_USE_PURCHASE_ORDER_MOCK !== "false"
+const USE_MOCK = (process.env.NEXT_PUBLIC_USE_PURCHASE_ORDER_MOCK = false)
 
 let purchaseOrderDatabase = structuredClone(mockPurchaseOrders)
 
@@ -26,12 +26,67 @@ function clone(value) {
 }
 
 function createApiUrl(path) {
-  const baseUrl = (process.env.NEXT_PUBLIC_API_BASE_URL ?? "").replace(
-    /\/$/,
-    "",
-  )
+  const baseUrl = (
+    process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:8080"
+  ).replace(/\/$/, "")
+  const refinedPath = path.startsWith("/") ? path : `/${path}`
 
-  return `${baseUrl}${path}`
+  return `${baseUrl}${refinedPath}`
+}
+
+function toFrontendPurchaseOrder(data) {
+  if (!data) return null
+  return {
+    orderId: data.orderId,
+    id: data.orderId,
+    orderNumber:
+      data.orderNo || `PO-2026-${String(data.orderId).padStart(4, "0")}`,
+    requestId: data.requestId,
+    requestNumber: data.requestNo || "-",
+    requestTitle: data.requestTitle || "-",
+    supplierId: data.supplierId,
+    supplierName: data.supplierName || "-",
+
+    // 백엔드 userName을 프론트 그리드용 orderManager로 매핑
+    orderManager: data.userName || "-",
+    orderManagerPhone: data.userPhone || "-",
+
+    orderedAt: data.createdAt ? String(data.createdAt).slice(0, 10) : "-",
+    expectedReceiptFrom:
+      data.expectedReceiptFrom ||
+      data.expectedInboundFrom ||
+      (data.dueDate ? String(data.dueDate).slice(0, 10) : "-"),
+    expectedReceiptTo:
+      data.expectedReceiptTo ||
+      data.expectedInboundTo ||
+      (data.dueDate ? String(data.dueDate).slice(0, 10) : "-"),
+    warehouseCode: data.warehouseCode || "",
+    warehouseName: data.warehouseName || "일반 창고",
+    memo: data.memo || "",
+    status: data.orderStatus || "DRAFT",
+    items: data.items || [],
+  }
+}
+
+function normalizePurchaseOrderResponse(data) {
+  if (!data)
+    return {
+      items: [],
+      pagination: { page: 1, size: 10, totalElements: 0, totalPages: 1 },
+    }
+
+  const itemsArray = data.content || data.items || []
+
+  return {
+    /* ⭕ map 안에서 호출하던 구형 이름(toFrontendWarehouse)을 새 이름으로 싱크 교정! */
+    items: itemsArray.map(toFrontendPurchaseOrder),
+    pagination: {
+      page: (data.number ?? 0) + 1,
+      size: data.size ?? 10,
+      totalElements: data.totalElements ?? itemsArray.length,
+      totalPages: Math.max(data.totalPages ?? 1, 1),
+    },
+  }
 }
 
 function includesKeyword(value, keyword) {
@@ -47,7 +102,7 @@ function includesKeyword(value, keyword) {
 function nextId() {
   return (
     purchaseOrderDatabase.reduce(
-      (maximumId, order) => Math.max(maximumId, Number(order.id)),
+      (maximumId, order) => Math.max(maximumId, Number(order.orderId)),
       0,
     ) + 1
   )
@@ -81,7 +136,7 @@ function createRecord(payload, id, attachment, previousOrder = null) {
   )
 
   const warehouse = mockPurchaseOrderWarehouses.find(
-    (item) => item.id === Number(payload.warehouseId),
+    (item) => item.id === Number(payload.warehouseCode),
   )
 
   if (!request || !supplier || !warehouse) {
@@ -101,14 +156,14 @@ function createRecord(payload, id, attachment, previousOrder = null) {
     supplierName: supplier.name,
     supplierManagerName: supplier.managerName,
     supplierContact: supplier.contact,
-    orderManager: payload.orderManager.trim(),
-    orderedAt: previousOrder?.orderedAt ?? payload.orderedAt,
-    expectedInboundFrom: payload.expectedInboundFrom,
-    expectedInboundTo: payload.expectedInboundTo,
-    warehouseId: warehouse.id,
-    warehouseName: warehouse.name,
+    orderManager: payload.userName.trim(),
+    orderedAt: previousOrder?.createdBy ?? payload.createdBy,
+    expectedReceiptFrom: payload.expectedReceiptFrom,
+    expectedReceiptTo: payload.expectedReceiptTo,
+    warehouseCode: warehouse.warehouseCode,
+    warehouseName: warehouse.warehouseName,
     memo: payload.memo.trim(),
-    status: payload.status,
+    status: payload.orderStatus,
     cancelReason: previousOrder?.cancelReason ?? "",
     canceledAt: previousOrder?.canceledAt ?? "",
     attachments: attachment
@@ -125,9 +180,10 @@ function createRecord(payload, id, attachment, previousOrder = null) {
 export async function fetchPurchaseOrders(params = {}) {
   if (!USE_MOCK) {
     const query = new URLSearchParams(params)
-
     const response = await fetch(
-      createApiUrl(`/api/purchase-orders?${query.toString()}`),
+      createApiUrl(
+        `/api/orders` + (query.toString() ? `?${query.toString()}` : ""),
+      ),
       { cache: "no-store" },
     )
 
@@ -135,7 +191,7 @@ export async function fetchPurchaseOrders(params = {}) {
       throw new Error("발주 목록을 불러오지 못했습니다.")
     }
 
-    return response.json()
+    return normalizePurchaseOrderResponse(await response.json())
   }
 
   await wait(120)
@@ -182,10 +238,9 @@ export async function fetchPurchaseOrders(params = {}) {
 
 export async function fetchPurchaseOrderFilterOptions() {
   if (!USE_MOCK) {
-    const response = await fetch(
-      createApiUrl("/api/purchase-orders/filter-options"),
-      { cache: "no-store" },
-    )
+    const response = await fetch(createApiUrl("/api/orders/filter-options"), {
+      cache: "no-store",
+    })
 
     if (!response.ok) {
       throw new Error("발주 검색 조건을 불러오지 못했습니다.")
@@ -212,10 +267,9 @@ export async function fetchPurchaseOrderFilterOptions() {
 
 export async function fetchPurchaseOrderFormOptions() {
   if (!USE_MOCK) {
-    const response = await fetch(
-      createApiUrl("/api/purchase-orders/form-options"),
-      { cache: "no-store" },
-    )
+    const response = await fetch(createApiUrl("/api/orders/form-options"), {
+      cache: "no-store",
+    })
 
     if (!response.ok) {
       throw new Error("발주 등록 기준정보를 불러오지 못했습니다.")
@@ -234,16 +288,17 @@ export async function fetchPurchaseOrderFormOptions() {
 
 export async function fetchPurchaseOrderById(orderId) {
   if (!USE_MOCK) {
-    const response = await fetch(
-      createApiUrl(`/api/purchase-orders/${orderId}`),
-      { cache: "no-store" },
-    )
+    const response = await fetch(createApiUrl(`/api/orders/${orderId}`), {
+      cache: "no-store",
+    })
 
     if (!response.ok) {
       throw new Error("발주 상세 정보를 불러오지 못했습니다.")
     }
 
-    return response.json()
+    const rawData = await response.json()
+
+    return toFrontendPurchaseOrder(rawData)
   }
 
   await wait(100)
@@ -261,7 +316,7 @@ export async function fetchPurchaseOrderById(orderId) {
 
 export async function createPurchaseOrder(payload, attachment = null) {
   if (!USE_MOCK) {
-    const response = await fetch(createApiUrl("/api/purchase-orders"), {
+    const response = await fetch(createApiUrl("/api/orders"), {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload),
@@ -294,14 +349,11 @@ export async function createPurchaseOrder(payload, attachment = null) {
 
 export async function updatePurchaseOrder(orderId, payload, attachment = null) {
   if (!USE_MOCK) {
-    const response = await fetch(
-      createApiUrl(`/api/purchase-orders/${orderId}`),
-      {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      },
-    )
+    const response = await fetch(createApiUrl(`/api/orders/${orderId}`), {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    })
 
     if (!response.ok) {
       throw new Error("발주 정보를 수정하지 못했습니다.")
@@ -328,9 +380,9 @@ export async function updatePurchaseOrder(orderId, payload, attachment = null) {
     ? payload
     : {
         ...previousOrder,
-        expectedInboundFrom: payload.expectedInboundFrom,
-        expectedInboundTo: payload.expectedInboundTo,
-        warehouseId: payload.warehouseId,
+        expectedReceiptFrom: payload.expectedReceiptFrom,
+        expectedReceiptTo: payload.expectedReceiptTo,
+        warehouseCode: payload.warehouseCode,
         memo: payload.memo,
         status: previousOrder.status,
         items: previousOrder.items,
@@ -344,7 +396,7 @@ export async function updatePurchaseOrder(orderId, payload, attachment = null) {
   )
 
   purchaseOrderDatabase = purchaseOrderDatabase.map((order) =>
-    order.id === Number(orderId) ? updatedOrder : order,
+    order.orderId === Number(orderId) ? updatedOrder : order,
   )
 
   return clone(updatedOrder)
@@ -353,7 +405,7 @@ export async function updatePurchaseOrder(orderId, payload, attachment = null) {
 export async function cancelPurchaseOrder(orderId, cancelReason) {
   if (!USE_MOCK) {
     const response = await fetch(
-      createApiUrl(`/api/purchase-orders/${orderId}/cancel`),
+      createApiUrl(`/api/orders/${orderId}/cancel`),
       {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
@@ -390,7 +442,7 @@ export async function cancelPurchaseOrder(orderId, cancelReason) {
   }
 
   purchaseOrderDatabase = purchaseOrderDatabase.map((order) =>
-    order.id === Number(orderId) ? canceledOrder : order,
+    order.orderId === Number(orderId) ? canceledOrder : order,
   )
 
   return clone(canceledOrder)

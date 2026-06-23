@@ -39,11 +39,23 @@ function DateField({ label, required, ...inputProps }) {
 }
 
 export default function PurchaseRequestBasicForm({
-  form,
+  form = {},
   attachment,
-  onChange,
-  onAttachmentChange,
+  onChange = () => {},
+  onAttachmentChange = () => {},
 }) {
+  const safeForm = {
+    requestNumber: "",
+    requester: "",
+    department: "물류운영팀",
+    requestDate: "",
+    expectedDate: "",
+    title: "",
+    urgency: "일반",
+    reason: "",
+    ...form,
+  }
+
   return (
     <section className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
       <div className="mb-3 flex items-center gap-2">
@@ -57,16 +69,14 @@ export default function PurchaseRequestBasicForm({
       <div className="grid gap-3 md:grid-cols-2">
         <TextField
           label="요청 번호"
-          required
-          value={form.requestNumber}
-          onChange={(event) => onChange("requestNumber", event.target.value)}
-          placeholder="예) PR-2026-0001"
+          value={safeForm.requestNumber || "자동 생성"}
+          disabled
+          placeholder="승인 요청 시 자동 생성됩니다."
         />
-
         <TextField
           label="요청자"
           required
-          value={form.requester}
+          value={safeForm.requester}
           onChange={(event) => onChange("requester", event.target.value)}
           placeholder="요청자 이름을 입력해 주세요."
         />
@@ -75,7 +85,7 @@ export default function PurchaseRequestBasicForm({
           <FieldLabel required>요청 부서</FieldLabel>
 
           <select
-            value={form.department}
+            value={safeForm.department}
             onChange={(event) => onChange("department", event.target.value)}
             className={`${INPUT_CLASS_NAME} bg-white`}
           >
@@ -90,13 +100,13 @@ export default function PurchaseRequestBasicForm({
           <DateField
             label="요청일"
             required
-            value={form.requestDate}
+            value={safeForm.requestDate}
             onChange={(event) => onChange("requestDate", event.target.value)}
           />
 
           <DateField
             label="희망 입고일"
-            value={form.expectedDate}
+            value={safeForm.expectedDate}
             onChange={(event) => onChange("expectedDate", event.target.value)}
           />
         </div>
@@ -106,7 +116,7 @@ export default function PurchaseRequestBasicForm({
         <TextField
           label="요청 제목"
           required
-          value={form.title}
+          value={safeForm.title}
           onChange={(event) => onChange("title", event.target.value)}
           placeholder="예) 2분기 정기 설비 부품 구매 요청"
         />
@@ -123,7 +133,7 @@ export default function PurchaseRequestBasicForm({
                   type="radio"
                   name="urgency"
                   value={priority}
-                  checked={form.urgency === priority}
+                  checked={safeForm.urgency === priority}
                   onChange={(event) => onChange("urgency", event.target.value)}
                   className="h-3.5 w-3.5 accent-blue-600"
                 />
@@ -159,7 +169,7 @@ export default function PurchaseRequestBasicForm({
         <FieldLabel required>요청 사유</FieldLabel>
 
         <textarea
-          value={form.reason}
+          value={safeForm.reason}
           onChange={(event) => onChange("reason", event.target.value)}
           placeholder="구매가 필요한 구체적인 사유를 입력해주세요. (예: 노후 부품 교체 및 예비 부품 확보)"
           className="min-h-24 w-full resize-y rounded-md border border-slate-200 px-3 py-2.5 text-[14px] text-slate-600 outline-none transition placeholder:text-slate-300 focus:border-blue-400 focus:ring-2 focus:ring-blue-100"

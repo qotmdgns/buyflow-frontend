@@ -1,18 +1,123 @@
 "use client"
 
 import { useEffect, useMemo, useState } from "react"
-
 import {
   createPurchaseOrder,
   fetchPurchaseOrderFormOptions,
 } from "@/features/purchase-order/api/purchaseOrderApi"
-
 import {
   calculatePurchaseOrderSummary,
   createOrderItemFromRequestItem,
   createPurchaseOrderForm,
   validatePurchaseOrderForm,
 } from "@/features/purchase-order/utils/purchaseOrderUtils"
+
+function getNumberOrNull(value) {
+  const numberValue = Number(value)
+
+  if (!Number.isFinite(numberValue) || numberValue <= 0) {
+    return null
+  }
+
+  return numberValue
+}
+
+function getSupplierValue(supplier) {
+  if (typeof supplier === "string") {
+    return supplier
+  }
+
+  return (
+    supplier?.supplierId ??
+    supplier?.id ??
+    supplier?.supplierCode ??
+    supplier?.supplierName ??
+    supplier?.suppliername ??
+    supplier?.name ??
+    ""
+  )
+}
+
+function isSameSupplier(supplier, selectedValue) {
+  const normalizedSelectedValue = String(selectedValue ?? "").trim()
+
+  if (!normalizedSelectedValue) {
+    return false
+  }
+
+  if (typeof supplier === "string") {
+    return String(supplier).trim() === normalizedSelectedValue
+  }
+
+  const candidates = [
+    supplier?.supplierId,
+    supplier?.id,
+    supplier?.supplierCode,
+    supplier?.supplierName,
+    supplier?.suppliername,
+    supplier?.name,
+    supplier?.nameKo,
+  ]
+
+  return candidates.some(
+    (candidate) => String(candidate ?? "").trim() === normalizedSelectedValue,
+  )
+}
+
+function getSupplierName(supplier, fallbackValue = "") {
+  if (typeof supplier === "string") {
+    return supplier
+  }
+
+  return (
+    supplier?.supplierName ||
+    supplier?.suppliername ||
+    supplier?.name ||
+    supplier?.nameKo ||
+    supplier?.supplierCode ||
+    fallbackValue ||
+    ""
+  )
+}
+
+function getSupplierManager(supplier) {
+  if (!supplier || typeof supplier === "string") {
+    return "-"
+  }
+
+  return (
+    supplier.manager ||
+    supplier.managerName ||
+    supplier.supplierManager ||
+    supplier.contactManager ||
+    supplier.contactName ||
+    "-"
+  )
+}
+
+function getSupplierContact(supplier) {
+  if (!supplier || typeof supplier === "string") {
+    return "-"
+  }
+
+  return (
+    supplier.contact ||
+    supplier.supplierContact ||
+    supplier.phone ||
+    supplier.phoneNumber ||
+    supplier.tel ||
+    supplier.mobile ||
+    "-"
+  )
+}
+
+function getSupplierCode(supplier) {
+  if (!supplier || typeof supplier === "string") {
+    return "-"
+  }
+
+  return supplier.supplierCode || supplier.code || "-"
+}
 
 export default function usePurchaseOrderCreate() {
   const [options, setOptions] = useState({
@@ -32,20 +137,49 @@ export default function usePurchaseOrderCreate() {
   const [draftSelectedItemIds, setDraftSelectedItemIds] = useState(new Set())
 
   useEffect(() => {
-    fetchPurchaseOrderFormOptions().then((data) => {
-      setOptions(data)
+    let ignore = false
 
-      setForm((currentForm) => ({
-        ...currentForm,
-        orderNumber: data.nextOrderNumber,
-      }))
-    })
+    async function loadFormOptions() {
+      try {
+        const data = await fetchPurchaseOrderFormOptions()
+
+        if (ignore) return
+
+        const nextOptions = {
+          nextOrderNumber: data?.nextOrderNumber || data?.orderNo || "",
+          suppliers: data?.suppliers ?? [],
+          warehouses: data?.warehouses ?? [],
+          approvedPurchaseRequests: data?.approvedPurchaseRequests ?? [],
+        }
+
+        setOptions(nextOptions)
+
+        setForm((currentForm) => ({
+          ...currentForm,
+          orderNo:
+            data?.nextOrderNumber || data?.orderNo || currentForm.orderNo || "",
+        }))
+      } catch (error) {
+        if (!ignore) {
+          setSubmitError(
+            error.message || "발주 등록 옵션을 불러오지 못했습니다.",
+          )
+        }
+      }
+    }
+
+    loadFormOptions()
+
+    return () => {
+      ignore = true
+    }
   }, [])
 
   const selectedRequest = useMemo(
     () =>
       options.approvedPurchaseRequests.find(
-        (request) => request.id === Number(form.requestId),
+        (request) =>
+          Number(request.id || request.requestId) === Number(form.requestId),
       ) ?? null,
     [form.requestId, options.approvedPurchaseRequests],
   )
@@ -55,62 +189,154 @@ export default function usePurchaseOrderCreate() {
   const summary = useMemo(() => calculatePurchaseOrderSummary(items), [items])
 
   function updateForm(name, value) {
-    setForm((currentForm) => ({
-      ...currentForm,
-      [name]: value,
-    }))
+    setForm((currentForm) => {
+      const nextForm = {
+        ...currentForm,
+        [name]: value,
+      }
+
+      if (name === "warehouseName" || name === "warehouseCode") {
+        const foundWarehouse = options.warehouses.find(
+          (warehouse) =>
+            warehouse.warehouseName === value ||
+            warehouse.name === value ||
+            warehouse.warehouseCode === value ||
+            warehouse.code === value,
+        )
+
+        if (foundWarehouse) {
+          nextForm.warehouseCode =
+            foundWarehouse.warehouseCode || foundWarehouse.code || value
+          nextForm.warehouseName =
+            foundWarehouse.warehouseName ||
+            foundWarehouse.name ||
+            currentForm.warehouseName ||
+            ""
+        }
+      }
+
+      return nextForm
+    })
+
+    setErrors((currentErrors) => {
+      if (!currentErrors[name]) {
+        return currentErrors
+      }
+
+      const nextErrors = { ...currentErrors }
+      delete nextErrors[name]
+      return nextErrors
+    })
   }
 
-  function changeSupplier(supplierId) {
-    const supplier = options.suppliers.find(
-      (item) => item.id === Number(supplierId),
+  function changeSupplier(selectedSupplierValue) {
+    if (!selectedSupplierValue) {
+      setForm((currentForm) => ({
+        ...currentForm,
+        supplierId: "",
+        supplierCode: "",
+        supplierName: "",
+        manager: "",
+        supplierContact: "",
+      }))
+      return
+    }
+
+    const foundSupplier = options.suppliers.find((supplier) =>
+      isSameSupplier(supplier, selectedSupplierValue),
     )
+
+    const supplierValue = foundSupplier
+      ? getSupplierValue(foundSupplier)
+      : selectedSupplierValue
+
+    const supplierId =
+      getNumberOrNull(
+        typeof foundSupplier === "string"
+          ? selectedSupplierValue
+          : foundSupplier?.supplierId ||
+              foundSupplier?.id ||
+              selectedSupplierValue,
+      ) ?? selectedSupplierValue
+
+    const supplierName = foundSupplier
+      ? getSupplierName(foundSupplier, selectedSupplierValue)
+      : selectedSupplierValue
 
     setForm((currentForm) => ({
       ...currentForm,
-      supplierId: supplier ? String(supplier.id) : "",
-      supplierName: supplier?.name ?? "",
-      supplierManagerName: supplier?.managerName ?? "",
-      supplierContact: supplier?.contact ?? "",
+      supplierId,
+      supplierCode: getSupplierCode(foundSupplier),
+      supplierName,
+      manager: getSupplierManager(foundSupplier),
+      supplierContact: getSupplierContact(foundSupplier),
     }))
+
+    setErrors((currentErrors) => {
+      const nextErrors = { ...currentErrors }
+      delete nextErrors.supplierId
+      delete nextErrors.supplierName
+      delete nextErrors.supplierCode
+      return nextErrors
+    })
   }
 
   function applyPurchaseRequest(requestId) {
     const request = options.approvedPurchaseRequests.find(
-      (item) => item.id === Number(requestId),
+      (item) => Number(item.id || item.requestId) === Number(requestId),
     )
 
-    if (!request) {
-      return
-    }
+    if (!request) return
 
     setForm((currentForm) => ({
       ...currentForm,
-      requestId: String(request.id),
-      requestNumber: request.requestNumber,
-      requestTitle: request.title,
+      requestId: String(request.id || request.requestId),
+      requestNumber: request.requestNumber || request.requestNo || "",
+      requestTitle: request.requestTitle || request.title || "",
     }))
 
-    setItems(request.items.map((item) => createOrderItemFromRequestItem(item)))
+    setItems(
+      request.items?.map((item) => createOrderItemFromRequestItem(item)) || [],
+    )
+
+    setErrors((currentErrors) => {
+      const nextErrors = { ...currentErrors }
+      delete nextErrors.requestId
+      delete nextErrors.items
+      return nextErrors
+    })
   }
 
   function changeItemValue(requestItemId, name, value) {
     setItems((currentItems) =>
-      currentItems.map((item) =>
-        Number(item.requestItemId) === Number(requestItemId)
-          ? {
-              ...item,
-              [name]: Math.max(0, Number(value) || 0),
-            }
-          : item,
-      ),
+      currentItems.map((item) => {
+        const targetId = item.requestItemId || item.id
+        const matchId = Number(requestItemId)
+
+        if (Number(targetId) !== matchId) {
+          return item
+        }
+
+        const processedValue =
+          value === "" ? "" : Math.max(0, Number(value) || 0)
+
+        return {
+          ...item,
+          [name]: processedValue,
+          orderQuantity:
+            name === "orderQuantity" || name === "quantity"
+              ? processedValue
+              : item.orderQuantity,
+        }
+      }),
     )
   }
 
   function removeItem(requestItemId) {
     setItems((currentItems) =>
       currentItems.filter(
-        (item) => Number(item.requestItemId) !== Number(requestItemId),
+        (item) =>
+          Number(item.requestItemId || item.id) !== Number(requestItemId),
       ),
     )
   }
@@ -118,14 +344,10 @@ export default function usePurchaseOrderCreate() {
   function openItemModal() {
     if (!form.requestId) {
       window.alert("구매 요청 번호를 먼저 선택해 주세요.")
-
       return
     }
 
-    setDraftSelectedItemIds(
-      new Set(items.map((item) => Number(item.requestItemId))),
-    )
-
+    setDraftSelectedItemIds(new Set())
     setIsItemModalOpen(true)
   }
 
@@ -136,11 +358,12 @@ export default function usePurchaseOrderCreate() {
   function toggleDraftItem(requestItemId) {
     setDraftSelectedItemIds((currentIds) => {
       const nextIds = new Set(currentIds)
+      const nextId = Number(requestItemId)
 
-      if (nextIds.has(Number(requestItemId))) {
-        nextIds.delete(Number(requestItemId))
+      if (nextIds.has(nextId)) {
+        nextIds.delete(nextId)
       } else {
-        nextIds.add(Number(requestItemId))
+        nextIds.add(nextId)
       }
 
       return nextIds
@@ -149,15 +372,17 @@ export default function usePurchaseOrderCreate() {
 
   function confirmSelectedItems() {
     const previousItemMap = new Map(
-      items.map((item) => [Number(item.requestItemId), item]),
+      items.map((item) => [Number(item.requestItemId || item.id), item]),
     )
 
     const nextItems = availableRequestItems
-      .filter((item) => draftSelectedItemIds.has(Number(item.id)))
+      .filter((item) =>
+        draftSelectedItemIds.has(Number(item.requestItemId || item.id)),
+      )
       .map((item) =>
         createOrderItemFromRequestItem(
           item,
-          previousItemMap.get(Number(item.id)),
+          previousItemMap.get(Number(item.requestItemId || item.id)),
         ),
       )
 
@@ -170,8 +395,13 @@ export default function usePurchaseOrderCreate() {
   }
 
   async function saveOrder(status) {
+    const normalizedSupplierId =
+      getNumberOrNull(form.supplierId) ?? getNumberOrNull(form.supplierCode)
+
     const nextForm = {
       ...form,
+      supplierId:
+        normalizedSupplierId || form.supplierId || form.supplierName || "",
       status,
     }
 
@@ -182,21 +412,74 @@ export default function usePurchaseOrderCreate() {
       return null
     }
 
+    const totalAmountCalculated = items.reduce((acc, item) => {
+      const quantity = Number(item.orderQuantity || item.quantity || 0)
+      const unitPrice = Number(item.unitPrice || 0)
+
+      return acc + quantity * unitPrice * 1.1
+    }, 0)
+
+    const expectedReceiptFrom =
+      form.expectedReceiptFrom || form.expectedInboundFrom || ""
+
+    const expectedReceiptTo =
+      form.expectedReceiptTo || form.expectedInboundTo || ""
+
+    const payloadItems = items.map((item) => {
+      const quantity = Number(item.orderQuantity || item.quantity || 0)
+
+      return {
+        requestItemId: getNumberOrNull(item.requestItemId || item.id),
+        productId: getNumberOrNull(
+          item.productId || item.product?.productId || item.id,
+        ),
+        quantity,
+        orderQuantity: quantity,
+        unitPrice: Number(item.unitPrice || 0),
+      }
+    })
+
+    const bffRequestPayload = {
+      supplierId: normalizedSupplierId || 2,
+      supplierCode: form.supplierCode || "",
+      supplierName: form.supplierName || "",
+      supplierContact: form.supplierContact || "",
+      manager: form.manager || "-",
+
+      createdBy: Number(form.createdBy || form.userId || 5),
+
+      orderStatus: status,
+      status,
+      orderNo: form.orderNo || null,
+      orderNumber: form.orderNo || null,
+
+      requestId: getNumberOrNull(form.requestId),
+      requestNumber: form.requestNumber || "",
+      requestTitle: form.requestTitle || "",
+
+      dueDate: expectedReceiptTo ? `${expectedReceiptTo}T23:59:59` : null,
+
+      expectedReceiptFrom,
+      expectedReceiptTo,
+
+      expectedInboundFrom: expectedReceiptFrom,
+      expectedInboundTo: expectedReceiptTo,
+
+      warehouseCode: form.warehouseCode || "",
+      memo: form.memo || "",
+
+      totalAmount: Math.floor(totalAmountCalculated),
+
+      items: payloadItems,
+    }
+
     setSubmitting(true)
     setSubmitError("")
 
     try {
-      return await createPurchaseOrder(
-        {
-          ...nextForm,
-          items,
-          ...summary,
-        },
-        attachment,
-      )
+      return await createPurchaseOrder(bffRequestPayload, attachment)
     } catch (requestError) {
       setSubmitError(requestError.message || "발주를 등록하지 못했습니다.")
-
       return null
     } finally {
       setSubmitting(false)

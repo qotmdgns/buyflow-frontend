@@ -21,7 +21,7 @@ function TableMessage({ children, isError = false }) {
   return (
     <tr>
       <td
-        colSpan={11}
+        colSpan={10}
         className={`h-52 text-center text-[14px] ${
           isError ? "text-rose-500" : "text-slate-400"
         }`}
@@ -33,8 +33,6 @@ function TableMessage({ children, isError = false }) {
 }
 
 function ProductRow({ product, isSelected, onToggle, onDetail, onEdit }) {
-  const isLowStock = product.currentStock < product.safetyStock
-
   function openDetail() {
     onDetail(product)
   }
@@ -85,28 +83,24 @@ function ProductRow({ product, isSelected, onToggle, onDetail, onEdit }) {
         {product.code}
       </td>
 
-      <td className="min-w-[180px] px-3 py-2.5 font-medium text-slate-700">
-        {product.name}
+      <td className="px-3 py-2.5 font-medium text-slate-700">
+        <div className="break-words" title={product.name ?? ""}>
+          {product.name || "-"}
+        </div>
       </td>
 
       <td className="whitespace-nowrap px-3 py-2.5">{product.category}</td>
 
-      <td className="whitespace-nowrap px-3 py-2.5 text-slate-500">
-        {product.spec}
+      <td className="px-3 py-2.5 text-slate-500">
+        <div className="truncate" title={product.spec ?? ""}>
+          {product.spec || "-"}
+        </div>
       </td>
 
       <td className="whitespace-nowrap px-3 py-2.5">{product.unit}</td>
 
       <td className="whitespace-nowrap px-3 py-2.5 font-medium text-slate-700">
         {formatWon(product.unitPrice)}
-      </td>
-
-      <td
-        className={`whitespace-nowrap px-3 py-2.5 font-semibold ${
-          isLowStock ? "text-rose-500" : "text-slate-700"
-        }`}
-      >
-        {product.safetyStock}
       </td>
 
       <td className="whitespace-nowrap px-3 py-2.5">
@@ -182,7 +176,19 @@ export default function ProductTable({
 
   return (
     <div className="overflow-x-auto">
-      <table className="w-full min-w-[1240px] text-left text-[13px]">
+      <table className="w-full min-w-[1180px] table-fixed text-left text-[13px]">
+        <colgroup>
+          <col className="w-[44px]" />
+          <col className="w-[95px]" />
+          <col className="w-[220px]" />
+          <col className="w-[135px]" />
+          <col className="w-[360px]" />
+          <col className="w-[70px]" />
+          <col className="w-[120px]" />
+          <col className="w-[90px]" />
+          <col className="w-[100px]" />
+          <col className="w-[80px]" />
+        </colgroup>
         <thead className="bg-slate-50 text-slate-500">
           <tr>
             <th className="w-12 px-4 py-2.5">

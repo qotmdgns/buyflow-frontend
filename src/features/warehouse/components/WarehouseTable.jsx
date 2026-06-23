@@ -18,7 +18,7 @@ function TableMessage({ children, isError = false }) {
   return (
     <tr>
       <td
-        colSpan={7}
+        colSpan={WAREHOUSE_TABLE_HEADERS.length}
         className={`h-52 text-center text-[14px] ${
           isError ? "text-rose-500" : "text-slate-400"
         }`}
@@ -58,15 +58,25 @@ function WarehouseRow({ warehouse, onDetail }) {
         {warehouse.name}
       </td>
 
+      <td className="whitespace-nowrap px-3 py-2.5 text-slate-600">
+        {warehouse.zipcode || "-"}
+      </td>
+
       <td className="min-w-[250px] px-3 py-2.5 text-slate-600">
-        {warehouse.address}
+        {warehouse.baseAddress || warehouse.address || "-"}
+      </td>
+
+      <td className="min-w-[180px] px-3 py-2.5 text-slate-600">
+        {warehouse.detailAddress || "-"}
       </td>
 
       <td className="whitespace-nowrap px-3 py-2.5">
         <StatusBadge status={warehouse.activeStatus} />
       </td>
 
-      <td className="whitespace-nowrap px-3 py-2.5">{warehouse.manager}</td>
+      <td className="whitespace-nowrap px-3 py-2.5">
+        {warehouse.manager || warehouse.managerName || "-"}
+      </td>
 
       <td className="whitespace-nowrap px-3 py-2.5 text-slate-600">
         {warehouse.phone}
@@ -74,6 +84,10 @@ function WarehouseRow({ warehouse, onDetail }) {
 
       <td className="whitespace-nowrap px-3 py-2.5 text-slate-600">
         {warehouse.registeredAt}
+      </td>
+
+      <td className="whitespace-nowrap px-3 py-2.5 text-slate-600">
+        {warehouse.updatedAt}
       </td>
     </tr>
   )
@@ -109,7 +123,7 @@ export default function WarehouseTable({
 
   return (
     <div className="overflow-x-auto">
-      <table className="w-full min-w-[950px] text-left text-[13px]">
+      <table className="w-full min-w-[1200px] text-left text-[13px]">
         <thead className="bg-slate-50 text-slate-600">
           <tr>
             {WAREHOUSE_TABLE_HEADERS.map((heading) => (

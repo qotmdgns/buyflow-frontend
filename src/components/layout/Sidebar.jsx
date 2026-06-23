@@ -1,5 +1,6 @@
 "use client"
 
+import { useEffect, useState } from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import {
@@ -9,15 +10,15 @@ import {
   ClipboardList,
   History,
   LayoutDashboard,
-  LogIn,
-  LogOut,
   Package,
   PackageCheck,
   Settings,
   ShoppingCart,
-  UserRound,
+  LogIn,
   Warehouse,
 } from "lucide-react"
+import SidebarAccount from "@/features/auth/components/SidebarAccount"
+import { hasPermission } from "@/utils/permissions"
 
 const menuGroups = [
   {
@@ -38,20 +39,28 @@ const menuGroups = [
       { label: "구매 요청", href: "/purchase-requests", icon: ShoppingCart },
       { label: "승인 관리", href: "/approvals", icon: CheckSquare },
       { label: "발주 관리", href: "/purchase-orders", icon: ClipboardList },
-      { label: "입고 관리", href: "/inbounds", icon: LogIn },
-      { label: "검수 관리", href: "#", icon: PackageCheck },
+      { label: "입고 관리", href: "/receipts", icon: LogIn },
+      { label: "검수 관리", href: "/inspections", icon: PackageCheck },
     ],
   },
   {
     label: "재고 관리",
     items: [
-      { label: "재고 현황", href: "#", icon: Boxes },
-      { label: "재고 이력", href: "#", icon: History },
+      { label: "재고 현황", href: "/stock", icon: Boxes, exact: true },
+      { label: "재고 이력", href: "/stock/history", icon: History },
     ],
   },
   {
     label: "설정",
-    items: [{ label: "시스템 관리", href: "#", icon: Settings }],
+    items: [
+      {
+        label: "사용자 및 권한 관리",
+        href: "/system",
+        icon: Settings,
+        // 시스템 관리(사용자/권한) = ADMIN 전용. 둘 중 하나라도 있으면 노출.
+        requireAnyPermission: ["users.read", "roles.write"],
+      },
+    ],
   },
 ]
 
@@ -73,12 +82,38 @@ function Logo() {
 export default function Sidebar() {
   const pathname = usePathname()
 
+  // 세션 권한은 마운트 이후에 읽는다 (SSR 하이드레이션 불일치 방지)
+  const [ready, setReady] = useState(false)
+
+  useEffect(() => {
+    setReady(true)
+  }, [])
+
+  const canSee = (item) => {
+    if (!item.requireAnyPermission) {
+      return true
+    }
+
+    if (!ready) {
+      return false
+    }
+
+    return item.requireAnyPermission.some((permission) =>
+      hasPermission(permission),
+    )
+  }
+
+  // 권한 없는 항목 제거 + 항목이 모두 빠진 그룹은 라벨까지 숨김
+  const visibleGroups = menuGroups
+    .map((group) => ({ ...group, items: group.items.filter(canSee) }))
+    .filter((group) => group.items.length > 0)
+
   return (
     <aside className="fixed inset-y-0 left-0 z-30 hidden w-[220px] border-r border-slate-200 bg-white lg:flex lg:flex-col">
       <Logo />
 
       <nav className="flex-1 overflow-y-auto py-2">
-        {menuGroups.map((group, groupIndex) => (
+        {visibleGroups.map((group, groupIndex) => (
           <div
             key={`${group.label}-${groupIndex}`}
             className={groupIndex ? "mt-3" : ""}
@@ -90,10 +125,10 @@ export default function Sidebar() {
             )}
 
             <div className="space-y-0.5">
-              {group.items.map(({ label, href, icon: Icon }) => {
-                const active =
-                  href !== "#" &&
-                  (pathname === href || pathname.startsWith(`${href}/`))
+              {group.items.map(({ label, href, icon: Icon, exact = false }) => {
+                const active = exact
+                  ? pathname === href
+                  : pathname === href || pathname.startsWith(`${href}/`)
 
                 return (
                   <Link
@@ -116,21 +151,7 @@ export default function Sidebar() {
       </nav>
 
       <div className="border-t border-slate-200 p-3">
-        <div className="flex items-center gap-3 rounded-md p-2 hover:bg-slate-50">
-          <span className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-100 text-slate-500">
-            <UserRound size={16} />
-          </span>
-
-          <div className="min-w-0 flex-1">
-            <p className="truncate text-[13px] font-semibold text-slate-700">
-              김철수 대리
-            </p>
-
-            <p className="text-[12px] text-emerald-500">● 물류운영팀</p>
-          </div>
-
-          <LogOut size={14} className="text-slate-400" />
-        </div>
+        <SidebarAccount />
       </div>
     </aside>
   )

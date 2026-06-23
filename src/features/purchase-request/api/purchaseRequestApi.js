@@ -31,8 +31,8 @@ function filterMockPurchaseRequests(params = {}) {
     priority = "전체",
     requestedFrom = "",
     requestedTo = "",
-    desiredInboundFrom = "",
-    desiredInboundTo = "",
+    desiredReceiptFrom = "",
+    desiredReceiptTo = "",
   } = params
 
   return mockPurchaseRequests.filter((request) => {
@@ -57,10 +57,10 @@ function filterMockPurchaseRequests(params = {}) {
       requestedTo,
     )
 
-    const matchesDesiredInboundAt = isWithinRange(
-      request.desiredInboundAt,
-      desiredInboundFrom,
-      desiredInboundTo,
+    const matchesDesiredReceiptAt = isWithinRange(
+      request.desiredReceiptAt,
+      desiredReceiptFrom,
+      desiredReceiptTo,
     )
 
     return (
@@ -71,7 +71,7 @@ function filterMockPurchaseRequests(params = {}) {
       matchesStatus &&
       matchesPriority &&
       matchesRequestedAt &&
-      matchesDesiredInboundAt
+      matchesDesiredReceiptAt
     )
   })
 }
@@ -112,16 +112,47 @@ function getMockPurchaseRequestSummary() {
     approved: statusCounts["승인 완료"] ?? 0,
     rejected: statusCounts["반려"] ?? 0,
     ordered: statusCounts["발주 완료"] ?? 0,
+    canceled: statusCounts["요청 취소"] ?? 0,
+  }
+}
+
+function normalizePurchaseRequestListItem(item, index = 0) {
+  const rawPriority = item.priority ?? item.urgency ?? ""
+  const rawStatus = item.status ?? item.requestStatus ?? ""
+
+  return {
+    id: item.id ?? item.requestId ?? index + 1,
+    requestNumber: item.requestNumber ?? item.requestNo ?? "",
+    title: item.title ?? item.requestTitle ?? "",
+    requester: item.requester ?? item.requesterName ?? "-",
+    department: item.department ?? item.departmentName ?? "-",
+    requestedAt: item.requestedAt ?? item.requestDate ?? "",
+    desiredReceiptAt:
+      item.desiredReceiptAt ?? item.desiredInboundAt ?? item.expectedDate ?? "",
+    createdAt: item.createdAt ?? item.requestedAt ?? item.requestDate ?? "",
+    updatedAt: item.updatedAt ?? "",
+    itemCount: Number(item.itemCount ?? item.items?.length ?? 0),
+    totalAmount: Number(item.totalAmount ?? 0),
+    priority:
+      PURCHASE_REQUEST_PRIORITY_LABELS[rawPriority] ?? rawPriority ?? "일반",
+    status:
+      PURCHASE_REQUEST_STATUS_LABELS[rawStatus] ?? rawStatus ?? "승인 대기",
+    items: item.items ?? [],
   }
 }
 
 function normalizePurchaseRequestResponse(data) {
   if (Array.isArray(data.items) && data.pagination) {
-    return data
+    return {
+      ...data,
+      items: data.items.map(normalizePurchaseRequestListItem),
+    }
   }
 
+  const items = data.content ?? []
+
   return {
-    items: data.content ?? [],
+    items: items.map(normalizePurchaseRequestListItem),
     pagination: {
       page: (data.number ?? 0) + 1,
       size: data.size ?? 10,
@@ -133,6 +164,10 @@ function normalizePurchaseRequestResponse(data) {
 
 function createQueryString(params) {
   const query = new URLSearchParams()
+  const queryKeyMap = {
+    desiredReceiptFrom: "desiredInboundFrom",
+    desiredReceiptTo: "desiredInboundTo",
+  }
 
   Object.entries(params).forEach(([key, value]) => {
     if (
@@ -144,8 +179,11 @@ function createQueryString(params) {
       return
     }
 
-    // 화면은 1페이지부터 시작하지만 Spring Pageable은 0페이지부터 시작합니다.
-    query.set(key, key === "page" ? String(Number(value) - 1) : String(value))
+    const queryKey = queryKeyMap[key] ?? key
+    const queryValue =
+      key === "page" ? String(Math.max(Number(value) - 1, 0)) : String(value)
+
+    query.set(queryKey, queryValue)
   })
 
   return query.toString()
@@ -188,9 +226,20 @@ export async function fetchPurchaseRequestFilterOptions() {
   return response.json()
 }
 
+function normalizePurchaseRequestSummary(data = {}) {
+  return {
+    total: Number(data.total ?? 0),
+    pending: Number(data.pending ?? 0),
+    approved: Number(data.approved ?? 0),
+    rejected: Number(data.rejected ?? 0),
+    ordered: Number(data.ordered ?? 0),
+    canceled: Number(data.canceled ?? 0),
+  }
+}
+
 export async function fetchPurchaseRequestSummary() {
   if (USE_MOCK) {
-    return getMockPurchaseRequestSummary()
+    return normalizePurchaseRequestSummary(getMockPurchaseRequestSummary())
   }
 
   const response = await fetch(
@@ -202,15 +251,21 @@ export async function fetchPurchaseRequestSummary() {
     throw new Error("구매 요청 현황을 불러오지 못했습니다.")
   }
 
-  return response.json()
+  return normalizePurchaseRequestSummary(await response.json())
 }
 
 const PURCHASE_REQUEST_STATUS_LABELS = {
-  DRAFT: "임시 저장",
+  DRAFT: "승인 대기",
   PENDING: "승인 대기",
+  PENDING_APPROVAL: "승인 대기",
+  WAITING: "승인 대기",
+  REQUESTED: "승인 대기",
   APPROVED: "승인 완료",
   REJECTED: "반려",
   ORDERED: "발주 완료",
+  CANCELED: "요청 취소",
+  CANCELLED: "요청 취소",
+  CANCEL_REQUESTED: "요청 취소",
 }
 
 const PURCHASE_REQUEST_PRIORITY_LABELS = {
@@ -252,6 +307,7 @@ function normalizePurchaseRequestDetailResponse(data) {
 
     return {
       id: item.id ?? item.requestItemId ?? index + 1,
+      productId: item.productId ?? item.product?.productId ?? null,
       itemCode: item.itemCode ?? item.code ?? "",
       itemName: item.itemName ?? item.name ?? "",
       category: item.category ?? item.categoryName ?? "",
@@ -262,6 +318,9 @@ function normalizePurchaseRequestDetailResponse(data) {
       estimatedAmount: Number(
         item.estimatedAmount ?? estimatedUnitPrice * requestQuantity,
       ),
+      remark: item.remark ?? "",
+      createdAt: item.createdAt ?? "",
+      updatedAt: item.updatedAt ?? "",
     }
   })
 
@@ -285,7 +344,10 @@ function normalizePurchaseRequestDetailResponse(data) {
     requester: data.requester ?? data.requesterName ?? "",
     department: data.department ?? data.departmentName ?? "",
     requestedAt: data.requestedAt ?? data.requestDate ?? "",
-    desiredInboundAt: data.desiredInboundAt ?? data.expectedDate ?? "",
+    desiredReceiptAt:
+      data.desiredReceiptAt ?? data.desiredInboundAt ?? data.expectedDate ?? "",
+    createdAt: data.createdAt ?? data.requestedAt ?? data.requestDate ?? "",
+    updatedAt: data.updatedAt ?? "",
     priority:
       PURCHASE_REQUEST_PRIORITY_LABELS[data.priority] ?? data.priority ?? "",
     status: PURCHASE_REQUEST_STATUS_LABELS[data.status] ?? data.status ?? "",
@@ -329,4 +391,162 @@ export async function fetchPurchaseRequestDetail(requestId) {
   }
 
   return normalizePurchaseRequestDetailResponse(await response.json())
+}
+
+export async function createPurchaseRequest(payload) {
+  const response = await fetch(createApiUrl("/api/purchase-requests"), {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(payload),
+  })
+
+  if (!response.ok) {
+    throw new Error("구매 요청 등록에 실패했습니다.")
+  }
+
+  return normalizePurchaseRequestDetailResponse(await response.json())
+}
+
+async function readErrorMessage(response, fallbackMessage) {
+  try {
+    const data = await response.json()
+
+    return data.message ?? data.error ?? fallbackMessage
+  } catch {
+    return fallbackMessage
+  }
+}
+
+export async function updatePurchaseRequest(requestId, payload) {
+  if (!requestId) {
+    throw new Error("구매 요청 ID가 없습니다.")
+  }
+
+  const response = await fetch(
+    createApiUrl(`/api/purchase-requests/${encodeURIComponent(requestId)}`),
+    {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(payload),
+    },
+  )
+
+  if (response.status === 404) {
+    throw new Error("존재하지 않는 구매 요청입니다.")
+  }
+
+  if (response.status === 409) {
+    throw new Error(
+      await readErrorMessage(
+        response,
+        "현재 상태에서는 구매 요청을 수정할 수 없습니다.",
+      ),
+    )
+  }
+
+  if (!response.ok) {
+    throw new Error(
+      await readErrorMessage(response, "구매 요청 수정에 실패했습니다."),
+    )
+  }
+
+  return normalizePurchaseRequestDetailResponse(await response.json())
+}
+
+export async function cancelPurchaseRequest(requestId) {
+  if (!requestId) {
+    throw new Error("구매 요청 ID가 없습니다.")
+  }
+
+  const response = await fetch(
+    createApiUrl(
+      `/api/purchase-requests/${encodeURIComponent(requestId)}/cancel`,
+    ),
+    {
+      method: "PATCH",
+    },
+  )
+
+  if (response.status === 404) {
+    throw new Error("존재하지 않는 구매 요청입니다.")
+  }
+
+  if (response.status === 409) {
+    throw new Error(
+      await readErrorMessage(
+        response,
+        "승인 대기 상태의 구매 요청만 취소할 수 있습니다.",
+      ),
+    )
+  }
+
+  if (!response.ok) {
+    throw new Error(
+      await readErrorMessage(response, "구매 요청 취소에 실패했습니다."),
+    )
+  }
+
+  return normalizePurchaseRequestDetailResponse(await response.json())
+}
+
+export async function deletePurchaseRequest(requestId) {
+  if (!requestId) {
+    throw new Error("구매 요청 ID가 없습니다.")
+  }
+
+  const response = await fetch(
+    createApiUrl(`/api/purchase-requests/${encodeURIComponent(requestId)}`),
+    {
+      method: "DELETE",
+    },
+  )
+
+  if (response.status === 404) {
+    throw new Error("존재하지 않는 구매 요청입니다.")
+  }
+
+  if (response.status === 409) {
+    throw new Error(
+      await readErrorMessage(
+        response,
+        "현재 상태에서는 구매 요청을 삭제할 수 없습니다.",
+      ),
+    )
+  }
+
+  if (!response.ok) {
+    throw new Error(
+      await readErrorMessage(response, "구매 요청 삭제에 실패했습니다."),
+    )
+  }
+}
+
+export async function fetchPurchaseRequestProducts() {
+  const response = await fetch(createApiUrl("/api/products"), {
+    cache: "no-store",
+  })
+
+  if (!response.ok) {
+    throw new Error("품목 목록을 불러오지 못했습니다.")
+  }
+
+  const data = await response.json()
+  const products = Array.isArray(data)
+    ? data
+    : (data.items ?? data.content ?? [])
+
+  return products.map((product) => ({
+    id: product.productId,
+    code: product.productNo,
+    name: product.productName,
+    category: product.categoryName ?? "",
+    spec: product.spec ?? "",
+    unit: product.unit ?? "",
+    currentStock: product.currentStock ?? 0,
+    unitPrice: Number(product.unitPrice ?? 0),
+  }))
 }

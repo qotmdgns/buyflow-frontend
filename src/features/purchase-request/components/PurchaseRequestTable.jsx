@@ -2,7 +2,6 @@
 
 import Link from "next/link"
 import { useRouter } from "next/navigation"
-import { MoreHorizontal } from "lucide-react"
 
 import {
   formatWon,
@@ -10,11 +9,11 @@ import {
 } from "@/features/purchase-request/utils/purchaseRequestManagementUtils"
 
 const statusStyles = {
-  "임시 저장": "border-slate-200 bg-slate-50 text-slate-500",
   "승인 대기": "border-slate-200 bg-white text-slate-600",
   "승인 완료": "border-blue-200 bg-blue-50 text-blue-600",
   반려: "border-rose-200 bg-rose-50 text-rose-500",
   "발주 완료": "border-slate-200 bg-slate-50 text-slate-700",
+  "요청 취소": "border-slate-200 bg-slate-100 text-slate-500",
 }
 
 function PriorityBadge({ priority }) {
@@ -49,7 +48,7 @@ function TableMessage({ children, isError = false }) {
   return (
     <tr>
       <td
-        colSpan={12}
+        colSpan={13}
         className={`h-52 text-center text-[14px] ${
           isError ? "text-rose-500" : "text-slate-400"
         }`}
@@ -68,6 +67,7 @@ export default function PurchaseRequestTable({
   allCurrentRowsSelected,
   onToggleAll,
   onToggleRow,
+  onDeleteRequest,
 }) {
   const router = useRouter()
 
@@ -103,7 +103,7 @@ export default function PurchaseRequestTable({
 
   return (
     <div className="overflow-x-auto">
-      <table className="w-full min-w-[1400px] text-left text-[13px]">
+      <table className="w-full min-w-[1550px] text-left text-[13px]">
         <thead className="bg-slate-50 text-slate-500">
           <tr>
             <th className="w-10 px-3 py-2.5">
@@ -185,11 +185,15 @@ export default function PurchaseRequestTable({
                 </td>
 
                 <td className="whitespace-nowrap px-3 py-2.5">
-                  {request.requestedAt}
+                  {request.createdAt || request.requestedAt || "-"}
                 </td>
 
                 <td className="whitespace-nowrap px-3 py-2.5">
-                  {request.desiredInboundAt}
+                  {request.updatedAt || "-"}
+                </td>
+
+                <td className="whitespace-nowrap px-3 py-2.5">
+                  {request.desiredReceiptAt}
                 </td>
 
                 <td className="whitespace-nowrap px-3 py-2.5 text-right">
@@ -208,21 +212,39 @@ export default function PurchaseRequestTable({
                   <StatusBadge status={request.status} />
                 </td>
 
-                <td className="px-3 py-2.5 text-slate-400">
-                  <button
-                    type="button"
-                    onClick={(event) => {
-                      event.stopPropagation()
+                <td className="px-3 py-2.5">
+                  <div className="flex flex-wrap items-center gap-1.5">
+                    {["승인 대기", "반려"].includes(request.status) && (
+                      <Link
+                        href={`/purchase-requests/${request.id}/edit`}
+                        onClick={(event) => event.stopPropagation()}
+                        className="whitespace-nowrap rounded-md border border-slate-200 bg-white px-2.5 py-1.5 text-[12px] font-semibold text-slate-600 transition hover:bg-slate-50"
+                        aria-label={`${request.requestNumber} 수정`}
+                      >
+                        수정
+                      </Link>
+                    )}
 
-                      window.alert(
-                        `${request.requestNumber} 관리 메뉴는 추후 연결합니다.`,
-                      )
-                    }}
-                    className="flex h-7 w-7 items-center justify-center rounded-md hover:bg-slate-100 hover:text-slate-700"
-                    aria-label={`${request.requestNumber} 관리 메뉴`}
-                  >
-                    <MoreHorizontal size={14} />
-                  </button>
+                    {["승인 대기", "반려", "요청 취소"].includes(
+                      request.status,
+                    ) && (
+                      <button
+                        type="button"
+                        onClick={(event) => {
+                          event.stopPropagation()
+                          onDeleteRequest?.(request)
+                        }}
+                        className="whitespace-nowrap rounded-md border border-rose-200 bg-white px-2.5 py-1.5 text-[12px] font-semibold text-rose-500 transition hover:bg-rose-50"
+                        aria-label={`${request.requestNumber} 삭제`}
+                      >
+                        삭제
+                      </button>
+                    )}
+
+                    {!["승인 대기", "반려", "요청 취소"].includes(
+                      request.status,
+                    ) && <span className="text-[12px] text-slate-300">-</span>}
+                  </div>
                 </td>
               </tr>
             ))}

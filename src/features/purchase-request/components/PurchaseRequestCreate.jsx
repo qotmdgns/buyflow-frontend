@@ -20,6 +20,7 @@ export default function PurchaseRequestCreate() {
     draftSelectedIds,
     keyword,
     category,
+    categoryOptions,
     filteredProducts,
     updateForm,
     changeAttachment,
@@ -32,8 +33,8 @@ export default function PurchaseRequestCreate() {
     toggleAllFilteredProducts,
     confirmSelectedProducts,
     changeQuantity,
+    changeRemark,
     removeItem,
-    saveDraft,
     submitApproval,
   } = usePurchaseRequestCreate()
 
@@ -77,6 +78,7 @@ export default function PurchaseRequestCreate() {
         totalAmount={totalAmount}
         onOpenItemModal={openItemModal}
         onChangeQuantity={changeQuantity}
+        onChangeRemark={changeRemark}
         onRemoveItem={removeItem}
       />
 
@@ -96,14 +98,6 @@ export default function PurchaseRequestCreate() {
 
         <button
           type="button"
-          onClick={saveDraft}
-          className="h-10 rounded-md border border-blue-200 bg-white px-4 text-[13px] font-semibold text-blue-600 transition hover:bg-blue-50"
-        >
-          임시 저장
-        </button>
-
-        <button
-          type="button"
           onClick={submitApproval}
           disabled={isSubmitting}
           className="h-10 rounded-md bg-blue-600 px-4 text-[13px] font-semibold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-blue-300"
@@ -118,6 +112,7 @@ export default function PurchaseRequestCreate() {
           selectedIds={draftSelectedIds}
           keyword={keyword}
           category={category}
+          categoryOptions={categoryOptions}
           onKeywordChange={setKeyword}
           onCategoryChange={setCategory}
           onSearch={searchProducts}

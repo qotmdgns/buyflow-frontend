@@ -1,19 +1,21 @@
 "use client"
 
-import { useMemo, useRef, useState } from "react"
+import { useMemo, useRef, useState, useEffect } from "react"
+import { useRouter } from "next/navigation"
+import { useAuth } from "@/features/auth/context/AuthContext"
 import {
-  initialPurchaseRequestItems,
-  mockPurchaseRequestProducts,
-} from "@/features/purchase-request/data/mockPurchaseRequestData"
+  createPurchaseRequest,
+  fetchPurchaseRequestProducts,
+} from "@/features/purchase-request/api/purchaseRequestApi"
 import {
   calculateRequestTotal,
   getTodayString,
 } from "@/features/purchase-request/utils/purchaseRequestUtils"
 
 const INITIAL_FORM = {
-  requestNumber: "PR-2026-0001",
-  requester: "김철수",
-  department: "물류운영팀",
+  requestNumber: "",
+  requester: "",
+  department: "",
   requestDate: getTodayString(),
   expectedDate: "",
   title: "",
@@ -21,9 +23,24 @@ const INITIAL_FORM = {
   reason: "",
 }
 
+function getCurrentRequestorId(user) {
+  const rawUserId = user?.dbUserId ?? user?.userId
+  const requestorId = Number(rawUserId)
+
+  if (!Number.isFinite(requestorId) || requestorId <= 0) {
+    return null
+  }
+
+  return requestorId
+}
+
 export default function usePurchaseRequestCreate() {
+  const router = useRouter()
+  const { user, isAuthReady } = useAuth()
+
+  const [products, setProducts] = useState([])
   const [form, setForm] = useState(INITIAL_FORM)
-  const [requestItems, setRequestItems] = useState(initialPurchaseRequestItems)
+  const [requestItems, setRequestItems] = useState([])
   const [attachment, setAttachment] = useState(null)
 
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -37,6 +54,42 @@ export default function usePurchaseRequestCreate() {
   const [appliedKeyword, setAppliedKeyword] = useState("")
   const [appliedCategory, setAppliedCategory] = useState("전체 카테고리")
 
+  const requesterName = useMemo(() => {
+    if (!isAuthReady || !user) {
+      return ""
+    }
+
+    return user.name ?? user.userName ?? user.username ?? ""
+  }, [isAuthReady, user])
+
+  const departmentName = useMemo(() => {
+    if (!isAuthReady || !user) {
+      return ""
+    }
+
+    return user.department ?? user.departmentName ?? ""
+  }, [isAuthReady, user])
+
+  const formWithLoginUser = useMemo(
+    () => ({
+      ...form,
+      requester: form.requester || requesterName,
+      department: form.department || departmentName,
+    }),
+    [form, requesterName, departmentName],
+  )
+
+  useEffect(() => {
+    fetchPurchaseRequestProducts()
+      .then((data) => {
+        setProducts(Array.isArray(data) ? data : (data.items ?? []))
+      })
+      .catch((error) => {
+        console.error("품목 목록 조회 실패:", error)
+        window.alert("품목 목록을 불러오지 못했습니다.")
+      })
+  }, [])
+
   const totalAmount = useMemo(
     () => calculateRequestTotal(requestItems),
     [requestItems],
@@ -45,11 +98,15 @@ export default function usePurchaseRequestCreate() {
   const filteredProducts = useMemo(() => {
     const normalizedKeyword = appliedKeyword.trim().toLowerCase()
 
-    return mockPurchaseRequestProducts.filter((product) => {
+    return products.filter((product) => {
       const matchesKeyword =
         !normalizedKeyword ||
-        product.code.toLowerCase().includes(normalizedKeyword) ||
-        product.name.toLowerCase().includes(normalizedKeyword)
+        String(product.code ?? "")
+          .toLowerCase()
+          .includes(normalizedKeyword) ||
+        String(product.name ?? "")
+          .toLowerCase()
+          .includes(normalizedKeyword)
 
       const matchesCategory =
         appliedCategory === "전체 카테고리" ||
@@ -57,7 +114,15 @@ export default function usePurchaseRequestCreate() {
 
       return matchesKeyword && matchesCategory
     })
-  }, [appliedCategory, appliedKeyword])
+  }, [products, appliedCategory, appliedKeyword])
+
+  const categoryOptions = useMemo(() => {
+    const categories = products
+      .map((product) => product.category)
+      .filter(Boolean)
+
+    return ["전체 카테고리", ...Array.from(new Set(categories))]
+  }, [products])
 
   function updateForm(name, value) {
     setForm((currentForm) => ({
@@ -124,11 +189,16 @@ export default function usePurchaseRequestCreate() {
       requestItems.map((item) => [item.id, item.quantity]),
     )
 
-    const nextItems = mockPurchaseRequestProducts
+    const currentRemarkMap = new Map(
+      requestItems.map((item) => [item.id, item.remark ?? ""]),
+    )
+
+    const nextItems = products
       .filter((product) => draftSelectedIds.has(product.id))
       .map((product) => ({
         ...product,
         quantity: currentQuantityMap.get(product.id) ?? 1,
+        remark: currentRemarkMap.get(product.id) ?? "",
       }))
 
     setRequestItems(nextItems)
@@ -145,15 +215,17 @@ export default function usePurchaseRequestCreate() {
     )
   }
 
-  function removeItem(productId) {
+  function changeRemark(productId, remark) {
     setRequestItems((currentItems) =>
-      currentItems.filter((item) => item.id !== productId),
+      currentItems.map((item) =>
+        item.id === productId ? { ...item, remark } : item,
+      ),
     )
   }
 
-  function saveDraft() {
-    window.alert(
-      "구매 요청을 임시 저장했습니다. 백엔드 API는 추후 연결하면 됩니다.",
+  function removeItem(productId) {
+    setRequestItems((currentItems) =>
+      currentItems.filter((item) => item.id !== productId),
     )
   }
 
@@ -162,13 +234,23 @@ export default function usePurchaseRequestCreate() {
       return
     }
 
+    const requestorId = getCurrentRequestorId(user)
+
+    if (!requestorId) {
+      window.alert(
+        "로그인 사용자 ID를 확인할 수 없습니다. 다시 로그인해 주세요.",
+      )
+      return
+    }
+
+    const currentForm = formWithLoginUser
+
     const requiredFields = [
-      { label: "요청 번호", value: form.requestNumber },
-      { label: "요청자", value: form.requester },
-      { label: "요청 부서", value: form.department },
-      { label: "요청일", value: form.requestDate },
-      { label: "요청 제목", value: form.title },
-      { label: "요청 사유", value: form.reason },
+      { label: "요청자", value: currentForm.requester },
+      { label: "요청 부서", value: currentForm.department },
+      { label: "요청일", value: currentForm.requestDate },
+      { label: "요청 제목", value: currentForm.title },
+      { label: "요청 사유", value: currentForm.reason },
     ]
 
     const emptyField = requiredFields.find(
@@ -189,16 +271,29 @@ export default function usePurchaseRequestCreate() {
     setIsSubmitting(true)
 
     try {
-      // TODO: 백엔드 API 연동 시 실제 승인 요청 API를 호출합니다.
-      // await createPurchaseRequestApproval({
-      //   form,
-      //   requestItems,
-      //   attachment,
-      // })
+      const createdRequest = await createPurchaseRequest({
+        requestNumber: currentForm.requestNumber,
+        requestorId,
+        requester: currentForm.requester,
+        department: currentForm.department,
+        requestDate: currentForm.requestDate,
+        expectedDate: currentForm.expectedDate,
+        title: currentForm.title,
+        urgency: currentForm.urgency,
+        priority: currentForm.urgency === "긴급" ? "URGENT" : "NORMAL",
+        reason: currentForm.reason,
+        items: requestItems.map((item) => ({
+          productId: item.productId ?? item.id,
+          requestQuantity: Number(item.quantity ?? item.requestQuantity ?? 1),
+          estimatedUnitPrice: Number(
+            item.unitPrice ?? item.estimatedUnitPrice ?? 0,
+          ),
+          remark: item.remark ?? "",
+        })),
+      })
 
-      window.alert(
-        "승인 요청을 전송했습니다. 백엔드 API는 추후 연결하면 됩니다.",
-      )
+      window.alert("승인 요청을 전송했습니다.")
+      router.push(`/purchase-requests/${createdRequest.id}`)
     } catch (error) {
       console.error("승인 요청 처리 중 오류가 발생했습니다.", error)
       window.alert("승인 요청 처리에 실패했습니다. 다시 시도해 주세요.")
@@ -209,7 +304,7 @@ export default function usePurchaseRequestCreate() {
   }
 
   return {
-    form,
+    form: formWithLoginUser,
     attachment,
     requestItems,
     totalAmount,
@@ -218,6 +313,7 @@ export default function usePurchaseRequestCreate() {
     draftSelectedIds,
     keyword,
     category,
+    categoryOptions,
     filteredProducts,
     updateForm,
     changeAttachment,
@@ -230,8 +326,8 @@ export default function usePurchaseRequestCreate() {
     toggleAllFilteredProducts,
     confirmSelectedProducts,
     changeQuantity,
+    changeRemark,
     removeItem,
-    saveDraft,
     submitApproval,
   }
 }

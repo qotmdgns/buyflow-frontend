@@ -104,28 +104,85 @@ const breadcrumbRules = [
   },
 
   {
-    path: "/inbounds/new",
+    path: "/receipts/new",
     crumbs: [
-      { label: "구매 및 입고", href: "/inbounds" },
-      { label: "입고 관리", href: "/inbounds" },
+      { label: "구매 및 입고", href: "/receipts" },
+      { label: "입고 관리", href: "/receipts" },
       { label: "입고 등록" },
     ],
   },
   {
     matches: (pathname) =>
-      /^\/inbounds\/[^/]+$/.test(pathname) && pathname !== "/inbounds/new",
+      /^\/receipts\/[^/]+$/.test(pathname) && pathname !== "/receipts/new",
     crumbs: [
-      { label: "구매 및 입고", href: "/inbounds" },
-      { label: "입고 관리", href: "/inbounds" },
+      { label: "구매 및 입고", href: "/receipts" },
+      { label: "입고 관리", href: "/receipts" },
       { label: "입고 상세" },
     ],
   },
   {
-    path: "/inbounds",
+    path: "/receipts",
     crumbs: [
-      { label: "구매 및 입고", href: "/inbounds" },
+      { label: "구매 및 입고", href: "/receipts" },
       { label: "입고 관리" },
     ],
+  },
+
+  {
+    matches: (pathname) => /^\/inspections\/[^/]+\/register$/.test(pathname),
+
+    crumbs: [
+      {
+        label: "구매 및 입고",
+        href: "/inspections",
+      },
+      {
+        label: "검수 관리",
+        href: "/inspections",
+      },
+      {
+        label: "검수 등록",
+      },
+    ],
+  },
+  {
+    matches: (pathname) => /^\/inspections\/[^/]+$/.test(pathname),
+
+    crumbs: [
+      {
+        label: "구매 및 입고",
+        href: "/inspections",
+      },
+      {
+        label: "검수 관리",
+        href: "/inspections",
+      },
+      {
+        label: "검수 상세",
+      },
+    ],
+  },
+  {
+    path: "/inspections",
+
+    crumbs: [
+      {
+        label: "구매 및 입고",
+        href: "/inspections",
+      },
+      {
+        label: "검수 관리",
+      },
+    ],
+  },
+
+  {
+    path: "/stock/history",
+    crumbs: [{ label: "재고 관리", href: "/stock" }, { label: "재고 이력" }],
+  },
+  {
+    path: "/stock",
+    crumbs: [{ label: "재고 관리", href: "/stock" }, { label: "재고 현황" }],
   },
 ]
 
