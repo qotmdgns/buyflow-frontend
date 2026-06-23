@@ -5,6 +5,7 @@ import { useEffect, useMemo, useState } from "react"
 import {
   createReceiptReceipt,
   fetchReceiptFormOptions,
+  fetchReceiptByOrderId,
 } from "@/features/receipt/api/ReceiptApi"
 
 import {
@@ -99,27 +100,49 @@ export default function useReceiptCreate(initialReceiptId = "") {
     setErrors({})
   }
 
-  function changeOrder(receiptId) {
-    const order = options.eligibleOrders.find(
-      (item) => item.id === Number(receiptId),
-    )
+ function applySelectedOrder(order) {
+  setForm((currentForm) => ({
+    ...currentForm,
+    targetReceiptId: String(order.orderId),
+    orderNumber: order.orderNumber,
+    supplierName: order.supplierName,
+    warehouseName: order.warehouseName,
+  }))
 
-    if (!order) {
-      setForm((currentForm) => ({
-        ...currentForm,
-        targetReceiptId: "",
-        orderNumber: "",
-        supplierName: "",
-        warehouseName: "",
-      }))
+  setItems((order.items ?? []).map(createReceiptReceiptItem))
+  setErrors({})
+}
 
-      setItems([])
-      return
-    }
+async function changeOrder(receiptId) {
+  const order = options.eligibleOrders.find(
+    (item) => item.orderId === Number(receiptId),
+  )
 
-    applySelectedOrder(order)
+  if (!order) {
+    setForm((currentForm) => ({
+      ...currentForm,
+      targetReceiptId: "",
+      orderNumber: "",
+      supplierName: "",
+      warehouseName: "",
+    }))
+
+    setItems([])
+    return
   }
 
+  try {
+    const detail = await fetchReceiptByOrderId(order.orderId)
+
+    applySelectedOrder(detail)
+  } catch (error) {
+    console.error(error)
+
+    setSubmitError(
+      error.message || "입고 상세 정보를 불러오지 못했습니다.",
+    )
+  }
+}
   function updateForm(name, value) {
     setForm((currentForm) => ({
       ...currentForm,

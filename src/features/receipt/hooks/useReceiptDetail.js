@@ -17,6 +17,8 @@ export default function useReceiptDetail(
   const [reloadKey, setReloadKey] = useState(0)
 
   useEffect(() => {
+    console.log("mode =", mode)
+console.log("receiptId =", receiptId)
     let ignore = false
 
     async function loadReceipt() {
