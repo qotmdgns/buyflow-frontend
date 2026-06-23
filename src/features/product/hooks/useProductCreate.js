@@ -18,7 +18,7 @@ const INITIAL_FORM = {
   spec: "",
   unit: "",
   unitPrice: "",
-  origin: "",
+  origin: "KR",
   competingProduct: "",
   validStartDate: "",
   validEndDate: "",
