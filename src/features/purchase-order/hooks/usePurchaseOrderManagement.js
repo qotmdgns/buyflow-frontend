@@ -4,7 +4,6 @@ import { useEffect, useState } from "react"
 
 import {
   cancelPurchaseOrder,
-  fetchPurchaseOrderFilterOptions,
   fetchPurchaseOrders,
 } from "@/features/purchase-order/api/purchaseOrderApi"
 
@@ -25,8 +24,8 @@ export default function usePurchaseOrderManagement() {
   )
 
   const [filterOptions, setFilterOptions] = useState({
-    suppliers: ["전체 공급업체"],
-    statuses: ["전체"],
+    suppliers: [],
+    statuses: [],
   })
 
   const [orders, setOrders] = useState([])
@@ -46,7 +45,43 @@ export default function usePurchaseOrderManagement() {
   const detailState = usePurchaseOrderDetail(selectedOrderId)
 
   useEffect(() => {
-    fetchPurchaseOrderFilterOptions().then(setFilterOptions)
+    let ignore = false
+
+    async function loadFormOptions() {
+      try {
+        // 성공하는 URL로 바꿔보세요
+        const res = await fetch("http://localhost:8080/api/orders/form-options", {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          credentials: "include",
+        });
+
+        if (!res.ok) {
+          console.error("Status:", res.status);
+          throw new Error(`HTTP ${res.status}`);
+        }
+        
+        const response = await res.json();
+        console.log("✅ 성공적으로 받아옴:", response);
+
+        if (ignore) {
+          return
+        }
+
+        setFilterOptions({
+          suppliers: response.suppliers || [],
+          statuses: response.statuses || ["전체", "PENDING", "APPROVED", "CANCELLED"],
+        });
+      } catch (err) {
+        console.error("폼 옵션 로딩 실패:", err);
+      }
+    }
+
+    void loadFormOptions()
+
+    return () => { ignore = true; }
   }, [])
 
   useEffect(() => {
@@ -57,50 +92,44 @@ export default function usePurchaseOrderManagement() {
       setError("")
 
       try {
-        const data = await fetchPurchaseOrders({
+        const params = {
           ...appliedFilters,
-          page: pagination.page,
+          page: pagination.page - 1,
           size: pagination.size,
-        })
+        };
+
+        console.log("📤 [SEARCH] 최종 params:", params);
+
+        const data = await fetchPurchaseOrders(params);
 
         if (!ignore) {
-          // 🚀 [최종 지뢰 진압 완료]: 백엔드 자바 컨트롤러에서 사출해 준 
-          // PageResponse 표준 족보 주머니 이름인 'content' 또는 'items' 가드 매핑!
           const realContentList = data.content || data.items || data || [];
-          setOrders(realContentList)
+          setOrders(realContentList);
 
-          console.log("현재 page", pagination.page)
-          console.log("현재 size", pagination.size)
+          const newPagination = {
+            page: data.number !== undefined ? data.number + 1 : pagination.page,
+            size: data.size ?? data.pagination?.size ?? pagination.size,
+            totalElements: data.totalElements ?? data.pagination?.totalElements ?? realContentList.length,
+            totalPages: data.totalPages ?? data.pagination?.totalPages ?? 1,
+          };
 
-          // 페이징 객체 안전핀 가드레일 매핑
-          if (data.pagination) {
-            setPagination(data.pagination)
-          } else if (data.page) {
-            setPagination({
-              page: data.page,
-              size: data.size,
-              totalElements: data.totalElements,
-              totalPages: data.totalPages
-            })
-          }
+          console.log("🆕 새 pagination 적용:", newPagination);
+          setPagination(newPagination);
         }
       } catch (requestError) {
+        console.error("목록 로드 실패:", requestError);
         if (!ignore) {
-          setError(requestError.message || "발주 목록을 불러오지 못했습니다.")
+          setError(requestError.message || "발주 목록을 불러오지 못했습니다.");
         }
       } finally {
-        if (!ignore) {
-          setLoading(false)
-        }
+        if (!ignore) setLoading(false);
       }
     }
 
-    loadOrders()
+    loadOrders();
 
-    return () => {
-      ignore = true
-    }
-  }, [appliedFilters, pagination.page, pagination.size, refreshKey])
+    return () => { ignore = true; };
+  }, [appliedFilters, refreshKey, pagination.page, pagination.size]);
 
   function updateFilter(name, value) {
     setDraftFilters((currentFilters) => ({
@@ -126,18 +155,20 @@ export default function usePurchaseOrderManagement() {
   }
 
   function movePage(page) {
-    setPagination((currentPagination) => ({
-      ...currentPagination,
-      page,
-    }))
+    const newPage = Math.max(1, Math.min(page, pagination.totalPages || 1));
+    console.log(`🔄 movePage: ${pagination.page} → ${newPage}`);
+
+    setPagination(prev => ({ ...prev, page: newPage }));
+    setRefreshKey(k => k + 1);   // 강제 트리거
   }
 
   function changePageSize(size) {
-    setPagination((currentPagination) => ({
-      ...currentPagination,
+    setPagination(prev => ({
+      ...prev,
       page: 1,
-      size,
-    }))
+      size: Number(size),
+    }));
+    setRefreshKey(k => k + 1);
   }
 
   function openDetail(order) {

@@ -1,28 +1,28 @@
 "use client"
 
-import { useEffect, useState } from "react"
-import { Plus, ShieldCheck, UsersRound } from "lucide-react"
+import { ShieldCheck, UsersRound } from "lucide-react"
 import RolePermissionPanel from "./RolePermissionPanel"
 import SystemPagination from "./SystemPagination"
 import UserFormModal from "./UserFormModal"
 import UserSearchForm from "./UserSearchForm"
 import UserTable from "./UserTable"
 import useSystem from "../hooks/useSystem"
-import { hasPermission } from "@/utils/permissions"
+import { hasRole } from "@/utils/permissions"
+import useClientReady from "@/utils/useClientReady"
 
 export default function System() {
-  const management = useSystem()
-
-  // 세션 권한은 클라이언트 마운트 이후에 읽는다 (SSR 하이드레이션 불일치 방지)
-  const [access, setAccess] = useState({ users: false, roles: false, ready: false })
-
-  useEffect(() => {
-    setAccess({
-      users: hasPermission("users.read"),
-      roles: hasPermission("roles.write"),
-      ready: true,
-    })
-  }, [])
+  const ready = useClientReady()
+  const admin = ready && hasRole("ADMIN")
+  const teamManager = ready && hasRole("TEAM_MANAGER")
+  const access = {
+    admin,
+    teamManager,
+    users: admin || teamManager,
+    roles: admin,
+    ready,
+  }
+  const delegateOnly = access.teamManager && !access.admin
+  const management = useSystem({ delegateOnly })
 
   // 마운트 전에는 깜빡임 방지로 렌더하지 않는다
   if (!access.ready) {
@@ -110,14 +110,6 @@ export default function System() {
                 사용자 목록 · 총 {management.pagination.totalElements}건
               </span>
 
-              <button
-                type="button"
-                onClick={management.openUserCreate}
-                className="flex items-center gap-1 rounded-md bg-blue-600 px-3 py-2 text-[13px] font-semibold text-white"
-              >
-                <Plus size={14} />
-                신규 사용자 등록
-              </button>
             </div>
 
             <UserTable
@@ -125,6 +117,7 @@ export default function System() {
               loading={management.userLoading}
               error={management.userError}
               onEdit={management.openUserEdit}
+              onApprove={access.admin ? management.approveUser : null}
             />
 
             <SystemPagination
@@ -137,7 +130,7 @@ export default function System() {
         </>
       ) : (
         <RolePermissionPanel
-          roles={management.roles}
+          roles={management.permissionRoles}
           selectedRoleId={management.selectedRoleId}
           permissionGroups={management.permissionGroups}
           loading={management.permissionLoading}
@@ -156,6 +149,7 @@ export default function System() {
           mode={management.formMode}
           initialValue={management.editingUser}
           roles={management.roles}
+          delegateMode={delegateOnly}
           onClose={management.closeUserForm}
           onSubmit={management.saveUser}
         />

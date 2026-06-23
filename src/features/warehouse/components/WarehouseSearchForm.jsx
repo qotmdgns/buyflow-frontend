@@ -70,8 +70,8 @@ export default function WarehouseSearchForm({
           <FieldLabel>담당자</FieldLabel>
 
           <input
-            value={filters.manager}
-            onChange={(event) => onChange("manager", event.target.value)}
+            value={filters.managerName}
+            onChange={(event) => onChange("managerName", event.target.value)}
             placeholder="성명 입력"
             className={INPUT_CLASS_NAME}
           />
@@ -81,9 +81,9 @@ export default function WarehouseSearchForm({
           <FieldLabel>사용 여부</FieldLabel>
 
           <SelectField
-            value={filters.activeStatus}
-            options={filterOptions.activeStatuses}
-            onChange={(event) => onChange("activeStatus", event.target.value)}
+            value={filters.useYn}
+            options={filterOptions.useYn}
+            onChange={(event) => onChange("useYn", event.target.value)}
           />
         </label>
       </div>

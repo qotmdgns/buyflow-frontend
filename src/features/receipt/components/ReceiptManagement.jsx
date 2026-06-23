@@ -592,7 +592,7 @@ export default function ReceiptManagement() {
                     </td>
 
                     <td className="whitespace-nowrap px-3 py-3 text-center">
-  {console.log("LINK DATA", receipt.id, receipt.receiptId)}
+  
  <Link
   href={
     receipt.receiptId > 0

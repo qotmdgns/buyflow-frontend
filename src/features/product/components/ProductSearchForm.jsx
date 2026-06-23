@@ -84,6 +84,16 @@ export default function ProductSearchForm({
               onChange={(event) => onChange("unit", event.target.value)}
             />
           </label>
+
+          <label className="w-[220px] max-w-full">
+            <FieldLabel>사용 여부</FieldLabel>
+
+            <SelectField
+              value={filters.activeStatus}
+              options={filterOptions.activeStatuses}
+              onChange={(event) => onChange("activeStatus", event.target.value)}
+            />
+          </label>
         </div>
 
         <div className="flex items-center gap-2">

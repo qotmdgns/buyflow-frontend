@@ -17,14 +17,41 @@ function normalizeProductItem(product) {
     id: product.id ?? product.productId,
     code: product.code ?? product.productNo,
     name: product.name ?? product.productName,
-    category: product.category ?? product.categoryName,
+    category: product.category ?? product.categoryName ?? "",
+    spec: product.spec ?? product.specification ?? "",
+    unit: product.unit ?? "",
     manufacturer: product.manufacturer ?? product.companyName ?? "",
     description: product.description ?? "",
     unitPrice: product.unitPrice ?? 0,
     safetyStock: product.safetyStock ?? 0,
     currentStock: product.currentStock ?? 0,
     isActive: product.isActive ?? product.useYn !== "N",
-    registeredAt: product.registeredAt ?? "",
+    registeredAt: product.registeredAt ?? product.createdAt ?? "",
+  }
+}
+
+function withAllOption(values = []) {
+  const uniqueValues = Array.from(
+    new Set(
+      values
+        .filter(Boolean)
+        .map((value) => String(value).trim())
+        .filter(Boolean),
+    ),
+  )
+
+  return ["전체", ...uniqueValues.filter((value) => value !== "전체")]
+}
+
+function normalizeProductFilterOptions(data = {}) {
+  const rawData = data.data ?? data
+
+  return {
+    categories: withAllOption(
+      rawData.categories ?? rawData.categoryNames ?? [],
+    ),
+    units: withAllOption(rawData.units ?? []),
+    activeStatuses: rawData.activeStatuses ?? ["전체", "사용", "미사용"],
   }
 }
 
@@ -62,16 +89,42 @@ function normalizeProductResponse(data) {
 }
 
 function toProductRequestPayload(form) {
+  const isActive =
+    form.isActive !== undefined
+      ? form.isActive
+      : form.useYn
+        ? form.useYn !== "N"
+        : true
+
   return {
-    productNo: form.code?.trim(),
-    productName: form.name?.trim(),
-    categoryName: form.category,
-    spec: form.spec?.trim(),
-    unit: form.unit,
-    unitPrice: Math.max(0, Number(form.unitPrice) || 0),
-    companyName: form.manufacturer?.trim(),
-    isActive: form.isActive,
-    description: form.description?.trim(),
+    productNo: (form.code ?? form.productNo ?? "").trim(),
+    productName: (form.name ?? form.productName ?? "").trim(),
+
+    companyName: (form.companyName ?? form.manufacturer ?? "").trim(),
+    bizRegNo: (form.bizRegNo ?? "").trim(),
+
+    categoryName: form.category ?? form.categoryName ?? "",
+    parentCategory: (form.parentCategory ?? "").trim(),
+
+    spec: (form.spec ?? "").trim(),
+    unit: form.unit ?? "",
+
+    unitPrice:
+      form.unitPrice === "" ||
+      form.unitPrice === null ||
+      form.unitPrice === undefined
+        ? 0
+        : Math.max(0, Number(form.unitPrice) || 0),
+
+    origin: (form.origin ?? "").trim(),
+    description: (form.description ?? "").trim(),
+    competingProduct: form.competingProduct === "Y" ? "Y" : "N",
+
+    validStartDate: form.validStartDate || null,
+    validEndDate: form.validEndDate || null,
+
+    isActive,
+    useYn: isActive ? "Y" : "N",
   }
 }
 
@@ -167,7 +220,7 @@ export async function fetchProductFilterOptions() {
     throw new Error("품목 검색 조건을 불러오지 못했습니다.")
   }
 
-  return response.json()
+  return normalizeProductFilterOptions(await response.json())
 }
 
 export async function fetchProductById(productId) {

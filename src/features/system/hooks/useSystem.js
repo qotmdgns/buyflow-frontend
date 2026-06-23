@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react"
 import {
+  approveUser as requestApproveUser,
   createUser,
   fetchRolePermissions,
   fetchRoles,
@@ -16,7 +17,36 @@ import {
   DEFAULT_USER_PAGINATION,
 } from "@/features/system/utils/systemUtils"
 
-export default function useSystem() {
+function roleCodeOf(role) {
+  if (typeof role === "string" || typeof role === "number") {
+    return String(role).replace(/^ROLE_/, "")
+  }
+
+  return String(role?.id ?? role?.code ?? role?.roleCode ?? "").replace(
+    /^ROLE_/,
+    "",
+  )
+}
+
+function isPermissionManagedRole(role) {
+  return roleCodeOf(role) !== "TEAM_MANAGER"
+}
+
+function normalizedRoleIds(value) {
+  return [...new Set((value ?? []).filter(Boolean).map(roleCodeOf))].sort()
+}
+
+function isSameRoleSet(left, right) {
+  const leftRoles = normalizedRoleIds(left)
+  const rightRoles = normalizedRoleIds(right)
+
+  return (
+    leftRoles.length === rightRoles.length &&
+    leftRoles.every((roleId, index) => roleId === rightRoles[index])
+  )
+}
+
+export default function useSystem({ delegateOnly = false } = {}) {
   const [activeTab, setActiveTab] = useState("users")
 
   const [draftFilters, setDraftFilters] = useState(DEFAULT_USER_FILTERS)
@@ -58,8 +88,9 @@ export default function useSystem() {
         setFilterOptions(nextFilterOptions)
         setRoles(nextRoles)
 
-        if (nextRoles.length > 0) {
-          setSelectedRoleId(nextRoles[0].id)
+        const nextPermissionRoles = nextRoles.filter(isPermissionManagedRole)
+        if (nextPermissionRoles.length > 0) {
+          setSelectedRoleId(nextPermissionRoles[0].id)
         }
       } catch {
         if (!ignore) {
@@ -202,7 +233,15 @@ export default function useSystem() {
 
   async function saveUser(form) {
     if (formMode === "edit" && editingUser) {
-      await updateUser(editingUser.id, form)
+      const nextRoleIds = form.roleIds?.length ? form.roleIds : [form.roleId]
+      const currentRoleIds = editingUser.roleIds?.length
+        ? editingUser.roleIds
+        : [editingUser.roleId]
+
+      await updateUser(editingUser.id, form, {
+        delegateOnly,
+        skipRoles: isSameRoleSet(nextRoleIds, currentRoleIds),
+      })
     } else {
       await createUser(form)
       setPagination((current) => ({ ...current, page: 1 }))
@@ -214,6 +253,17 @@ export default function useSystem() {
     reloadRoles().catch(() => {
       // 사용자 저장은 완료되었으므로 인원 수 갱신 실패는 무시합니다.
     })
+  }
+
+  // 가입 승인 (PENDING → ACTIVE)
+  async function approveUser(user) {
+    try {
+      await requestApproveUser(user.id)
+      setUserRefreshKey((current) => current + 1)
+      reloadRoles().catch(() => {})
+    } catch (requestError) {
+      window.alert(requestError.message || "승인에 실패했습니다.")
+    }
   }
 
   function selectRole(roleId) {
@@ -283,6 +333,7 @@ export default function useSystem() {
     formMode,
     editingUser,
     roles,
+    permissionRoles: roles.filter(isPermissionManagedRole),
     selectedRoleId,
     permissionGroups,
     permissionLoading,
@@ -298,6 +349,7 @@ export default function useSystem() {
     openUserEdit,
     closeUserForm,
     saveUser,
+    approveUser,
     selectRole,
     togglePermission,
     savePermissions,

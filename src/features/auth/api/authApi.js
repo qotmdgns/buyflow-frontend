@@ -70,8 +70,8 @@ export function signup({ loginId, password, name, email, department, rank }) {
       password,
       userName: name?.trim(),
       email: email?.trim().toLowerCase(),
-      department: department?.trim(),
-      rank: rank?.trim(),
+      departmentName: department?.trim(), // department → departmentName
+      jobRank: rank?.trim(),              // rank → jobRank (직급)
     }),
   })
 }

@@ -8,13 +8,11 @@ import {
   Plus,
   RefreshCcw,
   Search,
+  Download,
 } from "lucide-react"
-
 import PurchaseOrderCancelModal from "@/features/purchase-order/components/PurchaseOrderCancelModal"
 import PurchaseOrderDetailModal from "@/features/purchase-order/components/PurchaseOrderDetailModal"
-
 import usePurchaseOrderManagement from "@/features/purchase-order/hooks/usePurchaseOrderManagement"
-
 import {
   formatWon,
   getPurchaseOrderStatusLabel,
@@ -26,7 +24,6 @@ const INPUT_CLASS_NAME =
 
 function StatusBadge({ status }) {
   const meta = getPurchaseOrderStatusMeta(status)
-
   return (
     <span
       className={`inline-flex rounded-full border px-2.5 py-1 text-[12px] font-semibold ${meta.badgeClassName}`}
@@ -67,8 +64,8 @@ function getRequestNumber(order) {
 }
 
 function getExpectedReceiptText(order) {
-  const from = order.expectedReceiptFrom || order.expectedInboundFrom || "-"
-  const to = order.expectedReceiptTo || order.expectedInboundTo || "-"
+  const from = order.expectedReceiptFrom || order.expectedReceiptFrom || "-"
+  const to = order.expectedReceiptTo || order.expectedReceiptTo || "-"
 
   return `${from} ~ ${to}`
 }
@@ -117,6 +114,7 @@ export default function PurchaseOrderManagement() {
     error,
     selectedOrderId,
     detailState,
+    changePageSize,
     cancelTarget,
     canceling,
     cancelError,
@@ -131,6 +129,49 @@ export default function PurchaseOrderManagement() {
     confirmCancel,
   } = usePurchaseOrderManagement()
 
+  async function handleDownload() {
+    try {
+      // 🚀 백엔드 엑셀 다운로드 API 주소 (환경에 맞게 포트/경로 조절)
+      // 만약 검색 필터(draftFilters) 조건까지 넘기고 싶다면 URL 뒤에 쿼리스트링(?status=... 등)을 붙여주시면 됩니다.
+      const excelApiUrl = "http://localhost:8080/api/orders/excel"; 
+
+      const response = await fetch(excelApiUrl, {
+        method: "GET",
+        // 만약 JWT 토큰 등 인증 헤더가 필요하다면 아래 주석을 풀고 넣어주세요.
+        // headers: {
+        //   "Authorization": `Bearer ${localStorage.getItem('token')}` 
+        // }
+      });
+
+      if (!response.ok) {
+        throw new Error("엑셀 파일을 생성하지 못했습니다.");
+      }
+
+      // 1. 서버에서 넘어온 바이너리 데이터(Excel)를 Blob 객체로 변환
+      const blob = await response.blob();
+
+      // 2. 브라우저 메모리에 가상의 다운로드 URL 생성
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      
+      link.href = url;
+      // 3. 다운로드될 파일명 강제 지정 (서버 헤더를 읽어와도 되지만 프론트에서 고정하는 것이 편합니다)
+      link.download = `발주 목록_${new Date().toISOString().slice(0,10).replace(/-/g,"")}.xlsx`;
+
+      // 4. 링크를 클릭한 것처럼 이벤트를 발생시켜 다운로드 실행
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+
+      // 5. 메모리 누수 방지를 위해 가상 URL 해제
+      window.URL.revokeObjectURL(url);
+
+    } catch (error) {
+      console.error("엑셀 다운로드 중 오류가 발생했습니다.", error);
+      window.alert("엑셀 파일을 다운로드하지 못했습니다.");
+    }
+  }
+
   function moveToEdit(order) {
     closeDetail()
     router.push(`/purchase-orders/${order.orderId}/edit`)
@@ -140,7 +181,6 @@ export default function PurchaseOrderManagement() {
     <div className="w-full">
       <header className="mb-3">
         <h1 className="text-[22px] font-bold text-slate-900">발주 관리</h1>
-
         <p className="mt-1 text-[13px] text-slate-400">
           공급업체에 전달한 발주 내역과 입고 진행 상태를 관리합니다.
         </p>
@@ -157,9 +197,9 @@ export default function PurchaseOrderManagement() {
             </span>
 
             <input
-              value={draftFilters.orderNumber}
+              value={draftFilters.orderNo}
               onChange={(event) =>
-                updateFilter("orderNumber", event.target.value)
+                updateFilter("orderNo", event.target.value)
               }
               placeholder="PO-YYYY-XXXX"
               className={INPUT_CLASS_NAME}
@@ -172,71 +212,70 @@ export default function PurchaseOrderManagement() {
             </span>
 
             <input
-              value={draftFilters.requestNumber}
+              value={draftFilters.requestNo}
               onChange={(event) =>
-                updateFilter("requestNumber", event.target.value)
+                updateFilter("requestNo", event.target.value)
               }
               placeholder="PR-YYYY-XXXX"
               className={INPUT_CLASS_NAME}
             />
           </label>
-
           <label>
             <span className="mb-1 block text-[13px] font-semibold text-slate-600">
               공급업체
             </span>
-
             <select
-              value={draftFilters.supplierName}
+              value={draftFilters.supplierName || ""}
               onChange={(event) =>
                 updateFilter("supplierName", event.target.value)
               }
               className={INPUT_CLASS_NAME}
             >
+              <option value="">전체</option>
+
               {(filterOptions?.suppliers ?? []).map((supplier) => (
-                <option key={supplier} value={supplier}>
-                  {supplier}
+                <option
+                  key={supplier.supplierId || supplier.supplierName}
+                  value={supplier.supplierName}
+                >
+                  {supplier.supplierName}
                 </option>
               ))}
             </select>
           </label>
-
           <label>
             <span className="mb-1 block text-[13px] font-semibold text-slate-600">
               발주 담당자
             </span>
 
             <input
-              value={draftFilters.orderManager}
+              value={draftFilters.userName}
               onChange={(event) =>
-                updateFilter("orderManager", event.target.value)
+                updateFilter("userName", event.target.value)
               }
               placeholder="담당자 이름 입력"
               className={INPUT_CLASS_NAME}
             />
           </label>
-
           <label>
             <span className="mb-1 block text-[13px] font-semibold text-slate-600">
               발주 상태
             </span>
-
             <select
-              value={draftFilters.status}
-              onChange={(event) => updateFilter("status", event.target.value)}
+              value={draftFilters.orderStatus}
+              onChange={(event) => updateFilter("orderStatus", event.target.value)}
               className={INPUT_CLASS_NAME}
             >
-              {(filterOptions?.statuses ?? []).map((status) => (
-                <option key={status} value={status}>
-                  {status === "전체"
-                    ? status
-                    : getPurchaseOrderStatusLabel(status)}
+              {(filterOptions?.statuses ?? []).map((orderStatus) => (
+                <option key={orderStatus} value={orderStatus}>
+                  {orderStatus === "전체"
+                    ? orderStatus
+                    : getPurchaseOrderStatusLabel(orderStatus)}
                 </option>
               ))}
             </select>
           </label>
         </div>
-
         <div className="mt-3 flex justify-end gap-2 border-t border-slate-100 pt-3">
           <button
             type="button"
@@ -256,17 +295,22 @@ export default function PurchaseOrderManagement() {
           </button>
         </div>
       </form>
-
       <section className="mt-3 overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm">
         <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 px-4 py-3">
           <div>
             <h2 className="text-[15px] font-bold text-slate-800">발주 목록</h2>
-
             <p className="mt-0.5 text-[13px] text-slate-400">
-              총 {pagination.totalElements}건
+              총 <span className="font-medium text-slate-700"> {pagination.totalElements}</span>건
             </p>
           </div>
-
+            <button
+              type="button"
+              onClick={handleDownload}
+              className="flex h-10 items-center gap-1.5 rounded-md border border-slate-200 bg-white px-3 text-[13px] font-semibold text-slate-500 transition hover:bg-slate-50"
+            >
+              <Download size={13} />
+              엑셀 다운로드
+            </button>
           <Link
             href="/purchase-orders/new"
             className="flex h-10 items-center gap-1.5 rounded-md bg-blue-600 px-4 text-[13px] font-semibold text-white transition hover:bg-blue-700"
@@ -327,35 +371,29 @@ export default function PurchaseOrderManagement() {
                     <td className="whitespace-nowrap px-3 py-3 font-semibold text-blue-600">
                       {order.orderNo || order.orderNumber || "-"}
                     </td>
-
                     <td className="whitespace-nowrap px-3 py-3">
-                      {getRequestNumber(order)}
+                      {order.requestNo && order.requestNo !== "-"
+                        ? order.requestNo
+                        : order.requestNumber || "-"}
                     </td>
-
                     <td className="whitespace-nowrap px-3 py-3 font-medium text-slate-700">
                       {order.supplierName || "-"}
                     </td>
-
                     <td className="whitespace-nowrap px-3 py-3">
                       {order.orderManager || order.userName || "-"}
                     </td>
-
                     <td className="whitespace-nowrap px-3 py-3">
                       {formatDate(order.orderedAt || order.createdAt)}
                     </td>
-
                     <td className="whitespace-nowrap px-3 py-3">
                       {getExpectedReceiptText(order)}
                     </td>
-
                     <td className="whitespace-nowrap px-3 py-3 text-right">
                       {getItemCount(order)}건
                     </td>
-
                     <td className="whitespace-nowrap px-3 py-3 text-right font-semibold text-slate-800">
                       {formatWon(getOrderTotalAmount(order))}
                     </td>
-
                     <td className="whitespace-nowrap px-3 py-3">
                       <StatusBadge status={order.orderStatus || order.status} />
                     </td>

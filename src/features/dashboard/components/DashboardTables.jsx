@@ -28,9 +28,15 @@ const LOW_STOCK_LIST_HREF = createQueryHref("/stock", {
 
 function StatusBadge({ status }) {
   const styles = {
+    "승인 완료": "bg-emerald-50 text-emerald-600",
+    "승인 대기": "bg-slate-100 text-slate-600",
+    반려: "bg-rose-50 text-rose-500",
+    "발주 완료": "bg-blue-50 text-blue-600",
+    "요청 취소": "bg-slate-100 text-slate-400",
+
+    // 혹시 공백 없는 값이 들어올 때도 대응
     승인완료: "bg-emerald-50 text-emerald-600",
     승인대기: "bg-slate-100 text-slate-600",
-    반려: "bg-rose-50 text-rose-500",
     발주완료: "bg-blue-50 text-blue-600",
     요청취소: "bg-slate-100 text-slate-400",
   }

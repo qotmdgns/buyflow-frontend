@@ -1,6 +1,7 @@
 "use client"
 
-import { Ban, Pencil, X } from "lucide-react"
+// 🚀 1. lucide-react에서 Paperclip(클립 모양 아이콘)을 추가로 불러옵니다.
+import { Ban, Pencil, X, Paperclip } from "lucide-react"
 
 import {
   canCancelPurchaseOrder,
@@ -33,6 +34,18 @@ export default function PurchaseOrderDetailModal({
 
   const currentStatus = order.orderStatus || order.status || "DRAFT"
   const statusMeta = getPurchaseOrderStatusMeta(currentStatus)
+  const computedTotalAmount =
+    order.items?.reduce((acc, item) => {
+      const qty = Number(item.quantity || 0)
+      const price = Number(item.unitPrice || 0)
+      return acc + qty * price
+    }, 0) || 0
+
+  // 부가세 10% 포함 연산 마감
+  const finalDetailAmount =
+    computedTotalAmount > 0
+      ? computedTotalAmount + Math.floor(computedTotalAmount * 0.1)
+      : order.totalAmount || 0
 
   return (
     <div className="fixed inset-0 z-[70] flex items-center justify-center bg-slate-900/45 px-4 py-6">
@@ -70,7 +83,9 @@ export default function PurchaseOrderDetailModal({
                 구매 요청 번호
               </dt>
               <dd className="font-medium text-slate-800">
-                {order.requestNo || order.requestNumber || "-"}
+                {order.requestNo && order.requestNo !== "-"
+                  ? order.requestNo
+                  : order.requestNumber || "-"}
               </dd>
             </div>
 
@@ -125,23 +140,48 @@ export default function PurchaseOrderDetailModal({
                 총 발주 금액
               </dt>
               <dd className="font-bold text-[16px] text-blue-600">
-                {formatWon(order.totalAmount)}
+                {formatWon(finalDetailAmount)}
               </dd>
             </div>
           </dl>
 
-          {order.memo && (
-            <div className="rounded-md border border-slate-100 bg-slate-50/50 px-4 py-2.5 mt-2">
-              <dt className="text-[12px] font-semibold text-slate-400 mb-1">
-                비고 / 특이사항
-              </dt>
-              <dd className="text-slate-700 whitespace-pre-wrap">
-                {order.memo}
-              </dd>
-            </div>
-          )}
+          {/* 기존 비고 영역 */}
+          <div className="rounded-md border border-slate-200 bg-slate-50 px-4 py-3 mt-3">
+            <h3 className="text-[12px] font-bold text-slate-600 mb-1.5">
+              {currentStatus === "CANCELED" ? "🚨 취소 사유" : "📌 비고"}
+            </h3>
+            <p className="text-[13px] text-slate-700 whitespace-pre-wrap leading-relaxed min-h-[20px]">
+              {order.memo && order.memo.trim() !== "" ? order.memo : "-"}
+            </p>
+          </div>
 
-          {error && <p className="text-rose-500 font-medium">{error}</p>}
+          {/* 🚀 2. 새롭게 추가된 첨부파일 영역 */}
+          <div className="rounded-md border border-slate-200 bg-slate-50 px-4 py-3 mt-3">
+            <h3 className="text-[12px] font-bold text-slate-600 mb-2 flex items-center gap-1.5">
+              <Paperclip size={14} className="text-slate-500" /> 첨부파일
+            </h3>
+            <div>
+              {order.attachmentId ? (
+                <a
+                  // TODO: 환경에 맞게 다운로드 API 엔드포인트 URL을 맞춰주세요!
+                  href={`http://localhost:8080/api/orders/attachments/download/${order.attachmentId}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 rounded-md border border-slate-200 bg-white px-3 py-2 text-[13px] font-medium text-blue-600 shadow-sm transition hover:bg-blue-50 hover:border-blue-300"
+                >
+                  <span className="underline decoration-dotted underline-offset-2">
+                    {order.attachmentName || "첨부파일 다운로드"}
+                  </span>
+                </a>
+              ) : (
+                <p className="text-[13px] text-slate-400 italic leading-relaxed">
+                  등록된 첨부파일이 없습니다.
+                </p>
+              )}
+            </div>
+          </div>
+
+          {error && <p className="text-rose-500 font-medium mt-3">{error}</p>}
         </div>
 
         <footer className="flex justify-between border-t bg-slate-50 px-5 py-3">
