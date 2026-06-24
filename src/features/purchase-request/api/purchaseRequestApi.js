@@ -304,7 +304,11 @@ function normalizePurchaseRequestDetailResponse(data) {
   const attachments = (data.attachments ?? data.files ?? []).map(
     (attachment, index) => ({
       id: attachment.id ?? attachment.attachmentId ?? index + 1,
-      fileName: attachment.fileName ?? attachment.originalFileName ?? "",
+      fileName:
+        attachment.fileName ??
+        attachment.originalFileName ??
+        attachment.originalName ??
+        "",
       downloadUrl: normalizeDownloadUrl(attachment.downloadUrl),
     }),
   )
@@ -402,16 +406,6 @@ export async function createPurchaseRequest(payload, attachment = null) {
   }
 }
 
-async function readErrorMessage(response, fallbackMessage) {
-  try {
-    const data = await response.json()
-
-    return data.message ?? data.error ?? fallbackMessage
-  } catch {
-    return fallbackMessage
-  }
-}
-
 function getApiErrorStatus(error) {
   return error?.status ?? error?.response?.status ?? error?.cause?.status
 }
@@ -438,33 +432,32 @@ export async function updatePurchaseRequest(
     throw new Error("구매 요청 ID가 없습니다.")
   }
 
-  const response = await fetch(
-    createApiUrl(`/api/purchase-requests/${encodeURIComponent(requestId)}`),
-    {
-      method: "PUT",
-      body: createPurchaseRequestFormData(payload, attachment),
-    },
-  )
-  if (response.status === 404) {
-    throw new Error("존재하지 않는 구매 요청입니다.")
-  }
-
-  if (response.status === 409) {
-    throw new Error(
-      await readErrorMessage(
-        response,
-        "현재 상태에서는 구매 요청을 수정할 수 없습니다.",
-      ),
+  try {
+    const data = await apiFetch(
+      `/api/purchase-requests/${encodeURIComponent(requestId)}`,
+      {
+        method: "PUT",
+        body: createPurchaseRequestFormData(payload, attachment),
+      },
     )
-  }
 
-  if (!response.ok) {
-    throw new Error(
-      await readErrorMessage(response, "구매 요청 수정에 실패했습니다."),
-    )
-  }
+    return normalizePurchaseRequestDetailResponse(data)
+  } catch (error) {
+    if (isApiErrorStatus(error, 404)) {
+      throw new Error("존재하지 않는 구매 요청입니다.")
+    }
 
-  return normalizePurchaseRequestDetailResponse(await response.json())
+    if (isApiErrorStatus(error, 409)) {
+      throw new Error(
+        getApiErrorMessage(
+          error,
+          "현재 상태에서는 구매 요청을 수정할 수 없습니다.",
+        ),
+      )
+    }
+
+    throw new Error(getApiErrorMessage(error, "구매 요청 수정에 실패했습니다."))
+  }
 }
 
 export async function cancelPurchaseRequest(requestId) {
@@ -472,35 +465,31 @@ export async function cancelPurchaseRequest(requestId) {
     throw new Error("구매 요청 ID가 없습니다.")
   }
 
-  const response = await fetch(
-    createApiUrl(
+  try {
+    const data = await apiFetch(
       `/api/purchase-requests/${encodeURIComponent(requestId)}/cancel`,
-    ),
-    {
-      method: "PATCH",
-    },
-  )
-
-  if (response.status === 404) {
-    throw new Error("존재하지 않는 구매 요청입니다.")
-  }
-
-  if (response.status === 409) {
-    throw new Error(
-      await readErrorMessage(
-        response,
-        "승인 대기 상태의 구매 요청만 취소할 수 있습니다.",
-      ),
+      {
+        method: "PATCH",
+      },
     )
-  }
 
-  if (!response.ok) {
-    throw new Error(
-      await readErrorMessage(response, "구매 요청 취소에 실패했습니다."),
-    )
-  }
+    return normalizePurchaseRequestDetailResponse(data)
+  } catch (error) {
+    if (isApiErrorStatus(error, 404)) {
+      throw new Error("존재하지 않는 구매 요청입니다.")
+    }
 
-  return normalizePurchaseRequestDetailResponse(await response.json())
+    if (isApiErrorStatus(error, 409)) {
+      throw new Error(
+        getApiErrorMessage(
+          error,
+          "승인 대기 상태의 구매 요청만 취소할 수 있습니다.",
+        ),
+      )
+    }
+
+    throw new Error(getApiErrorMessage(error, "구매 요청 취소에 실패했습니다."))
+  }
 }
 
 export async function deletePurchaseRequest(requestId) {
@@ -508,55 +497,55 @@ export async function deletePurchaseRequest(requestId) {
     throw new Error("구매 요청 ID가 없습니다.")
   }
 
-  const response = await fetch(
-    createApiUrl(`/api/purchase-requests/${encodeURIComponent(requestId)}`),
-    {
-      method: "DELETE",
-    },
-  )
-
-  if (response.status === 404) {
-    throw new Error("존재하지 않는 구매 요청입니다.")
-  }
-
-  if (response.status === 409) {
-    throw new Error(
-      await readErrorMessage(
-        response,
-        "현재 상태에서는 구매 요청을 삭제할 수 없습니다.",
-      ),
+  try {
+    return await apiFetch(
+      `/api/purchase-requests/${encodeURIComponent(requestId)}`,
+      {
+        method: "DELETE",
+      },
     )
-  }
+  } catch (error) {
+    if (isApiErrorStatus(error, 404)) {
+      throw new Error("존재하지 않는 구매 요청입니다.")
+    }
 
-  if (!response.ok) {
-    throw new Error(
-      await readErrorMessage(response, "구매 요청 삭제에 실패했습니다."),
-    )
+    if (isApiErrorStatus(error, 409)) {
+      throw new Error(
+        getApiErrorMessage(
+          error,
+          "현재 상태에서는 구매 요청을 삭제할 수 없습니다.",
+        ),
+      )
+    }
+
+    throw new Error(getApiErrorMessage(error, "구매 요청 삭제에 실패했습니다."))
   }
 }
 
 export async function fetchPurchaseRequestProducts() {
-  const response = await fetch(createApiUrl("/api/products"), {
-    cache: "no-store",
-  })
+  try {
+    const data = await apiFetch("/api/products", {
+      cache: "no-store",
+    })
 
-  if (!response.ok) {
-    throw new Error("품목 목록을 불러오지 못했습니다.")
+    const products = Array.isArray(data)
+      ? data
+      : (data.items ?? data.content ?? [])
+
+    return products.map((product) => ({
+      id: product.productId ?? product.id,
+      productId: product.productId ?? product.id,
+      code: product.productNo ?? product.itemCode ?? "",
+      name: product.productName ?? product.itemName ?? "",
+      category: product.categoryName ?? product.category ?? "",
+      spec: product.spec ?? product.specification ?? "",
+      unit: product.unit ?? "",
+      currentStock: Number(product.currentStock ?? product.stockQuantity ?? 0),
+      unitPrice: Number(product.unitPrice ?? product.price ?? 0),
+    }))
+  } catch (error) {
+    throw new Error(
+      getApiErrorMessage(error, "품목 목록을 불러오지 못했습니다."),
+    )
   }
-
-  const data = await response.json()
-  const products = Array.isArray(data)
-    ? data
-    : (data.items ?? data.content ?? [])
-
-  return products.map((product) => ({
-    id: product.productId,
-    code: product.productNo,
-    name: product.productName,
-    category: product.categoryName ?? "",
-    spec: product.spec ?? "",
-    unit: product.unit ?? "",
-    currentStock: product.currentStock ?? 0,
-    unitPrice: Number(product.unitPrice ?? 0),
-  }))
 }

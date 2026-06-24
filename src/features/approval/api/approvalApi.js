@@ -63,6 +63,10 @@ function updateMockDecision(approvalId, decision, comment) {
 }
 
 export async function fetchApprovalDetail(approvalId) {
+  if (!approvalId) {
+    throw new Error("승인 ID가 없습니다.")
+  }
+
   if (USE_MOCK) {
     await wait(150)
 
@@ -74,7 +78,11 @@ export async function fetchApprovalDetail(approvalId) {
   })
 }
 
-export async function approveApproval(approvalId, payload) {
+export async function approveApproval(approvalId, payload = {}) {
+  if (!approvalId) {
+    throw new Error("승인 ID가 없습니다.")
+  }
+
   if (USE_MOCK) {
     await wait(150)
 
@@ -87,7 +95,11 @@ export async function approveApproval(approvalId, payload) {
   })
 }
 
-export async function rejectApproval(approvalId, payload) {
+export async function rejectApproval(approvalId, payload = {}) {
+  if (!approvalId) {
+    throw new Error("승인 ID가 없습니다.")
+  }
+
   if (USE_MOCK) {
     await wait(150)
 
@@ -101,6 +113,10 @@ export async function rejectApproval(approvalId, payload) {
 }
 
 export async function requestApprovalCancellation(approvalId) {
+  if (!approvalId) {
+    throw new Error("승인 ID가 없습니다.")
+  }
+
   if (USE_MOCK) {
     await wait(150)
 
@@ -237,12 +253,15 @@ function createApprovalListQueryString(params = {}) {
   const query = new URLSearchParams()
 
   Object.entries(params).forEach(([key, value]) => {
-    if (value === "" || value === "전체") {
+    if (
+      value === undefined ||
+      value === null ||
+      value === "" ||
+      value === "전체"
+    ) {
       return
     }
 
-    // 프론트엔드는 1페이지부터 시작하고,
-    // Spring Pageable은 0페이지부터 시작합니다.
     query.set(
       key,
       key === "page" ? String(Math.max(Number(value) - 1, 0)) : String(value),
@@ -277,8 +296,7 @@ function normalizeApprovalListItem(item, index = 0) {
     requester: item.requester?.name ?? item.requester ?? "-",
     department: item.requestDepartment?.name ?? item.department ?? "-",
     requestedAt: item.requestedAt ?? item.requestDate ?? "",
-    desiredReceiptAt:
-      item.desiredReceiptAt ?? item.desiredReceiptAt ?? item.expectedDate ?? "",
+    desiredReceiptAt: item.desiredReceiptAt ?? item.expectedDate ?? "",
     createdAt: item.createdAt ?? item.requestedAt ?? item.requestDate ?? "",
     updatedAt: item.updatedAt ?? "",
     totalAmount: Number(item.totalAmount ?? 0),
@@ -321,10 +339,10 @@ export async function fetchApprovals(params = {}) {
     return getMockApprovals(params)
   }
 
-  const query = createApprovalListQueryString(params)
+  const queryString = createApprovalListQueryString(params)
+  const path = queryString ? `/api/approvals?${queryString}` : "/api/approvals"
 
-  const queryString = query ? `?${query}` : ""
-  const data = await apiFetch(`/api/approvals${queryString}`, {
+  const data = await apiFetch(path, {
     cache: "no-store",
   })
 
