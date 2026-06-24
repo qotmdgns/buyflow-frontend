@@ -1,3 +1,4 @@
+import { apiFetch, getApiUrl } from "@/lib/api/fetchClient"
 import {
   mockPurchaseRequests,
   purchaseRequestFilterOptions,
@@ -196,17 +197,15 @@ export async function fetchPurchaseRequests(params = {}) {
   }
 
   const query = createQueryString(params)
+  const path = query
+    ? `/api/purchase-requests?${query}`
+    : "/api/purchase-requests"
 
-  const response = await fetch(
-    `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/purchase-requests?${query}`,
-    { cache: "no-store" },
-  )
+  const data = await apiFetch(path, {
+    cache: "no-store",
+  })
 
-  if (!response.ok) {
-    throw new Error("구매 요청 목록을 불러오지 못했습니다.")
-  }
-
-  return normalizePurchaseRequestResponse(await response.json())
+  return normalizePurchaseRequestResponse(data)
 }
 
 export async function fetchPurchaseRequestFilterOptions() {
@@ -214,16 +213,9 @@ export async function fetchPurchaseRequestFilterOptions() {
     return purchaseRequestFilterOptions
   }
 
-  const response = await fetch(
-    `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/purchase-requests/filter-options`,
-    { cache: "no-store" },
-  )
-
-  if (!response.ok) {
-    throw new Error("구매 요청 검색 조건을 불러오지 못했습니다.")
-  }
-
-  return response.json()
+  return apiFetch("/api/purchase-requests/filter-options", {
+    cache: "no-store",
+  })
 }
 
 function normalizePurchaseRequestSummary(data = {}) {
@@ -242,16 +234,11 @@ export async function fetchPurchaseRequestSummary() {
     return normalizePurchaseRequestSummary(getMockPurchaseRequestSummary())
   }
 
-  const response = await fetch(
-    `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/purchase-requests/summary`,
-    { cache: "no-store" },
-  )
+  const data = await apiFetch("/api/purchase-requests/summary", {
+    cache: "no-store",
+  })
 
-  if (!response.ok) {
-    throw new Error("구매 요청 현황을 불러오지 못했습니다.")
-  }
-
-  return normalizePurchaseRequestSummary(await response.json())
+  return normalizePurchaseRequestSummary(data)
 }
 
 const PURCHASE_REQUEST_STATUS_LABELS = {
@@ -273,16 +260,6 @@ const PURCHASE_REQUEST_PRIORITY_LABELS = {
   URGENT: "긴급",
 }
 
-function createApiUrl(path) {
-  const baseUrl = (process.env.NEXT_PUBLIC_API_BASE_URL ?? "").replace(
-    /\/$/,
-    "",
-  )
-  const normalizedPath = path.startsWith("/") ? path : `/${path}`
-
-  return `${baseUrl}${normalizedPath}`
-}
-
 function normalizeDownloadUrl(downloadUrl) {
   if (!downloadUrl) {
     return ""
@@ -292,7 +269,7 @@ function normalizeDownloadUrl(downloadUrl) {
     return downloadUrl
   }
 
-  return createApiUrl(downloadUrl)
+  return getApiUrl(downloadUrl)
 }
 
 function normalizePurchaseRequestDetailResponse(data) {
@@ -375,22 +352,24 @@ export async function fetchPurchaseRequestDetail(requestId) {
     return normalizePurchaseRequestDetailResponse(mockDetail)
   }
 
-  const response = await fetch(
-    createApiUrl(`/api/purchase-requests/${encodeURIComponent(requestId)}`),
-    {
-      cache: "no-store",
-    },
-  )
+  try {
+    const data = await apiFetch(
+      `/api/purchase-requests/${encodeURIComponent(requestId)}`,
+      {
+        cache: "no-store",
+      },
+    )
 
-  if (response.status === 404) {
-    throw new Error("존재하지 않는 구매 요청입니다.")
+    return normalizePurchaseRequestDetailResponse(data)
+  } catch (error) {
+    if (isApiErrorStatus(error, 404)) {
+      throw new Error("존재하지 않는 구매 요청입니다.")
+    }
+
+    throw new Error(
+      getApiErrorMessage(error, "구매 요청 상세 정보를 불러오지 못했습니다."),
+    )
   }
-
-  if (!response.ok) {
-    throw new Error("구매 요청 상세 정보를 불러오지 못했습니다.")
-  }
-
-  return normalizePurchaseRequestDetailResponse(await response.json())
 }
 
 function createPurchaseRequestFormData(payload, attachment) {
@@ -411,18 +390,16 @@ function createPurchaseRequestFormData(payload, attachment) {
 }
 
 export async function createPurchaseRequest(payload, attachment = null) {
-  const response = await fetch(createApiUrl("/api/purchase-requests"), {
-    method: "POST",
-    body: createPurchaseRequestFormData(payload, attachment),
-  })
+  try {
+    const data = await apiFetch("/api/purchase-requests", {
+      method: "POST",
+      body: createPurchaseRequestFormData(payload, attachment),
+    })
 
-  if (!response.ok) {
-    throw new Error(
-      await readErrorMessage(response, "구매 요청 등록에 실패했습니다."),
-    )
+    return normalizePurchaseRequestDetailResponse(data)
+  } catch (error) {
+    throw new Error(getApiErrorMessage(error, "구매 요청 등록에 실패했습니다."))
   }
-
-  return normalizePurchaseRequestDetailResponse(await response.json())
 }
 
 async function readErrorMessage(response, fallbackMessage) {
@@ -433,6 +410,23 @@ async function readErrorMessage(response, fallbackMessage) {
   } catch {
     return fallbackMessage
   }
+}
+
+function getApiErrorStatus(error) {
+  return error?.status ?? error?.response?.status ?? error?.cause?.status
+}
+
+function getApiErrorMessage(error, fallbackMessage) {
+  return (
+    error?.data?.message ??
+    error?.data?.error ??
+    error?.message ??
+    fallbackMessage
+  )
+}
+
+function isApiErrorStatus(error, status) {
+  return getApiErrorStatus(error) === status
 }
 
 export async function updatePurchaseRequest(
