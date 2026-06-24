@@ -1,6 +1,6 @@
+import { apiFetch } from "@/lib/api/fetchClient"
 import { mockApprovalDetails } from "@/features/approval/data/mockApprovalData"
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL ?? ""
 const USE_MOCK = process.env.NEXT_PUBLIC_USE_APPROVAL_MOCK !== "false"
 
 const mockStore = new Map(
@@ -13,23 +13,6 @@ function wait(milliseconds) {
 
 function clone(value) {
   return JSON.parse(JSON.stringify(value))
-}
-
-async function parseResponse(response, fallbackMessage) {
-  if (!response.ok) {
-    let message = fallbackMessage
-
-    try {
-      const data = await response.json()
-      message = data.message || data.error || fallbackMessage
-    } catch {
-      // JSON 오류 응답이 아니면 기본 메시지를 사용합니다.
-    }
-
-    throw new Error(message)
-  }
-
-  return response.json()
 }
 
 function getMockApproval(approvalId) {
@@ -86,14 +69,9 @@ export async function fetchApprovalDetail(approvalId) {
     return clone(getMockApproval(approvalId))
   }
 
-  const response = await fetch(
-    `${API_BASE_URL}/api/approvals/${encodeURIComponent(approvalId)}`,
-    {
-      cache: "no-store",
-    },
-  )
-
-  return parseResponse(response, "승인 요청 정보를 불러오지 못했습니다.")
+  return apiFetch(`/api/approvals/${encodeURIComponent(approvalId)}`, {
+    cache: "no-store",
+  })
 }
 
 export async function approveApproval(approvalId, payload) {
@@ -103,18 +81,10 @@ export async function approveApproval(approvalId, payload) {
     return clone(updateMockDecision(approvalId, "APPROVE", payload.comment))
   }
 
-  const response = await fetch(
-    `${API_BASE_URL}/api/approvals/${encodeURIComponent(approvalId)}/approve`,
-    {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(payload),
-    },
-  )
-
-  return parseResponse(response, "승인 처리에 실패했습니다.")
+  return apiFetch(`/api/approvals/${encodeURIComponent(approvalId)}/approve`, {
+    method: "POST",
+    body: JSON.stringify(payload),
+  })
 }
 
 export async function rejectApproval(approvalId, payload) {
@@ -124,18 +94,10 @@ export async function rejectApproval(approvalId, payload) {
     return clone(updateMockDecision(approvalId, "REJECT", payload.comment))
   }
 
-  const response = await fetch(
-    `${API_BASE_URL}/api/approvals/${encodeURIComponent(approvalId)}/reject`,
-    {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(payload),
-    },
-  )
-
-  return parseResponse(response, "반려 처리에 실패했습니다.")
+  return apiFetch(`/api/approvals/${encodeURIComponent(approvalId)}/reject`, {
+    method: "POST",
+    body: JSON.stringify(payload),
+  })
 }
 
 export async function requestApprovalCancellation(approvalId) {
@@ -152,16 +114,12 @@ export async function requestApprovalCancellation(approvalId) {
     return approval
   }
 
-  const response = await fetch(
-    `${API_BASE_URL}/api/approvals/${encodeURIComponent(
-      approvalId,
-    )}/cancel-request`,
+  return apiFetch(
+    `/api/approvals/${encodeURIComponent(approvalId)}/cancel-request`,
     {
       method: "PATCH",
     },
   )
-
-  return parseResponse(response, "요청 취소 처리에 실패했습니다.")
 }
 
 function includesKeyword(value, keyword) {
@@ -365,13 +323,10 @@ export async function fetchApprovals(params = {}) {
 
   const query = createApprovalListQueryString(params)
 
-  const response = await fetch(`${API_BASE_URL}/api/approvals?${query}`, {
+  const queryString = query ? `?${query}` : ""
+  const data = await apiFetch(`/api/approvals${queryString}`, {
     cache: "no-store",
   })
 
-  if (!response.ok) {
-    throw new Error("승인 관리 목록을 불러오지 못했습니다.")
-  }
-
-  return normalizeApprovalListResponse(await response.json())
+  return normalizeApprovalListResponse(data)
 }

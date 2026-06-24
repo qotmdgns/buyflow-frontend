@@ -1,9 +1,5 @@
 import { apiFetch } from "@/lib/api/fetchClient"
-import {
-  mockRolePermissions,
-  mockRoles,
-  mockUsers,
-} from "@/features/system/data/mockSystemData"
+import { mockUsers } from "@/features/system/data/mockSystemData"
 
 // 읽기(목록/역할/필터)는 항상 실제 백엔드를 사용한다.
 // 쓰기(생성/수정)는 아직 백엔드 관리자 API가 정리되지 않아 mock 토글을 유지한다.
@@ -14,13 +10,6 @@ let userDatabase = mockUsers.map((user) => ({ ...user }))
 
 function wait(milliseconds) {
   return new Promise((resolve) => setTimeout(resolve, milliseconds))
-}
-
-function clonePermissionGroups(groups) {
-  return groups.map((group) => ({
-    ...group,
-    permissions: group.permissions.map((permission) => ({ ...permission })),
-  }))
 }
 
 const PERMISSION_GROUP_LABELS = {
@@ -64,18 +53,6 @@ function buildGroupsFromPermissionCatalog(permissions, permissionCodes) {
   })
 
   return Array.from(groups.values())
-}
-
-function buildGroupsFromCodes(permissionCodes) {
-  const codeSet = new Set(permissionCodes ?? [])
-
-  return clonePermissionGroups(mockRolePermissions.ROLE_ADMIN).map((group) => ({
-    ...group,
-    permissions: group.permissions.map((permission) => ({
-      ...permission,
-      checked: codeSet.has(permission.key),
-    })),
-  }))
 }
 
 function extractCheckedCodes(groups) {
@@ -460,18 +437,24 @@ export async function approveUser(userId) {
 // ─────────────────────────────────────────────────────────────
 export async function fetchRolePermissions(roleId) {
   const roleCode = roleId.replace(/^ROLE_/, "")
-  const permissionCodes = await apiFetch(`/api/roles/${roleCode}/permissions`, {
-    method: "GET",
-  })
-  return buildGroupsFromCodes(permissionCodes)
+  const [permissions, permissionCodes] = await Promise.all([
+    fetchPermissionCatalog(),
+    apiFetch(`/api/roles/${roleCode}/permissions`, {
+      method: "GET",
+    }),
+  ])
+
+  return buildGroupsFromPermissionCatalog(permissions, permissionCodes)
 }
 
 export async function updateRolePermissions(roleId, groups) {
   const roleCode = roleId.replace(/^ROLE_/, "")
+  const permissions = await fetchPermissionCatalog()
   const permissionCodes = extractCheckedCodes(groups)
   const savedCodes = await apiFetch(`/api/roles/${roleCode}/permissions`, {
     method: "PUT",
     body: JSON.stringify({ permissionCodes }),
   })
-  return buildGroupsFromCodes(savedCodes)
+
+  return buildGroupsFromPermissionCatalog(permissions, savedCodes)
 }
