@@ -33,7 +33,7 @@ function DetailItem({ label, value, icon: Icon, fullWidth = false }) {
 
       <div className="mt-1 flex min-h-10 items-center gap-2 rounded-md border border-slate-200 bg-slate-50 px-3 py-2 text-[13px] text-slate-700">
         {Icon && <Icon size={14} className="shrink-0 text-slate-400" />}
-        <span>{value || "-"}</span>
+        <span>{value}</span>
       </div>
     </div>
   )
@@ -159,7 +159,7 @@ export default function WarehouseDetailModal({
 
             <DetailItem label="수정일" value={warehouse.updatedAt} />
 
-            <DetailItem label="비고" value={warehouse.memo} fullWidth />
+            <DetailItem label="비고" value={warehouse.memo || "등록된 내용이 없습니다."} fullWidth />
           </div>
         </div>
 
