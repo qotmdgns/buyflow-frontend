@@ -48,14 +48,14 @@ const [filterOptions, setFilterOptions] =
     if (!ignore) {
       setFilterOptions({
         ...data,
-        movementTypes: [
-          { value: "전체", label: "전체" },
-          { value: "INBOUND", label: "입고" },
-          { value: "UPDATE", label: "입고 수정" },
-          { value: "DELETE", label: "입고 삭제" },
-          { value: "CANCEL", label: "입고 취소" },
-        ],
-      })
+movementTypes: [
+  { value: "전체", label: "전체" },
+  { value: "INBOUND", label: "입고" },
+  { value: "INSPECTION_ADJUST", label: "검수 조정" },
+  { value: "UPDATE", label: "입고 수정" },
+  { value: "DELETE", label: "입고 삭제" },
+  { value: "CANCEL", label: "입고 취소" },
+],      })
     }
   })
 
