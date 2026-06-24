@@ -112,22 +112,6 @@ export default function PurchaseOrderForm({
   confirmSelectedItems,
 }) {
 
-// ==================== 디버깅 useEffect ====================
-  useEffect(() => {
-    console.log("=== [FORM] 받은 items ===", items)
-    console.log("=== [FORM] items 길이 ===", items?.length ?? 0)
-  }, [items])
-
-  useEffect(() => {
-    console.log("=== [FORM] editableCoreFields ===", editableCoreFields)
-    console.log("=== [FORM] editable ===", editable)
-  }, [editable, editableCoreFields])
-
-  useEffect(() => {
-  console.log("=== [FORM] editableCoreFields 현재 값 ===", editableCoreFields)
-}, [editableCoreFields])
-  // =======================================================
-
   const isEditMode = mode === "edit"
 
   const approvedPurchaseRequests = options?.approvedPurchaseRequests ?? []
