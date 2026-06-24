@@ -10,15 +10,15 @@ export default function ReceiptCreate({ initialReceiptId = "" }) {
   const receipt = useReceiptCreate(initialReceiptId)
 
   async function saveReceipt() {
-    const result = await receipt.saveReceipt()
+  const result = await receipt.saveReceipt()
 
-    if (!result) {
-      return
-    }
-
-    window.alert(`${result.latestReceipt.receiptNumber} 입고를 등록했습니다.`)
-    router.push(`/receipts/${result.id}`)
+  if (!result) {
+    return
   }
+
+  window.alert("입고가 등록되었습니다.")
+  router.push("/receipts")
+}
 
   return (
     <ReceiptForm

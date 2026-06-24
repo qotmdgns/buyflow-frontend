@@ -57,17 +57,30 @@ function SelectField({
 }
 
 function MovementBadge({ type }) {
+  const labels = {
+    INBOUND: "입고",
+    INSPECTION_ADJUST: "검수 조정",
+    UPDATE: "입고 수정",
+    DELETE: "입고 삭제",
+    CANCEL: "입고 취소",
+  }
+
   const styles = {
-    입고: "border-blue-200 bg-blue-50 text-blue-600",
-    "재고 조정 증가": "border-emerald-200 bg-emerald-50 text-emerald-600",
-    "재고 조정 감소": "border-rose-200 bg-rose-50 text-rose-500",
+    INBOUND: "border-blue-200 bg-blue-50 text-blue-600",
+    INSPECTION_ADJUST:
+      "border-emerald-200 bg-emerald-50 text-emerald-600",
+    UPDATE: "border-amber-200 bg-amber-50 text-amber-600",
+    DELETE: "border-rose-200 bg-rose-50 text-rose-500",
+    CANCEL: "border-slate-200 bg-slate-50 text-slate-500",
   }
 
   return (
     <span
-      className={`inline-flex rounded-full border px-2 py-1 text-[12px] font-semibold ${styles[type]}`}
+      className={`inline-flex rounded-full border px-2 py-1 text-[12px] font-semibold ${
+        styles[type] ?? "border-slate-200 bg-slate-50 text-slate-500"
+      }`}
     >
-      {type}
+      {labels[type] ?? type}
     </span>
   )
 }
@@ -260,7 +273,7 @@ export default function StockHistoryManagement({ initialFilters }) {
   !error &&
   histories.map((history) => (
     <tr
-      key={history.id}
+      key={history.historyId}
       className="border-t border-slate-100 text-slate-600"
     >
       <td className="whitespace-nowrap px-3 py-3">
