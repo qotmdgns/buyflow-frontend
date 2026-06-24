@@ -105,12 +105,6 @@ export default function StockStatusManagement({ initialFilters = {} }) {
         </p>
       </header>
 
-      <StockSummaryCards
-        summary={summary}
-        selectedStatus={appliedFilters.stockStatus}
-        onSelectStatus={selectSummaryStatus}
-      />
-
       <form
         onSubmit={searchStocks}
         className="mt-3 rounded-lg border border-slate-200 bg-white p-3 shadow-sm"
@@ -193,6 +187,14 @@ export default function StockStatusManagement({ initialFilters = {} }) {
         </div>
       </form>
 
+      <div className="mt-3">
+        <StockSummaryCards
+          summary={summary}
+          selectedStatus={appliedFilters.stockStatus}
+          onSelectStatus={selectSummaryStatus}
+        />
+      </div>
+
       <section className="mt-3 overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm">
         <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 px-4 py-3">
           <div className="flex items-center gap-2">
@@ -214,7 +216,7 @@ export default function StockStatusManagement({ initialFilters = {} }) {
         </div>
 
         <div className="overflow-x-auto">
-          <table className="w-full min-w-[1380px] text-left text-[13px]">
+          <table className="w-full min-w-[1240px] text-left text-[13px]">
             <thead className="bg-slate-50 text-slate-600">
               <tr>
                 {STOCK_TABLE_HEADERS.map((heading) => (
@@ -286,10 +288,6 @@ export default function StockStatusManagement({ initialFilters = {} }) {
 
                       <td className="whitespace-nowrap px-3 py-3">
                         {stock.warehouseName}
-                      </td>
-
-                      <td className="whitespace-nowrap px-3 py-3">
-                        {stock.locationCode}
                       </td>
 
                       <td className="px-3 py-3">{stock.unit}</td>
