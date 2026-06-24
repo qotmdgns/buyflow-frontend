@@ -335,9 +335,12 @@ export async function fetchReceiptFormOptions() {
 
 export async function fetchReceiptById(receiptId) {
   if (!USE_MOCK) {
-    const response = await fetch(createApiUrl(`/api/receipts/order/${receiptId}`), {
-      cache: "no-store",
-    })
+    const response = await fetch(
+  createApiUrl(`/api/receipts/${receiptId}`),
+  {
+    cache: "no-store",
+  },
+)
 
     if (!response.ok) {
       throw new Error("입고 상세 정보를 불러오지 못했습니다.")
