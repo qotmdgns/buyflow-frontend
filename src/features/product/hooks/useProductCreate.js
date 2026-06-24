@@ -197,6 +197,10 @@ export default function useProductCreate({
   }
 
   async function saveProduct() {
+    if (isSaving) {
+      return false
+    }
+
     const validationMessage = validateForm()
 
     if (validationMessage) {
@@ -207,10 +211,6 @@ export default function useProductCreate({
     setIsSaving(true)
 
     try {
-      await new Promise((resolve) => setTimeout(resolve, 300))
-
-      window.alert("품목이 등록되었습니다.")
-
       if (mode === "edit") {
         if (!productId) {
           window.alert("수정할 품목 ID를 찾을 수 없습니다.")
@@ -226,14 +226,9 @@ export default function useProductCreate({
 
       return true
     } catch (error) {
-      console.error("품목 저장 중 오류가 발생했습니다.", error)
+      console.error("[Product Save Failed]", error)
 
-      window.alert(
-        mode === "edit"
-          ? "품목 수정에 실패했습니다. 다시 시도해 주세요."
-          : "품목 등록에 실패했습니다. 다시 시도해 주세요.",
-      )
-
+      window.alert(error?.message ?? "품목 저장에 실패했습니다.")
       return false
     } finally {
       setIsSaving(false)

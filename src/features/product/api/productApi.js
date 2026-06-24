@@ -84,6 +84,56 @@ function normalizeProductResponse(data) {
   }
 }
 
+function wait(milliseconds) {
+  return new Promise((resolve) => setTimeout(resolve, milliseconds))
+}
+
+function getMockProducts(params = {}) {
+  const page = Number(params.page ?? 1)
+  const size = Number(params.size ?? 10)
+
+  let items = mockProducts.map(normalizeProductItem)
+
+  if (params.keyword) {
+    const keyword = String(params.keyword).toLowerCase()
+
+    items = items.filter((item) =>
+      [item.code, item.name, item.category, item.manufacturer]
+        .filter(Boolean)
+        .some((value) => String(value).toLowerCase().includes(keyword)),
+    )
+  }
+
+  if (params.category && params.category !== "전체") {
+    items = items.filter((item) => item.category === params.category)
+  }
+
+  if (params.unit && params.unit !== "전체") {
+    items = items.filter((item) => item.unit === params.unit)
+  }
+
+  if (params.activeStatus && params.activeStatus !== "전체") {
+    const activeValue = params.activeStatus === "사용"
+
+    items = items.filter((item) => item.isActive === activeValue)
+  }
+
+  const totalElements = items.length
+  const totalPages = Math.max(Math.ceil(totalElements / size), 1)
+  const start = (page - 1) * size
+  const pagedItems = items.slice(start, start + size)
+
+  return {
+    items: pagedItems,
+    pagination: {
+      page,
+      size,
+      totalElements,
+      totalPages,
+    },
+  }
+}
+
 function toProductRequestPayload(form) {
   const isActive =
     form.isActive !== undefined
