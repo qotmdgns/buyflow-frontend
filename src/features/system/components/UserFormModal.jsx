@@ -73,6 +73,7 @@ export default function UserFormModal({
     ...base,
     roleIds: initialRoleIds,
     roleId: base.roleId || initialRoleIds[0] || "",
+    departmentAuthorized: base.departmentAuthorized ?? true,
   })
 
   // 수정 모드이거나 admin이 권한 그룹을 직접 고르면, 부서·직급 변경에 따른
@@ -132,9 +133,7 @@ export default function UserFormModal({
 
     if (delegateMode) {
       Object.keys(nextErrors).forEach((key) => {
-        if (key !== "roleId" && key !== "roleIds") {
-          delete nextErrors[key]
-        }
+        delete nextErrors[key]
       })
     }
 
@@ -158,7 +157,7 @@ export default function UserFormModal({
       >
         <h2 className="mb-4 text-[17px] font-bold">
           {delegateMode
-            ? "사용자 역할 변경"
+            ? "부서원 자격 변경"
             : mode === "edit"
               ? "사용자 정보 수정"
               : "신규 사용자 등록"}
@@ -191,40 +190,54 @@ export default function UserFormModal({
             </label>
           ))}
 
-          <label>
+          <div>
             <span className="mb-1 block text-[13px] font-semibold">
-              권한 그룹
+              {delegateMode ? "부서원 자격" : "권한 그룹"}
             </span>
 
-            <div className="grid min-h-10 gap-2 rounded-md border border-slate-200 p-2">
-              {selectableRoles.map((role) => (
-                <label
-                  key={role.id}
-                  className="flex items-center gap-2 text-[13px]"
-                >
-                  <input
-                    type="checkbox"
-                    checked={form.roleIds.includes(role.id)}
-                    onChange={() => handleRoleToggle(role.id)}
-                    className="accent-blue-600"
-                  />
-                  {role.name}
-                </label>
-              ))}
-            </div>
+            {delegateMode ? (
+              <label className="flex min-h-10 items-center gap-2 rounded-md border border-slate-200 p-2 text-[13px]">
+                <input
+                  type="checkbox"
+                  checked={Boolean(form.departmentAuthorized)}
+                  onChange={(event) =>
+                    updateForm("departmentAuthorized", event.target.checked)
+                  }
+                  className="accent-blue-600"
+                />
+                부서 권한 사용 허용
+              </label>
+            ) : (
+              <div className="grid min-h-10 gap-2 rounded-md border border-slate-200 p-2">
+                {selectableRoles.map((role) => (
+                  <label
+                    key={role.id}
+                    className="flex items-center gap-2 text-[13px]"
+                  >
+                    <input
+                      type="checkbox"
+                      checked={form.roleIds.includes(role.id)}
+                      onChange={() => handleRoleToggle(role.id)}
+                      className="accent-blue-600"
+                    />
+                    {role.name}
+                  </label>
+                ))}
+              </div>
+            )}
 
-            {(errors.roleIds || errors.roleId) && (
+            {!delegateMode && (errors.roleIds || errors.roleId) && (
               <p className="mt-1 text-[12px] text-rose-500">
                 {errors.roleIds || errors.roleId}
               </p>
             )}
 
-            {mode !== "edit" && !roleTouched && (
+            {!delegateMode && mode !== "edit" && !roleTouched && (
               <p className="mt-1 text-[12px] text-slate-400">
                 부서·직급에 따라 자동 추천됩니다. 필요하면 직접 바꾸세요.
               </p>
             )}
-          </label>
+          </div>
 
           <label>
             <span className="mb-1 block text-[13px] font-semibold">
@@ -259,7 +272,7 @@ export default function UserFormModal({
           </button>
 
           <button className="rounded-md bg-blue-600 px-4 py-2 text-[13px] font-semibold text-white">
-            {delegateMode ? "역할 저장" : "저장하기"}
+            {delegateMode ? "자격 저장" : "저장하기"}
           </button>
         </div>
       </form>

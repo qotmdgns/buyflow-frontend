@@ -23,9 +23,49 @@ function clonePermissionGroups(groups) {
   }))
 }
 
+const PERMISSION_GROUP_LABELS = {
+  DASHBOARD: "대시보드",
+  MASTER_DATA: "기준정보 관리",
+  PURCHASE: "구매 및 입고",
+  STOCK: "재고 관리",
+  SYSTEM: "설정",
+}
+
+export const SYSTEM_ADMIN_PERMISSION_PROFILE_ID = "role:ADMIN"
+
+export function isSystemAdminPermissionProfile(profileId) {
+  return profileId === SYSTEM_ADMIN_PERMISSION_PROFILE_ID
+}
+
 // ─────────────────────────────────────────────────────────────
 // 백엔드(코드 배열) ↔ 화면(groups 구조) 변환 어댑터 (권한 관리 패널용)
 // ─────────────────────────────────────────────────────────────
+function buildGroupsFromPermissionCatalog(permissions, permissionCodes) {
+  const codeSet = new Set(permissionCodes ?? [])
+
+  const groups = new Map()
+
+  ;(permissions ?? []).forEach((permission) => {
+    const groupKey = permission.permissionGroup || "ETC"
+
+    if (!groups.has(groupKey)) {
+      groups.set(groupKey, {
+        key: groupKey,
+        label: PERMISSION_GROUP_LABELS[groupKey] || groupKey,
+        permissions: [],
+      })
+    }
+
+    groups.get(groupKey).permissions.push({
+      key: permission.permissionCode,
+      label: permission.permissionName || permission.permissionCode,
+      checked: codeSet.has(permission.permissionCode),
+    })
+  })
+
+  return Array.from(groups.values())
+}
+
 function buildGroupsFromCodes(permissionCodes) {
   const codeSet = new Set(permissionCodes ?? [])
 
@@ -98,6 +138,7 @@ function adaptUser(item) {
     roleId: primary?.roleCode ?? "",
     roleIds,
     roleName: roles.length ? roles.map((role) => role.roleName).join(", ") : "-",
+    departmentAuthorized: item.departmentAuthorized ?? true,
     activeStatus: statusLabel(user),
     registeredAt: String(user.createdAt ?? "").slice(0, 10),
   }
@@ -197,6 +238,83 @@ export async function fetchRoles() {
     }))
 }
 
+export function buildPermissionProfiles(roles, departmentProfiles) {
+  const adminRole = (roles ?? []).find(
+    (role) => normalizeRoleCode(role.id) === "ADMIN",
+  )
+  const profiles = []
+
+  if (adminRole) {
+    profiles.push({
+      id: SYSTEM_ADMIN_PERMISSION_PROFILE_ID,
+      name: adminRole.name || "시스템 관리자",
+      description: "전체 메뉴 조회 및 변경 권한",
+      userCount: adminRole.userCount ?? 0,
+      profileType: "role",
+      roleId: adminRole.id,
+    })
+  }
+
+  return [
+    ...profiles,
+    ...(departmentProfiles ?? []).map((profile) => ({
+      ...profile,
+      profileType: "department",
+    })),
+  ]
+}
+
+function adaptDepartmentProfile(profile) {
+  const userCount = profile.userCount ?? 0
+  const authorizedUserCount = profile.authorizedUserCount ?? 0
+
+  return {
+    id: profile.departmentName,
+    name: profile.departmentName,
+    description: `${authorizedUserCount}명 부서원 자격 / 전체 ${userCount}명`,
+    userCount,
+    authorizedUserCount,
+  }
+}
+
+export async function fetchDepartmentPermissionProfiles() {
+  const data = await apiFetch(`/api/admin/departments/permission-profiles`, {
+    method: "GET",
+  })
+
+  return (data ?? []).map(adaptDepartmentProfile)
+}
+
+async function fetchPermissionCatalog() {
+  return apiFetch(`/api/admin/permissions`, { method: "GET" })
+}
+
+export async function fetchDepartmentPermissions(departmentName) {
+  const [permissions, permissionCodes] = await Promise.all([
+    fetchPermissionCatalog(),
+    apiFetch(
+      `/api/admin/departments/${encodeURIComponent(departmentName)}/permissions`,
+      { method: "GET" },
+    ),
+  ])
+
+  return buildGroupsFromPermissionCatalog(permissions, permissionCodes)
+}
+
+export async function updateDepartmentPermissions(departmentName, groups) {
+  const permissions = await fetchPermissionCatalog()
+  const permissionCodes = extractCheckedCodes(groups)
+  const savedCodes = await apiFetch(
+    `/api/admin/departments/${encodeURIComponent(departmentName)}/permissions`,
+    {
+      method: "PUT",
+      body: JSON.stringify({ permissionCodes }),
+    },
+  )
+
+  return buildGroupsFromPermissionCatalog(permissions, savedCodes)
+}
+
 export async function fetchUserFilterOptions() {
   const [departments, roles] = await Promise.all([
     apiFetch(`/api/admin/users/departments`, { method: "GET" }),
@@ -280,18 +398,15 @@ export async function updateUser(userId, payload, options = {}) {
   let response
 
   if (options.delegateOnly) {
-    if (options.skipRoles) {
+    if (options.skipDepartmentAuthorization) {
       return payload
     }
 
-    const numericRoleIds = await resolveRoleNumericIds(payloadRoleIds(payload))
-    if (numericRoleIds.length === 0) {
-      throw new Error("역할을 하나 이상 선택하세요.")
-    }
-
-    response = await apiFetch(`/api/admin/users/${userId}/roles`, {
+    response = await apiFetch(`/api/admin/users/${userId}/department-authorization`, {
       method: "PUT",
-      body: JSON.stringify({ roleIds: numericRoleIds }),
+      body: JSON.stringify({
+        authorized: Boolean(payload.departmentAuthorized),
+      }),
     })
 
     return adaptUser(response)
