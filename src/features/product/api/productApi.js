@@ -1,15 +1,11 @@
+import { apiFetch } from "@/lib/api/fetchClient"
+
 import {
   mockProducts,
   productFilterOptions,
 } from "@/features/product/data/mockProductData"
 
 const USE_MOCK = process.env.NEXT_PUBLIC_USE_PRODUCT_MOCK !== "false"
-
-const API_BASE_URL = (
-  process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:8080"
-).replace(/\/$/, "")
-
-const PRODUCT_API_BASE_URL = `${API_BASE_URL}/api/products`
 
 function normalizeProductItem(product) {
   return {
@@ -129,47 +125,43 @@ function toProductRequestPayload(form) {
 }
 
 export async function createProduct(form) {
-  const response = await fetch(PRODUCT_API_BASE_URL, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(toProductRequestPayload(form)),
-  })
-
-  if (!response.ok) {
-    throw new Error("품목 등록에 실패했습니다.")
+  if (USE_MOCK) {
+    return "품목 등록이 완료되었습니다."
   }
 
-  return response.text()
+  return apiFetch("/api/products", {
+    method: "POST",
+    body: JSON.stringify(toProductRequestPayload(form)),
+  })
 }
 
 export async function deleteProduct(productId) {
-  const response = await fetch(`${PRODUCT_API_BASE_URL}/${productId}`, {
-    method: "DELETE",
-  })
-
-  if (!response.ok) {
-    throw new Error("품목 삭제에 실패했습니다.")
+  if (!productId) {
+    throw new Error("삭제할 품목 ID가 없습니다.")
   }
 
-  return response.text()
+  if (USE_MOCK) {
+    return "품목 삭제가 완료되었습니다."
+  }
+
+  return apiFetch(`/api/products/${encodeURIComponent(productId)}`, {
+    method: "DELETE",
+  })
 }
 
 export async function updateProduct(productId, form) {
-  const response = await fetch(`${PRODUCT_API_BASE_URL}/${productId}`, {
-    method: "PUT",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(toProductRequestPayload(form)),
-  })
-
-  if (!response.ok) {
-    throw new Error("품목 수정에 실패했습니다.")
+  if (!productId) {
+    throw new Error("수정할 품목 ID가 없습니다.")
   }
 
-  return response.text()
+  if (USE_MOCK) {
+    return "품목 수정이 완료되었습니다."
+  }
+
+  return apiFetch(`/api/products/${encodeURIComponent(productId)}`, {
+    method: "PUT",
+    body: JSON.stringify(toProductRequestPayload(form)),
+  })
 }
 
 export async function fetchProducts(params = {}) {
@@ -181,30 +173,31 @@ export async function fetchProducts(params = {}) {
   const query = new URLSearchParams()
 
   Object.entries(params).forEach(([key, value]) => {
-    // 현재 PRODUCTS 기본 CRUD 단계에서는 lowStockOnly만 서버로 보내지 않음
     if (key === "lowStockOnly") {
       return
     }
 
-    if (value === "" || value === false || value === "전체") {
+    if (
+      value === undefined ||
+      value === null ||
+      value === "" ||
+      value === false ||
+      value === "전체"
+    ) {
       return
     }
 
     query.set(key, key === "page" ? String(Number(value) - 1) : String(value))
   })
 
-  const response = await fetch(
-    `${PRODUCT_API_BASE_URL}${query.toString() ? `?${query.toString()}` : ""}`,
-    {
-      cache: "no-store",
-    },
-  )
+  const queryString = query.toString()
+  const path = queryString ? `/api/products?${queryString}` : "/api/products"
 
-  if (!response.ok) {
-    throw new Error("품목 목록을 불러오지 못했습니다.")
-  }
+  const data = await apiFetch(path, {
+    cache: "no-store",
+  })
 
-  return normalizeProductResponse(await response.json())
+  return normalizeProductResponse(data)
 }
 
 export async function fetchProductFilterOptions() {
@@ -212,18 +205,18 @@ export async function fetchProductFilterOptions() {
     return productFilterOptions
   }
 
-  const response = await fetch(`${PRODUCT_API_BASE_URL}/filter-options`, {
+  const data = await apiFetch("/api/products/filter-options", {
     cache: "no-store",
   })
 
-  if (!response.ok) {
-    throw new Error("품목 검색 조건을 불러오지 못했습니다.")
-  }
-
-  return normalizeProductFilterOptions(await response.json())
+  return normalizeProductFilterOptions(data)
 }
 
 export async function fetchProductById(productId) {
+  if (!productId) {
+    throw new Error("품목 ID가 없습니다.")
+  }
+
   if (USE_MOCK) {
     await wait(100)
 
@@ -234,20 +227,19 @@ export async function fetchProductById(productId) {
     }
 
     return {
-      ...product,
+      ...normalizeProductItem(product),
       warehouseSettings: product.warehouseSettings?.map((setting) => ({
         ...setting,
       })),
     }
   }
 
-  const response = await fetch(`${PRODUCT_API_BASE_URL}/${productId}`, {
-    cache: "no-store",
-  })
+  const data = await apiFetch(
+    `/api/products/${encodeURIComponent(productId)}`,
+    {
+      cache: "no-store",
+    },
+  )
 
-  if (!response.ok) {
-    throw new Error("품목 상세 정보를 불러오지 못했습니다.")
-  }
-
-  return normalizeProductItem(await response.json())
+  return normalizeProductItem(data)
 }

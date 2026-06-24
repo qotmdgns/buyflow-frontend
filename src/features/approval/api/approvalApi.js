@@ -1,6 +1,6 @@
+import { apiFetch } from "@/lib/api/fetchClient"
 import { mockApprovalDetails } from "@/features/approval/data/mockApprovalData"
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL ?? ""
 const USE_MOCK = process.env.NEXT_PUBLIC_USE_APPROVAL_MOCK !== "false"
 
 const mockStore = new Map(
@@ -13,23 +13,6 @@ function wait(milliseconds) {
 
 function clone(value) {
   return JSON.parse(JSON.stringify(value))
-}
-
-async function parseResponse(response, fallbackMessage) {
-  if (!response.ok) {
-    let message = fallbackMessage
-
-    try {
-      const data = await response.json()
-      message = data.message || data.error || fallbackMessage
-    } catch {
-      // JSON 오류 응답이 아니면 기본 메시지를 사용합니다.
-    }
-
-    throw new Error(message)
-  }
-
-  return response.json()
 }
 
 function getMockApproval(approvalId) {
@@ -80,65 +63,60 @@ function updateMockDecision(approvalId, decision, comment) {
 }
 
 export async function fetchApprovalDetail(approvalId) {
+  if (!approvalId) {
+    throw new Error("승인 ID가 없습니다.")
+  }
+
   if (USE_MOCK) {
     await wait(150)
 
     return clone(getMockApproval(approvalId))
   }
 
-  const response = await fetch(
-    `${API_BASE_URL}/api/approvals/${encodeURIComponent(approvalId)}`,
-    {
-      cache: "no-store",
-    },
-  )
-
-  return parseResponse(response, "승인 요청 정보를 불러오지 못했습니다.")
+  return apiFetch(`/api/approvals/${encodeURIComponent(approvalId)}`, {
+    cache: "no-store",
+  })
 }
 
-export async function approveApproval(approvalId, payload) {
+export async function approveApproval(approvalId, payload = {}) {
+  if (!approvalId) {
+    throw new Error("승인 ID가 없습니다.")
+  }
+
   if (USE_MOCK) {
     await wait(150)
 
     return clone(updateMockDecision(approvalId, "APPROVE", payload.comment))
   }
 
-  const response = await fetch(
-    `${API_BASE_URL}/api/approvals/${encodeURIComponent(approvalId)}/approve`,
-    {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(payload),
-    },
-  )
-
-  return parseResponse(response, "승인 처리에 실패했습니다.")
+  return apiFetch(`/api/approvals/${encodeURIComponent(approvalId)}/approve`, {
+    method: "POST",
+    body: JSON.stringify(payload),
+  })
 }
 
-export async function rejectApproval(approvalId, payload) {
+export async function rejectApproval(approvalId, payload = {}) {
+  if (!approvalId) {
+    throw new Error("승인 ID가 없습니다.")
+  }
+
   if (USE_MOCK) {
     await wait(150)
 
     return clone(updateMockDecision(approvalId, "REJECT", payload.comment))
   }
 
-  const response = await fetch(
-    `${API_BASE_URL}/api/approvals/${encodeURIComponent(approvalId)}/reject`,
-    {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(payload),
-    },
-  )
-
-  return parseResponse(response, "반려 처리에 실패했습니다.")
+  return apiFetch(`/api/approvals/${encodeURIComponent(approvalId)}/reject`, {
+    method: "POST",
+    body: JSON.stringify(payload),
+  })
 }
 
 export async function requestApprovalCancellation(approvalId) {
+  if (!approvalId) {
+    throw new Error("승인 ID가 없습니다.")
+  }
+
   if (USE_MOCK) {
     await wait(150)
 
@@ -152,16 +130,12 @@ export async function requestApprovalCancellation(approvalId) {
     return approval
   }
 
-  const response = await fetch(
-    `${API_BASE_URL}/api/approvals/${encodeURIComponent(
-      approvalId,
-    )}/cancel-request`,
+  return apiFetch(
+    `/api/approvals/${encodeURIComponent(approvalId)}/cancel-request`,
     {
       method: "PATCH",
     },
   )
-
-  return parseResponse(response, "요청 취소 처리에 실패했습니다.")
 }
 
 function includesKeyword(value, keyword) {
@@ -279,12 +253,15 @@ function createApprovalListQueryString(params = {}) {
   const query = new URLSearchParams()
 
   Object.entries(params).forEach(([key, value]) => {
-    if (value === "" || value === "전체") {
+    if (
+      value === undefined ||
+      value === null ||
+      value === "" ||
+      value === "전체"
+    ) {
       return
     }
 
-    // 프론트엔드는 1페이지부터 시작하고,
-    // Spring Pageable은 0페이지부터 시작합니다.
     query.set(
       key,
       key === "page" ? String(Math.max(Number(value) - 1, 0)) : String(value),
@@ -319,8 +296,7 @@ function normalizeApprovalListItem(item, index = 0) {
     requester: item.requester?.name ?? item.requester ?? "-",
     department: item.requestDepartment?.name ?? item.department ?? "-",
     requestedAt: item.requestedAt ?? item.requestDate ?? "",
-    desiredReceiptAt:
-      item.desiredReceiptAt ?? item.desiredReceiptAt ?? item.expectedDate ?? "",
+    desiredReceiptAt: item.desiredReceiptAt ?? item.expectedDate ?? "",
     createdAt: item.createdAt ?? item.requestedAt ?? item.requestDate ?? "",
     updatedAt: item.updatedAt ?? "",
     totalAmount: Number(item.totalAmount ?? 0),
@@ -363,15 +339,12 @@ export async function fetchApprovals(params = {}) {
     return getMockApprovals(params)
   }
 
-  const query = createApprovalListQueryString(params)
+  const queryString = createApprovalListQueryString(params)
+  const path = queryString ? `/api/approvals?${queryString}` : "/api/approvals"
 
-  const response = await fetch(`${API_BASE_URL}/api/approvals?${query}`, {
+  const data = await apiFetch(path, {
     cache: "no-store",
   })
 
-  if (!response.ok) {
-    throw new Error("승인 관리 목록을 불러오지 못했습니다.")
-  }
-
-  return normalizeApprovalListResponse(await response.json())
+  return normalizeApprovalListResponse(data)
 }
