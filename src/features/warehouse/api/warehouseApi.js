@@ -1,3 +1,4 @@
+import { apiFetch } from "@/lib/api/fetchClient"
 import {
   mockWarehouses,
   warehouseFilterOptions,
@@ -51,10 +52,6 @@ function toBackendPayload(payload, includeCode = true) {
   }
 
   result.warehouseCode = payload.code ? payload.code.trim().toUpperCase() : (payload.warehouseCode ? payload.warehouseCode.trim().toUpperCase() : "");
-
-  // if (includeCode) {
-  //   result.warehouseCode = payload.code.trim().toUpperCase()
-  // }
 
   if (payload.userId) {
     result.userId = payload.userId
@@ -210,222 +207,102 @@ export async function fetchWarehouses(params = {}) {
   }
 
   const query = new URLSearchParams()
+  if (params.warehouseName) query.set("warehouseName", params.warehouseName)
+  if (params.type && params.type !== "전체") query.set("type", params.type)
+  if (params.useYn && params.useYn !== "전체") query.set("useYn", toUseYn(params.useYn))
+  if (params.managerName) query.set("managerName", params.managerName)
 
-  if (params.warehouseName) {
-    query.set("warehouseName", params.warehouseName)
-  }
+  // 🟢 순수 fetch 대신 apiFetch 사용
+  const queryString = query.toString() ? `?${query.toString()}` : ""
+  const data = await apiFetch(`/api/warehouses${queryString}`, { method: "GET" })
 
-  if (params.type && params.type !== "전체") {
-    query.set("type", params.type)
-  }
-
-  // ✅ 여기 수정 (useYn 직접 사용)
-  if (params.useYn && params.useYn !== "전체") {
-    query.set("useYn", toUseYn(params.useYn))   // "사용 중" → "Y", "사용 중지" → "N"
-  }
-
-  if (params.managerName) {
-    query.set("managerName", params.managerName)
-  }
-
-  const response = await fetch(
-    `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/warehouses` + 
-    (query.toString() ? `?${query.toString()}` : ""),
-    { cache: "no-store" }
-  )
-
-  if (!response.ok) {
-    throw new Error("창고 목록을 불러오지 못했습니다.")
-  }
-
-  return normalizeWarehouseResponse(await response.json())
+  return normalizeWarehouseResponse(data)
 }
 
 export async function fetchWarehouseFilterOptions() {
-  if (USE_MOCK) {
-    return warehouseFilterOptions
-  }
+  if (USE_MOCK) return warehouseFilterOptions
 
-  const response = await fetch(
-    `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/warehouses/filter-options`,
-    { cache: "no-store" },
-  )
-
-  if (!response.ok) {
-    throw new Error("창고 검색 조건을 불러오지 못했습니다.")
-  }
-
-  return response.json()
+  // 🟢 apiFetch 적용 (JSON 변환 자동 처리)
+  const data = await apiFetch(`/api/warehouses/filter-options`, { method: "GET" })
+  return data
 }
 
 export async function fetchWarehouseById(warehouseCode) {
   if (USE_MOCK) {
     await wait(100)
-
-    const warehouse = warehouseDatabase.find(
-      (item) => item.id === Number(warehouseCode),
-    )
-
-    if (!warehouse) {
-      throw new Error("창고 정보를 찾을 수 없습니다.")
-    }
-
+    const warehouse = warehouseDatabase.find((item) => item.id === Number(warehouseCode))
+    if (!warehouse) throw new Error("창고 정보를 찾을 수 없습니다.")
     return { ...warehouse }
   }
 
-  const response = await fetch(
-    `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/warehouses/${warehouseCode}`,
-    { cache: "no-store" },
-  )
-
-  if (!response.ok) {
-    throw new Error("창고 상세 정보를 불러오지 못했습니다.")
-  }
-
-  return toFrontendWarehouse(await response.json())
+  // 🟢 apiFetch 적용
+  const data = await apiFetch(`/api/warehouses/${warehouseCode}`, { method: "GET" })
+  return toFrontendWarehouse(data)
 }
 
 export async function createWarehouse(payload) {
   if (USE_MOCK) {
     await wait(200)
-
     const normalizedCode = payload.code.trim().toUpperCase()
+    const duplicated = warehouseDatabase.some((w) => w.code.toUpperCase() === normalizedCode)
+    if (duplicated) throw new Error("이미 사용 중인 창고 코드입니다.")
 
-    const duplicated = warehouseDatabase.some(
-      (warehouse) => warehouse.code.toUpperCase() === normalizedCode,
-    )
-
-    if (duplicated) {
-      throw new Error("이미 사용 중인 창고 코드입니다.")
-    }
-
-    const nextId =
-      warehouseDatabase.reduce(
-        (maximumId, warehouse) => Math.max(maximumId, warehouse.id),
-        0,
-      ) + 1
-
+    const nextId = warehouseDatabase.reduce((max, w) => Math.max(max, w.id), 0) + 1
     const createdWarehouse = createWarehouseRecord(payload, nextId)
-
     warehouseDatabase = [createdWarehouse, ...warehouseDatabase]
-
     return createdWarehouse
   }
 
-  const response = await fetch(
-    `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/warehouses`,
-    {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(toBackendPayload(payload)),
-    },
-  )
+  // 🟢 apiFetch 적용 (Base URL, Headers 생략)
+  const data = await apiFetch(`/api/warehouses`, {
+    method: "POST",
+    body: JSON.stringify(toBackendPayload(payload)),
+  })
 
-  if (!response.ok) {
-    throw new Error("신규 창고를 등록하지 못했습니다.")
-  }
-
-  const data = await readJsonOrNull(response)
-
+  // apiFetch는 성공 시 바로 객체(Data)를 반환하므로 readJsonOrNull 필요 없음
   if (data) {
     return toFrontendWarehouse(data)
   }
-
   return createWarehouseRecord(payload, payload.code.trim().toUpperCase())
 }
 
 export async function updateWarehouse(warehouseCode, payload) {
   if (USE_MOCK) {
     await wait(200)
-
-    const targetIndex = warehouseDatabase.findIndex(
-      (warehouse) => warehouse.id === Number(warehouseCode),
-    )
-
-    if (targetIndex === -1) {
-      throw new Error("수정할 창고 정보를 찾을 수 없습니다.")
-    }
+    const targetIndex = warehouseDatabase.findIndex((w) => w.id === Number(warehouseCode))
+    if (targetIndex === -1) throw new Error("수정할 창고 정보를 찾을 수 없습니다.")
 
     const normalizedCode = payload.code.trim().toUpperCase()
-
-    const duplicated = warehouseDatabase.some(
-      (warehouse) =>
-        warehouse.id !== Number(warehouseCode) &&
-        warehouse.code.toUpperCase() === normalizedCode,
-    )
-
-    if (duplicated) {
-      throw new Error("이미 사용 중인 창고 코드입니다.")
-    }
+    const duplicated = warehouseDatabase.some((w) => w.id !== Number(warehouseCode) && w.code.toUpperCase() === normalizedCode)
+    if (duplicated) throw new Error("이미 사용 중인 창고 코드입니다.")
 
     const previousWarehouse = warehouseDatabase[targetIndex]
-
-    const updatedWarehouse = createWarehouseRecord(
-      payload,
-      Number(warehouseCode),
-      previousWarehouse.updatedAt,
-    )
-
-    warehouseDatabase = warehouseDatabase.map((warehouse) =>
-      warehouse.id === Number(warehouseCode) ? updatedWarehouse : warehouse,
-    )
-
+    const updatedWarehouse = createWarehouseRecord(payload, Number(warehouseCode), previousWarehouse.updatedAt)
+    warehouseDatabase = warehouseDatabase.map((w) => w.id === Number(warehouseCode) ? updatedWarehouse : w)
     return updatedWarehouse
   }
 
-  const response = await fetch(
-    `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/warehouses/${warehouseCode}`,
-    {
-      method: "PATCH",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(toBackendPayload(payload, false)),
-    },
-  )
-
-  if (!response.ok) {
-    throw new Error("창고 정보를 수정하지 못했습니다.")
-  }
-
-  const data = await readJsonOrNull(response)
+  // 🟢 apiFetch 적용 (Base URL, Headers 생략)
+  const data = await apiFetch(`/api/warehouses/${warehouseCode}`, {
+    method: "PATCH",
+    body: JSON.stringify(toBackendPayload(payload, false)),
+  })
 
   if (data) {
     return toFrontendWarehouse(data)
   }
-
   return createWarehouseRecord(payload, warehouseCode)
 }
 
 export async function deleteWarehouse(warehouseCode) {
   if (USE_MOCK) {
     await wait(150)
-
-    const exists = warehouseDatabase.some(
-      (warehouse) => warehouse.id === Number(warehouseCode),
-    )
-
-    if (!exists) {
-      throw new Error("삭제할 창고 정보를 찾을 수 없습니다.")
-    }
-
-    warehouseDatabase = warehouseDatabase.filter(
-      (warehouse) => warehouse.id !== Number(warehouseCode),
-    )
-
+    const exists = warehouseDatabase.some((w) => w.id === Number(warehouseCode))
+    if (!exists) throw new Error("삭제할 창고 정보를 찾을 수 없습니다.")
+    warehouseDatabase = warehouseDatabase.filter((w) => w.id !== Number(warehouseCode))
     return
   }
 
-  const response = await fetch(
-    `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/warehouses/${warehouseCode}`,
-    {
-      method: "DELETE",
-    },
-  )
-
-  if (!response.ok) {
-    throw new Error("창고 정보를 삭제하지 못했습니다.")
-  }
+  // 🟢 apiFetch 적용
+  await apiFetch(`/api/warehouses/${warehouseCode}`, { method: "DELETE" })
 }
