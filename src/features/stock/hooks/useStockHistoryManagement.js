@@ -44,17 +44,20 @@ const [filterOptions, setFilterOptions] =
 
    fetchStockFilterOptions()
   .then((data) => {
-    console.log("filter-options", data)
-
+    
     if (!ignore) {
-      setFilterOptions(data)
+      setFilterOptions({
+        ...data,
+        movementTypes: [
+          { value: "전체", label: "전체" },
+          { value: "INBOUND", label: "입고" },
+          { value: "UPDATE", label: "입고 수정" },
+          { value: "DELETE", label: "입고 삭제" },
+          { value: "CANCEL", label: "입고 취소" },
+        ],
+      })
     }
   })
-.catch(() => {
-  if (!ignore) {
-    setFilterOptions(DEFAULT_STOCK_FILTER_OPTIONS)
-  }
-})
 
     return () => {
       ignore = true
@@ -106,8 +109,6 @@ const [filterOptions, setFilterOptions] =
 
   function searchHistories(event) {
     event.preventDefault()
-
-    console.log("draftFilters =", draftFilters)
 
     setPagination((currentPagination) => ({
       ...currentPagination,
