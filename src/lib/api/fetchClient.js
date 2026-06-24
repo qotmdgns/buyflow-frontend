@@ -49,6 +49,31 @@ function redirectToLogin() {
   }
 }
 
+export class ApiError extends Error {
+  constructor(message, { status, data } = {}) {
+    super(message)
+    this.name = "ApiError"
+    this.status = status
+    this.data = data
+  }
+}
+
+function getErrorMessage(payload, status) {
+  if (payload && typeof payload === "object") {
+    return (
+      payload.message ||
+      payload.error ||
+      `요청 처리에 실패했습니다. (${status})`
+    )
+  }
+
+  if (typeof payload === "string" && payload.trim()) {
+    return payload
+  }
+
+  return `요청 처리에 실패했습니다. (${status})`
+}
+
 export async function apiFetch(path, options = {}) {
   const headers = new Headers(options.headers)
   const token = getAccessToken()
@@ -56,7 +81,10 @@ export async function apiFetch(path, options = {}) {
   const isFormData =
     typeof FormData !== "undefined" && options.body instanceof FormData
 
-  if (hasBody && !isFormData && !headers.has("Content-Type")) {
+  if (isFormData) {
+    headers.delete("Content-Type")
+    headers.delete("content-type")
+  } else if (hasBody && !headers.has("Content-Type")) {
     headers.set("Content-Type", "application/json")
   }
 
@@ -77,20 +105,26 @@ export async function apiFetch(path, options = {}) {
 
   if (response.status === 401) {
     redirectToLogin()
+
+    throw new ApiError("로그인이 필요합니다.", {
+      status: response.status,
+      data: payload,
+    })
   }
 
   if (!response.ok) {
-    const message =
-      payload?.message ||
-      payload?.error ||
-      `요청 처리에 실패했습니다. (${response.status})`
-
-    throw new Error(message)
+    throw new ApiError(getErrorMessage(payload, response.status), {
+      status: response.status,
+      data: payload,
+    })
   }
 
   if (payload && typeof payload === "object" && "success" in payload) {
     if (!payload.success) {
-      throw new Error(payload.message || "요청 처리에 실패했습니다.")
+      throw new ApiError(payload.message || "요청 처리에 실패했습니다.", {
+        status: response.status,
+        data: payload,
+      })
     }
 
     return payload.data
