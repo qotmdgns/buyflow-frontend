@@ -16,8 +16,6 @@ import {
   validatePurchaseOrderForm,
 } from "@/features/purchase-order/utils/purchaseOrderUtils"
 
-// 🚀 [무적의 검증 방어선 장착]: 기존 유틸 함수가 억까(required)를 부리던 구역을 
-// 이 고성능 가드레일 함수로 대체하여, 직발주 문서나 확정 상태 문서가 팅기는 현상을 원천 분쇄합니다!
 function customValidatePurchaseOrderForm(form, items) {
   const nextErrors = {};
 
@@ -72,7 +70,6 @@ useEffect(() => {
 
         setOptions(formOptions)
 
-        // ==================== ITEMS 처리 (깔끔하게) ====================
         let itemsToSet = []
         if (detail?.items && Array.isArray(detail.items) && detail.items.length > 0) {
           itemsToSet = detail.items.map((item, index) => {
@@ -87,14 +84,12 @@ useEffect(() => {
               specification: item.specification || item.spec || "",
               unit: item.unit || "",
             }
-            console.log(`=== [EDIT] item ${index} 변환 후 ===`, formatted)
             return formatted
           })
         } else {
           console.warn("=== [EDIT] items가 없거나 빈 배열입니다 ===")
         }
 
-        console.log("=== [EDIT] 4. 최종 setItems 배열 ===", itemsToSet)
         setItems(itemsToSet)
 
         const currentSupplierId = detail.supplierId || detail.supplier?.supplierId || 21        
@@ -166,20 +161,13 @@ useEffect(() => {
         console.log("=== [EDIT] setForm 상태 ===", assignedFormState)
         setForm(assignedFormState)
 
-console.log("=== [최종 확인] detail 객체 안의 데이터 ===", detail);
-console.log("=== [최종 확인] detail.attachmentId ===", detail.attachmentId);
-console.log("=== [최종 확인] detail.attachmentName ===", detail.attachmentName);
-
         setDetailState({
           detail,
           loading: false,
           error: "",
         })
 
-        console.log("=== [EDIT] 로드 완료 ===")
-
       } catch (requestError) {
-        console.error("=== [EDIT] 데이터 로드 실패 ===", requestError)
 
         if (ignore) return
 
@@ -217,8 +205,6 @@ console.log("=== [최종 확인] detail.attachmentName ===", detail.attachmentNa
   const editable = canEditPurchaseOrder(form.status)
 
   const editableCoreFields = form.status === "CONFIRMED";
-
-  console.log("=== [EDIT] editableCoreFields 강제 true 적용 ===", editableCoreFields);
 
   function updateForm(name, value) {
     setForm((currentForm) => ({
@@ -269,10 +255,8 @@ console.log("=== [최종 확인] detail.attachmentName ===", detail.attachmentNa
   }
 
 function removeItem(requestItemId) {
-  console.log("=== [REMOVE] 삭제 시도 ===", requestItemId);
 
   if (!editableCoreFields) {
-    console.warn("=== [REMOVE] editableCoreFields가 false라 삭제 불가 ===");
     return;
   }
 
@@ -322,6 +306,7 @@ function removeItem(requestItemId) {
         warehouseCode: form.warehouseCode || "",
         memo: form.memo || "",
         items: items.map((item) => ({
+          orderItemId: item.orderItemId || item.requestItemId || item.id,
           productId: Number(item.productId),
           quantity: Number(item.orderQuantity || item.quantity || 0),
           unitPrice: Number(item.unitPrice || 0)

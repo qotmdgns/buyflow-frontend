@@ -85,7 +85,7 @@ export default function PurchaseOrderDetailModal({
               <dd className="font-medium text-slate-800">
                 {order.requestNo && order.requestNo !== "-"
                   ? order.requestNo
-                  : order.requestNumber || "-"}
+                  : order.requestNumber || "요청된 번호가 없습니다."}
               </dd>
             </div>
 
@@ -94,19 +94,19 @@ export default function PurchaseOrderDetailModal({
                 공급업체
               </dt>
               <dd className="font-medium text-slate-800">
-                {order.supplierName || "-"}
+                {order.supplierName || "지정된 공급업체가 없습니다."}
               </dd>
             </div>
 
             <div>
               <dt className="text-[12px] text-slate-400">발주 담당자</dt>
-              <dd>{order.orderManager || order.userName || "-"}</dd>
+              <dd>{order.orderManager || order.userName || "지정된 담당자가 없습니다."}</dd>
             </div>
 
             <div>
               <dt className="text-[12px] text-slate-400">발주 담당자 연락처</dt>
               <dd className="font-medium text-slate-800">
-                {order.orderManagerPhone || "-"}
+                {order.orderManagerPhone || "담당자의 연락처가 없습니다."}
               </dd>
             </div>
 
@@ -119,7 +119,7 @@ export default function PurchaseOrderDetailModal({
                   ? `${order.expectedReceiptFrom} ~ ${order.expectedReceiptTo}`
                   : order.dueDate
                     ? String(order.dueDate).slice(0, 10)
-                    : "-"}
+                    : "지정된 예정일이 없습니다."}
               </dd>
             </div>
 
@@ -128,10 +128,7 @@ export default function PurchaseOrderDetailModal({
                 입고 창고
               </dt>
               <dd className="font-medium text-slate-800">
-                {order.warehouseName ||
-                  (order.warehouseCode
-                    ? `창고 코드: ${order.warehouseCode}`
-                    : "일반 창고")}
+                {order.warehouseName || order.warehouseCode || "-"}
               </dd>
             </div>
 
@@ -148,10 +145,13 @@ export default function PurchaseOrderDetailModal({
           {/* 기존 비고 영역 */}
           <div className="rounded-md border border-slate-200 bg-slate-50 px-4 py-3 mt-3">
             <h3 className="text-[12px] font-bold text-slate-600 mb-1.5">
-              {currentStatus === "CANCELED" ? "🚨 취소 사유" : "📌 비고"}
+              {currentStatus === "CANCELED" ? "취소 사유" : "비고"}
             </h3>
             <p className="text-[13px] text-slate-700 whitespace-pre-wrap leading-relaxed min-h-[20px]">
-              {order.memo && order.memo.trim() !== "" ? order.memo : "-"}
+              {order.memo && order.memo.trim() !== "" ? order.memo : 
+                <span className="text-[13px] text-slate-400 italic leading-relaxed">
+                  등록된 내용이 없습니다.
+                </span>}
             </p>
           </div>
 

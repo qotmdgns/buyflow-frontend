@@ -42,7 +42,7 @@ export default function PurchaseOrderEdit({ orderId }) {
       return
     }
 
-    window.alert(`${result.orderNumber} 발주 정보를 수정했습니다.`)
+    window.alert(`${result.orderNo} 발주를 완료했습니다.`)
 
     router.push("/purchase-orders")
   }
