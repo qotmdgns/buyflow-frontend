@@ -296,8 +296,7 @@ function normalizeApprovalListItem(item, index = 0) {
     requester: item.requester?.name ?? item.requester ?? "-",
     department: item.requestDepartment?.name ?? item.department ?? "-",
     requestedAt: item.requestedAt ?? item.requestDate ?? "",
-    desiredReceiptAt:
-      item.desiredReceiptAt ?? item.desiredReceiptAt ?? item.expectedDate ?? "",
+    desiredReceiptAt: item.desiredReceiptAt ?? item.expectedDate ?? "",
     createdAt: item.createdAt ?? item.requestedAt ?? item.requestDate ?? "",
     updatedAt: item.updatedAt ?? "",
     totalAmount: Number(item.totalAmount ?? 0),
