@@ -82,16 +82,20 @@ export default function useReceiptManagement() {
       setError("")
 
       try {
-        console.log("loadReceipts 실행됨")
+  console.log("loadReceipts 실행됨")
+  console.log("activeTab =", activeTab)
+  console.log("appliedFilters =", appliedFilters)
 
-        const data = await fetchReceipts({
-          ...appliedFilters,
-          activeTab,
-          page: currentPage,
-          size: currentSize,
-        })
+  const data = await fetchReceipts({
+    ...appliedFilters,
+    activeTab,
+    page: currentPage,
+    size: currentSize,
+  })
 
-        if (!ignore) {
+  console.log("API 응답 =", data)
+
+  if (!ignore) {
 const nextItems = data?.items ?? []
 
 const nextPagination = {
