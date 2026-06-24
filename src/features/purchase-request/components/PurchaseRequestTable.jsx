@@ -142,112 +142,115 @@ export default function PurchaseRequestTable({
 
           {!loading &&
             !error &&
-            requests.map((request) => (
-              <tr
-                key={request.id}
-                role="link"
-                tabIndex={0}
-                aria-label={`${request.requestNumber} 구매 요청 상세 화면으로 이동`}
-                onClick={(event) => handleRowClick(event, request.id)}
-                onKeyDown={(event) => handleRowKeyDown(event, request.id)}
-                className="cursor-pointer border-t border-slate-100 text-slate-600 transition hover:bg-blue-50/40 focus:bg-blue-50/40 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-200"
-              >
-                <td className="px-4 py-2.5">
-                  <input
-                    type="checkbox"
-                    checked={selectedIds.has(request.id)}
-                    onChange={() => onToggleRow(request.id)}
-                    onClick={(event) => event.stopPropagation()}
-                    className="h-3.5 w-3.5 accent-blue-600"
-                    aria-label={`${request.requestNumber} 선택`}
-                  />
-                </td>
+            requests.map((request) => {
+              const canEdit = request.status === "승인 대기"
+              const canDelete = request.status === "승인 대기"
 
-                <td className="whitespace-nowrap px-3 py-2.5 font-semibold text-blue-600">
-                  <Link
-                    href={`/purchase-requests/${request.id}`}
-                    className="hover:underline"
-                  >
-                    {request.requestNumber}
-                  </Link>
-                </td>
+              return (
+                <tr
+                  key={request.id}
+                  role="link"
+                  tabIndex={0}
+                  aria-label={`${request.requestNumber} 구매 요청 상세 화면으로 이동`}
+                  onClick={(event) => handleRowClick(event, request.id)}
+                  onKeyDown={(event) => handleRowKeyDown(event, request.id)}
+                  className="cursor-pointer border-t border-slate-100 text-slate-600 transition hover:bg-blue-50/40 focus:bg-blue-50/40 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-200"
+                >
+                  <td className="px-4 py-2.5">
+                    <input
+                      type="checkbox"
+                      checked={selectedIds.has(request.id)}
+                      onChange={() => onToggleRow(request.id)}
+                      onClick={(event) => event.stopPropagation()}
+                      className="h-3.5 w-3.5 accent-blue-600"
+                      aria-label={`${request.requestNumber} 선택`}
+                    />
+                  </td>
 
-                <td className="min-w-[210px] px-3 py-2.5 font-medium text-slate-700">
-                  {request.title}
-                </td>
+                  <td className="whitespace-nowrap px-3 py-2.5 font-semibold text-blue-600">
+                    <Link
+                      href={`/purchase-requests/${request.id}`}
+                      className="hover:underline"
+                    >
+                      {request.requestNumber}
+                    </Link>
+                  </td>
 
-                <td className="whitespace-nowrap px-3 py-2.5">
-                  {request.requester}
-                </td>
+                  <td className="min-w-[210px] px-3 py-2.5 font-medium text-slate-700">
+                    {request.title}
+                  </td>
 
-                <td className="whitespace-nowrap px-3 py-2.5 text-slate-500">
-                  {request.department}
-                </td>
+                  <td className="whitespace-nowrap px-3 py-2.5">
+                    {request.requester}
+                  </td>
 
-                <td className="whitespace-nowrap px-3 py-2.5">
-                  {request.createdAt || request.requestedAt || "-"}
-                </td>
+                  <td className="whitespace-nowrap px-3 py-2.5 text-slate-500">
+                    {request.department}
+                  </td>
 
-                <td className="whitespace-nowrap px-3 py-2.5">
-                  {request.updatedAt || "-"}
-                </td>
+                  <td className="whitespace-nowrap px-3 py-2.5">
+                    {request.createdAt || request.requestedAt || "-"}
+                  </td>
 
-                <td className="whitespace-nowrap px-3 py-2.5">
-                  {request.desiredReceiptAt}
-                </td>
+                  <td className="whitespace-nowrap px-3 py-2.5">
+                    {request.updatedAt || "-"}
+                  </td>
 
-                <td className="whitespace-nowrap px-3 py-2.5 text-right">
-                  {request.itemCount}건
-                </td>
+                  <td className="whitespace-nowrap px-3 py-2.5">
+                    {request.desiredReceiptAt}
+                  </td>
 
-                <td className="whitespace-nowrap px-3 py-2.5 text-right font-semibold text-slate-700">
-                  {formatWon(request.totalAmount)}
-                </td>
+                  <td className="whitespace-nowrap px-3 py-2.5 text-right">
+                    {request.itemCount}건
+                  </td>
 
-                <td className="whitespace-nowrap px-3 py-2.5">
-                  <PriorityBadge priority={request.priority} />
-                </td>
+                  <td className="whitespace-nowrap px-3 py-2.5 text-right font-semibold text-slate-700">
+                    {formatWon(request.totalAmount)}
+                  </td>
 
-                <td className="whitespace-nowrap px-3 py-2.5">
-                  <StatusBadge status={request.status} />
-                </td>
+                  <td className="whitespace-nowrap px-3 py-2.5">
+                    <PriorityBadge priority={request.priority} />
+                  </td>
 
-                <td className="px-3 py-2.5">
-                  <div className="flex flex-wrap items-center gap-1.5">
-                    {["승인 대기", "반려"].includes(request.status) && (
-                      <Link
-                        href={`/purchase-requests/${request.id}/edit`}
-                        onClick={(event) => event.stopPropagation()}
-                        className="whitespace-nowrap rounded-md border border-slate-200 bg-white px-2.5 py-1.5 text-[12px] font-semibold text-slate-600 transition hover:bg-slate-50"
-                        aria-label={`${request.requestNumber} 수정`}
-                      >
-                        수정
-                      </Link>
-                    )}
+                  <td className="whitespace-nowrap px-3 py-2.5">
+                    <StatusBadge status={request.status} />
+                  </td>
 
-                    {["승인 대기", "반려", "요청 취소"].includes(
-                      request.status,
-                    ) && (
-                      <button
-                        type="button"
-                        onClick={(event) => {
-                          event.stopPropagation()
-                          onDeleteRequest?.(request)
-                        }}
-                        className="whitespace-nowrap rounded-md border border-rose-200 bg-white px-2.5 py-1.5 text-[12px] font-semibold text-rose-500 transition hover:bg-rose-50"
-                        aria-label={`${request.requestNumber} 삭제`}
-                      >
-                        삭제
-                      </button>
-                    )}
+                  <td className="px-3 py-2.5">
+                    <div className="flex flex-wrap items-center gap-1.5">
+                      {canEdit && (
+                        <Link
+                          href={`/purchase-requests/${request.id}/edit`}
+                          onClick={(event) => event.stopPropagation()}
+                          className="whitespace-nowrap rounded-md border border-slate-200 bg-white px-2.5 py-1.5 text-[12px] font-semibold text-slate-600 transition hover:bg-slate-50"
+                          aria-label={`${request.requestNumber} 수정`}
+                        >
+                          수정
+                        </Link>
+                      )}
 
-                    {!["승인 대기", "반려", "요청 취소"].includes(
-                      request.status,
-                    ) && <span className="text-[12px] text-slate-300">-</span>}
-                  </div>
-                </td>
-              </tr>
-            ))}
+                      {canDelete && (
+                        <button
+                          type="button"
+                          onClick={(event) => {
+                            event.stopPropagation()
+                            onDeleteRequest?.(request)
+                          }}
+                          className="whitespace-nowrap rounded-md border border-rose-200 bg-white px-2.5 py-1.5 text-[12px] font-semibold text-rose-500 transition hover:bg-rose-50"
+                          aria-label={`${request.requestNumber} 삭제`}
+                        >
+                          삭제
+                        </button>
+                      )}
+
+                      {!canEdit && !canDelete && (
+                        <span className="text-[12px] text-slate-300">-</span>
+                      )}
+                    </div>
+                  </td>
+                </tr>
+              )
+            })}
         </tbody>
       </table>
     </div>

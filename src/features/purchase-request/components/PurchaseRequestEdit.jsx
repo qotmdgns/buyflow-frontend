@@ -111,7 +111,7 @@ export default function PurchaseRequestEdit({ requestId }) {
 
       <div className="mt-3 flex items-center gap-2 rounded-md border border-slate-200 bg-white px-4 py-3 text-[12px] text-slate-500">
         <CircleAlert size={13} className="shrink-0 text-slate-400" />
-        임시 저장, 승인 대기, 반려 상태의 구매 요청만 수정할 수 있습니다.
+        승인 대기 상태의 구매 요청만 수정할 수 있습니다.
       </div>
 
       <footer className="mt-3 flex justify-end gap-2">

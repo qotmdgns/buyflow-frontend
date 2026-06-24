@@ -23,6 +23,10 @@ const INITIAL_FORM = {
   reason: "",
 }
 
+const LOCKED_FORM_FIELDS = new Set(["requestNumber", "requester", "department"])
+
+const FIXED_ITEM_REMARK = "해당 사항 없음"
+
 function getCurrentRequestorId(user) {
   const rawUserId = user?.dbUserId ?? user?.userId
   const requestorId = Number(rawUserId)
@@ -75,8 +79,8 @@ export default function usePurchaseRequestCreate() {
   const formWithLoginUser = useMemo(
     () => ({
       ...form,
-      requester: form.requester || requesterName,
-      department: form.department || departmentName,
+      requester: requesterName,
+      department: departmentName,
     }),
     [form, requesterName, departmentName],
   )
@@ -127,6 +131,10 @@ export default function usePurchaseRequestCreate() {
   }, [products])
 
   function updateForm(name, value) {
+    if (LOCKED_FORM_FIELDS.has(name)) {
+      return
+    }
+
     setForm((currentForm) => ({
       ...currentForm,
       [name]: value,
@@ -205,16 +213,12 @@ export default function usePurchaseRequestCreate() {
       requestItems.map((item) => [item.id, item.quantity]),
     )
 
-    const currentRemarkMap = new Map(
-      requestItems.map((item) => [item.id, item.remark ?? ""]),
-    )
-
     const nextItems = products
       .filter((product) => draftSelectedIds.has(product.id))
       .map((product) => ({
         ...product,
         quantity: currentQuantityMap.get(product.id) ?? 1,
-        remark: currentRemarkMap.get(product.id) ?? "",
+        remark: FIXED_ITEM_REMARK,
       }))
 
     setRequestItems(nextItems)
@@ -250,6 +254,13 @@ export default function usePurchaseRequestCreate() {
       return
     }
 
+    if (!isAuthReady) {
+      window.alert(
+        "로그인 사용자 정보를 확인하는 중입니다. 잠시 후 다시 시도해 주세요.",
+      )
+      return
+    }
+
     const requestorId = getCurrentRequestorId(user)
 
     if (!requestorId) {
@@ -265,6 +276,7 @@ export default function usePurchaseRequestCreate() {
       { label: "요청자", value: currentForm.requester },
       { label: "요청 부서", value: currentForm.department },
       { label: "요청일", value: currentForm.requestDate },
+      { label: "희망 입고일", value: currentForm.expectedDate },
       { label: "요청 제목", value: currentForm.title },
       { label: "요청 사유", value: currentForm.reason },
     ]
@@ -304,7 +316,7 @@ export default function usePurchaseRequestCreate() {
           estimatedUnitPrice: Number(
             item.unitPrice ?? item.estimatedUnitPrice ?? 0,
           ),
-          remark: item.remark ?? "",
+          remark: FIXED_ITEM_REMARK,
         })),
       }
 

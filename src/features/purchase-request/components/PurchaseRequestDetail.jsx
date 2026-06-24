@@ -19,8 +19,8 @@ const PRIORITY_CLASS_NAMES = {
   긴급: "border-rose-200 bg-rose-50 text-rose-500",
 }
 
-const EDITABLE_STATUS_LABELS = new Set(["승인 대기", "반려"])
-const DELETABLE_STATUS_LABELS = new Set(["승인 대기", "반려", "요청 취소"])
+const EDITABLE_STATUS_LABELS = new Set(["승인 대기"])
+const DELETABLE_STATUS_LABELS = new Set(["승인 대기"])
 const CANCELABLE_STATUS_LABELS = new Set(["승인 대기"])
 
 function StatusBadge({ status }) {

@@ -542,6 +542,8 @@ export async function fetchPurchaseRequestProducts() {
       unit: product.unit ?? "",
       currentStock: Number(product.currentStock ?? product.stockQuantity ?? 0),
       unitPrice: Number(product.unitPrice ?? product.price ?? 0),
+      createdAt: product.createdAt ?? product.registeredAt ?? "",
+      updatedAt: product.updatedAt ?? "",
     }))
   } catch (error) {
     throw new Error(

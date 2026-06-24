@@ -1,6 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
+import { useRouter } from "next/navigation"
 import {
   approveApproval,
   fetchApprovalDetail,
@@ -9,6 +10,8 @@ import {
 } from "@/features/approval/api/approvalApi"
 
 export default function useApprovalManagement(approvalId) {
+  const router = useRouter()
+
   const [approval, setApproval] = useState(null)
   const [comment, setComment] = useState("")
   const [loading, setLoading] = useState(true)
@@ -79,6 +82,9 @@ export default function useApprovalManagement(approvalId) {
           ? "승인 처리되었습니다."
           : "반려 처리되었습니다.",
       )
+
+      router.push("/approvals")
+      router.refresh()
     } catch (requestError) {
       setActionError(requestError.message || "결재 처리에 실패했습니다.")
     } finally {

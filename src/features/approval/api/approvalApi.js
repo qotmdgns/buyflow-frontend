@@ -188,8 +188,7 @@ function filterMockApprovals(params = {}) {
     requester = "",
     department = "",
     status = "전체",
-    requestedFrom = "",
-    requestedTo = "",
+    desiredReceiptAt = "",
   } = params
 
   return Array.from(mockStore.values())
@@ -209,11 +208,9 @@ function filterMockApprovals(params = {}) {
       const matchesStatus =
         status === "전체" || approval.requestStatus === status
 
-      const matchesRequestedAt = isWithinRange(
-        approval.requestedAt,
-        requestedFrom,
-        requestedTo,
-      )
+      const matchesDesiredReceiptAt =
+        !desiredReceiptAt ||
+        String(approval.desiredReceiptAt ?? "").startsWith(desiredReceiptAt)
 
       return (
         matchesRequestNumber &&
@@ -221,7 +218,7 @@ function filterMockApprovals(params = {}) {
         matchesRequester &&
         matchesDepartment &&
         matchesStatus &&
-        matchesRequestedAt
+        matchesDesiredReceiptAt
       )
     })
     .sort((a, b) => b.approvalId - a.approvalId)

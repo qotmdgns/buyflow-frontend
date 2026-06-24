@@ -9,8 +9,9 @@ import {
 } from "@/features/purchase-request/api/purchaseRequestApi"
 import { calculateRequestTotal } from "@/features/purchase-request/utils/purchaseRequestUtils"
 
-const EDITABLE_STATUS_LABELS = new Set(["승인 대기", "반려"])
+const EDITABLE_STATUS_LABELS = new Set(["승인 대기"])
 const MAX_ATTACHMENT_SIZE = 10 * 1024 * 1024
+const FIXED_ITEM_REMARK = "해당 사항 없음"
 
 const INITIAL_FORM = {
   requestNumber: "",
@@ -22,6 +23,8 @@ const INITIAL_FORM = {
   urgency: "일반",
   reason: "",
 }
+
+const LOCKED_FORM_FIELDS = new Set(["requestNumber", "requester", "department"])
 
 function normalizeEditItem(item, productMap) {
   const productId = Number(item.productId ?? item.id)
@@ -38,7 +41,7 @@ function normalizeEditItem(item, productMap) {
     currentStock: product?.currentStock ?? 0,
     unitPrice: Number(item.estimatedUnitPrice ?? product?.unitPrice ?? 0),
     quantity: Number(item.requestQuantity ?? item.quantity ?? 1),
-    remark: item.remark ?? "",
+    remark: FIXED_ITEM_REMARK,
   }
 }
 
@@ -168,6 +171,10 @@ export default function usePurchaseRequestEdit(requestId) {
   }, [products])
 
   function updateForm(name, value) {
+    if (LOCKED_FORM_FIELDS.has(name)) {
+      return
+    }
+
     setForm((currentForm) => ({
       ...currentForm,
       [name]: value,
@@ -246,17 +253,13 @@ export default function usePurchaseRequestEdit(requestId) {
       requestItems.map((item) => [item.id, item.quantity]),
     )
 
-    const currentRemarkMap = new Map(
-      requestItems.map((item) => [item.id, item.remark ?? ""]),
-    )
-
     const nextItems = products
       .filter((product) => draftSelectedIds.has(product.id))
       .map((product) => ({
         ...product,
         productId: product.id,
         quantity: currentQuantityMap.get(product.id) ?? 1,
-        remark: currentRemarkMap.get(product.id) ?? "",
+        remark: FIXED_ITEM_REMARK,
       }))
 
     setRequestItems(nextItems)
@@ -293,6 +296,7 @@ export default function usePurchaseRequestEdit(requestId) {
     }
 
     const requiredFields = [
+      { label: "희망 입고일", value: form.expectedDate },
       { label: "요청 제목", value: form.title },
       { label: "요청 사유", value: form.reason },
     ]
@@ -327,7 +331,7 @@ export default function usePurchaseRequestEdit(requestId) {
           productId: Number(item.productId ?? item.id),
           requestQuantity: Number(item.quantity ?? 1),
           estimatedUnitPrice: Number(item.unitPrice ?? 0),
-          remark: item.remark ?? "",
+          remark: FIXED_ITEM_REMARK,
         })),
       }
 

@@ -443,7 +443,8 @@ export default function ApprovalManagement({ approvalId }) {
     )
   }
 
-  const canCancel = approval.requestStatus === "PENDING_APPROVAL"
+  const isPendingApproval = approval.requestStatus === "PENDING_APPROVAL"
+  const canCancel = isPendingApproval
 
   return (
     <div className="w-full">
@@ -460,33 +461,35 @@ export default function ApprovalManagement({ approvalId }) {
           </p>
         </div>
 
-        <div className="flex flex-wrap gap-2">
-          <Link
-            href="/approvals"
-            className="flex h-9 items-center gap-1 rounded-md border border-slate-200 bg-white px-3 text-[13px] font-semibold text-slate-500 transition hover:bg-slate-50"
-          >
-            <ArrowLeft size={13} />
-            목록으로
-          </Link>
+        {isPendingApproval && (
+          <div className="flex flex-wrap gap-2">
+            <Link
+              href="/approvals"
+              className="flex h-9 items-center gap-1 rounded-md border border-slate-200 bg-white px-3 text-[13px] font-semibold text-slate-500 transition hover:bg-slate-50"
+            >
+              <ArrowLeft size={13} />
+              목록으로
+            </Link>
 
-          <Link
-            href={`/purchase-requests/${approval.requestId}`}
-            className="flex h-9 items-center gap-1 rounded-md border border-slate-200 bg-white px-3 text-[13px] font-semibold text-slate-500 transition hover:bg-slate-50"
-          >
-            <Pencil size={13} />
-            수정
-          </Link>
+            <Link
+              href={`/purchase-requests/${approval.requestId}/edit`}
+              className="flex h-9 items-center gap-1 rounded-md border border-slate-200 bg-white px-3 text-[13px] font-semibold text-slate-500 transition hover:bg-slate-50"
+            >
+              <Pencil size={13} />
+              수정
+            </Link>
 
-          <button
-            type="button"
-            onClick={cancelRequest}
-            disabled={!canCancel || Boolean(submittingAction)}
-            className="flex h-9 items-center gap-1 rounded-md border border-rose-300 bg-white px-3 text-[13px] font-semibold text-rose-500 transition hover:bg-rose-50 disabled:cursor-not-allowed disabled:opacity-50"
-          >
-            <Ban size={13} />
-            요청취소
-          </button>
-        </div>
+            <button
+              type="button"
+              onClick={cancelRequest}
+              disabled={!canCancel || Boolean(submittingAction)}
+              className="flex h-9 items-center gap-1 rounded-md border border-rose-300 bg-white px-3 text-[13px] font-semibold text-rose-500 transition hover:bg-rose-50 disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              <Ban size={13} />
+              요청취소
+            </button>
+          </div>
+        )}
       </header>
 
       <div className="grid items-start gap-3 xl:grid-cols-[minmax(0,1fr)_320px]">
@@ -499,14 +502,16 @@ export default function ApprovalManagement({ approvalId }) {
         </div>
 
         <aside className="space-y-3">
-          <ApprovalActionCard
-            approval={approval}
-            comment={comment}
-            actionError={actionError}
-            submittingAction={submittingAction}
-            onCommentChange={setComment}
-            onSubmitDecision={submitDecision}
-          />
+          {isPendingApproval && (
+            <ApprovalActionCard
+              approval={approval}
+              comment={comment}
+              actionError={actionError}
+              submittingAction={submittingAction}
+              onCommentChange={setComment}
+              onSubmitDecision={submitDecision}
+            />
+          )}
 
           <ApprovalHistoryCard history={approval.history} />
         </aside>

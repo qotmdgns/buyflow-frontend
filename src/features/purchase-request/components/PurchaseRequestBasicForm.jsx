@@ -16,7 +16,7 @@ function TextField({ label, required, ...inputProps }) {
   return (
     <label>
       <FieldLabel required={required}>{label}</FieldLabel>
-      <input {...inputProps} className={INPUT_CLASS_NAME} />
+      <input {...inputProps} required={required} className={INPUT_CLASS_NAME} />
     </label>
   )
 }
@@ -27,7 +27,12 @@ function DateField({ label, required, ...inputProps }) {
       <FieldLabel required={required}>{label}</FieldLabel>
 
       <span className="relative block">
-        <input {...inputProps} type="date" className={INPUT_CLASS_NAME} />
+        <input
+          {...inputProps}
+          type="date"
+          required={required}
+          className={INPUT_CLASS_NAME}
+        />
 
         <CalendarDays
           size={13}
@@ -47,7 +52,7 @@ export default function PurchaseRequestBasicForm({
   const safeForm = {
     requestNumber: "",
     requester: "",
-    department: "물류운영팀",
+    department: "",
     requestDate: "",
     expectedDate: "",
     title: "",
@@ -77,24 +82,17 @@ export default function PurchaseRequestBasicForm({
           label="요청자"
           required
           value={safeForm.requester}
-          onChange={(event) => onChange("requester", event.target.value)}
-          placeholder="요청자 이름을 입력해 주세요."
+          disabled
+          placeholder="로그인 사용자 이름이 자동 입력됩니다."
         />
 
-        <label>
-          <FieldLabel required>요청 부서</FieldLabel>
-
-          <select
-            value={safeForm.department}
-            onChange={(event) => onChange("department", event.target.value)}
-            className={`${INPUT_CLASS_NAME} bg-white`}
-          >
-            <option value="물류운영팀">물류운영팀</option>
-            <option value="구매관리팀">구매관리팀</option>
-            <option value="생산관리팀">생산관리팀</option>
-            <option value="경영지원팀">경영지원팀</option>
-          </select>
-        </label>
+        <TextField
+          label="요청 부서"
+          required
+          value={safeForm.department}
+          disabled
+          placeholder="로그인 사용자 부서가 자동 입력됩니다."
+        />
 
         <div className="grid gap-3 sm:grid-cols-2">
           <DateField
@@ -106,6 +104,7 @@ export default function PurchaseRequestBasicForm({
 
           <DateField
             label="희망 입고일"
+            required
             value={safeForm.expectedDate}
             onChange={(event) => onChange("expectedDate", event.target.value)}
           />

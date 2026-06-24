@@ -9,8 +9,7 @@ const DEFAULT_FILTERS = {
   requester: "",
   department: "",
   status: "전체",
-  requestedFrom: "",
-  requestedTo: "",
+  desiredReceiptAt: "",
 }
 
 const DEFAULT_PAGINATION = {

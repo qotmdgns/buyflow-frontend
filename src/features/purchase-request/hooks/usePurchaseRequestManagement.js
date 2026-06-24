@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 import {
   cancelPurchaseRequest,
   deletePurchaseRequest,
@@ -21,6 +21,35 @@ const DEFAULT_SUMMARY = {
   rejected: 0,
   ordered: 0,
   canceled: 0,
+}
+
+const SUMMARY_KEY_BY_STATUS = {
+  "승인 대기": "pending",
+  "승인 완료": "approved",
+  반려: "rejected",
+  "발주 완료": "ordered",
+  "요청 취소": "canceled",
+}
+
+function createDisplayedSummary(baseSummary, activeStatus, totalElements) {
+  if (!activeStatus || activeStatus === "전체") {
+    return baseSummary
+  }
+
+  const selectedKey = SUMMARY_KEY_BY_STATUS[activeStatus]
+
+  if (!selectedKey) {
+    return baseSummary
+  }
+
+  return {
+    total: totalElements,
+    pending: selectedKey === "pending" ? totalElements : 0,
+    approved: selectedKey === "approved" ? totalElements : 0,
+    rejected: selectedKey === "rejected" ? totalElements : 0,
+    ordered: selectedKey === "ordered" ? totalElements : 0,
+    canceled: selectedKey === "canceled" ? totalElements : 0,
+  }
 }
 
 export default function usePurchaseRequestManagement() {
@@ -227,11 +256,21 @@ export default function usePurchaseRequestManagement() {
     })
   }
 
+  const displayedSummary = useMemo(
+    () =>
+      createDisplayedSummary(
+        summary,
+        appliedFilters.status,
+        pagination.totalElements,
+      ),
+    [summary, appliedFilters.status, pagination.totalElements],
+  )
+
   return {
     draftFilters,
     appliedFilters,
     filterOptions,
-    summary,
+    summary: displayedSummary,
     requests,
     pagination,
     pageSize,

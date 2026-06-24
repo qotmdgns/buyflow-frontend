@@ -173,17 +173,9 @@ export default function ApprovalListManagement() {
           </label>
 
           <SearchInput
-            label="요청일 시작"
-            name="requestedFrom"
-            value={draftFilters.requestedFrom}
-            onChange={updateFilter}
-            type="date"
-          />
-
-          <SearchInput
-            label="요청일 종료"
-            name="requestedTo"
-            value={draftFilters.requestedTo}
+            label="희망 입고일"
+            name="desiredReceiptAt"
+            value={draftFilters.desiredReceiptAt}
             onChange={updateFilter}
             type="date"
           />
