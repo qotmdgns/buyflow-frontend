@@ -85,6 +85,15 @@ function MovementBadge({ type }) {
   )
 }
 
+function getStockHistoryRowKey(history, index) {
+  return (
+    history?.historyId ??
+    history?.stockHistoryId ??
+    history?.id ??
+    `${history?.occurredAt ?? "unknown"}-${history?.movementType ?? "unknown"}-${history?.referenceNumber ?? "no-ref"}-${index}`
+  )
+}
+
 export default function StockHistoryManagement({ initialFilters }) {
   const {
     draftFilters,
@@ -271,9 +280,9 @@ export default function StockHistoryManagement({ initialFilters }) {
 
 {!loading &&
   !error &&
-  histories.map((history) => (
+  histories.map((history, index) => (
     <tr
-      key={history.historyId}
+      key={getStockHistoryRowKey(history, index)}
       className="border-t border-slate-100 text-slate-600"
     >
       <td className="whitespace-nowrap px-3 py-3">

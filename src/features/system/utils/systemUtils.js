@@ -26,6 +26,7 @@ export const EMPTY_USER_FORM = {
   position: "",
   roleId: "",
   roleIds: [],
+  departmentAuthorized: true,
   activeStatus: "사용 중",
 }
 

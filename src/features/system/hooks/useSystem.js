@@ -3,11 +3,16 @@
 import { useEffect, useState } from "react"
 import {
   approveUser as requestApproveUser,
+  buildPermissionProfiles,
   createUser,
+  fetchDepartmentPermissionProfiles,
+  fetchDepartmentPermissions,
   fetchRolePermissions,
   fetchRoles,
   fetchUserFilterOptions,
   fetchUsers,
+  isSystemAdminPermissionProfile,
+  updateDepartmentPermissions,
   updateRolePermissions,
   updateUser,
 } from "@/features/system/api/systemApi"
@@ -26,10 +31,6 @@ function roleCodeOf(role) {
     /^ROLE_/,
     "",
   )
-}
-
-function isPermissionManagedRole(role) {
-  return roleCodeOf(role) !== "TEAM_MANAGER"
 }
 
 function normalizedRoleIds(value) {
@@ -66,6 +67,7 @@ export default function useSystem({ delegateOnly = false } = {}) {
   const [editingUser, setEditingUser] = useState(null)
 
   const [roles, setRoles] = useState([])
+  const [departmentProfiles, setDepartmentProfiles] = useState([])
   const [selectedRoleId, setSelectedRoleId] = useState("")
   const [permissionGroups, setPermissionGroups] = useState([])
   const [permissionLoading, setPermissionLoading] = useState(false)
@@ -78,19 +80,25 @@ export default function useSystem({ delegateOnly = false } = {}) {
 
     async function loadInitialOptions() {
       try {
-        const [nextFilterOptions, nextRoles] = await Promise.all([
+        const [nextFilterOptions, nextRoles, nextDepartmentProfiles] = await Promise.all([
           fetchUserFilterOptions(),
           fetchRoles(),
+          fetchDepartmentPermissionProfiles(),
         ])
 
         if (ignore) return
 
+        const nextPermissionProfiles = buildPermissionProfiles(
+          nextRoles,
+          nextDepartmentProfiles,
+        )
+
         setFilterOptions(nextFilterOptions)
         setRoles(nextRoles)
+        setDepartmentProfiles(nextPermissionProfiles)
 
-        const nextPermissionRoles = nextRoles.filter(isPermissionManagedRole)
-        if (nextPermissionRoles.length > 0) {
-          setSelectedRoleId(nextPermissionRoles[0].id)
+        if (nextPermissionProfiles.length > 0) {
+          setSelectedRoleId(nextPermissionProfiles[0].id)
         }
       } catch {
         if (!ignore) {
@@ -156,7 +164,9 @@ export default function useSystem({ delegateOnly = false } = {}) {
       setPermissionError("")
 
       try {
-        const data = await fetchRolePermissions(selectedRoleId)
+        const data = isSystemAdminPermissionProfile(selectedRoleId)
+          ? await fetchRolePermissions("ADMIN")
+          : await fetchDepartmentPermissions(selectedRoleId)
 
         if (!ignore) {
           setPermissionGroups(data)
@@ -240,7 +250,11 @@ export default function useSystem({ delegateOnly = false } = {}) {
 
       await updateUser(editingUser.id, form, {
         delegateOnly,
-        skipRoles: isSameRoleSet(nextRoleIds, currentRoleIds),
+        skipRoles: !delegateOnly && isSameRoleSet(nextRoleIds, currentRoleIds),
+        skipDepartmentAuthorization:
+          delegateOnly &&
+          Boolean(form.departmentAuthorized) ===
+            Boolean(editingUser.departmentAuthorized),
       })
     } else {
       await createUser(form)
@@ -302,10 +316,9 @@ export default function useSystem({ delegateOnly = false } = {}) {
     setPermissionError("")
 
     try {
-      const savedGroups = await updateRolePermissions(
-        selectedRoleId,
-        permissionGroups,
-      )
+      const savedGroups = isSystemAdminPermissionProfile(selectedRoleId)
+        ? await updateRolePermissions("ADMIN", permissionGroups)
+        : await updateDepartmentPermissions(selectedRoleId, permissionGroups)
 
       setPermissionGroups(savedGroups)
       setPermissionDirty(false)
@@ -333,7 +346,7 @@ export default function useSystem({ delegateOnly = false } = {}) {
     formMode,
     editingUser,
     roles,
-    permissionRoles: roles.filter(isPermissionManagedRole),
+    permissionRoles: departmentProfiles,
     selectedRoleId,
     permissionGroups,
     permissionLoading,
