@@ -359,6 +359,7 @@ export default function ReceiptManagement() {
   title="전체"
   value={
   (summary.tabCounts?.expected ?? 0) +
+  (summary.delayed ?? 0) +
   (summary.tabCounts?.partial ?? 0) +
   (summary.tabCounts?.completed ?? 0)
 }
