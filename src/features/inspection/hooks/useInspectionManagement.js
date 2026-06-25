@@ -82,7 +82,6 @@ useEffect(() => {
       setError("")
 
       try {
-        // 🚀 핵심 해결책: Promise.all을 써서 목록(List)과 요약(Summary)을 '항상 동시에' 서버에 요청합니다.
         const [listData, summaryData] = await Promise.all([
           fetchPendingInspections({
             ...appliedFilters,
@@ -90,7 +89,6 @@ useEffect(() => {
             page: pagination.page,
             size: pagination.size,
           }),
-          // 💡 요약 데이터도 새로 요청! (검색 조건이 요약에 반영되길 원한다면 appliedFilters를 넘겨주면 됩니다)
           fetchPendingInspectionSummary(appliedFilters) 
         ]);
 
@@ -100,7 +98,6 @@ useEffect(() => {
         setInspections(listData.items || [])
         setPagination(listData.pagination ?? DEFAULT_INSPECTION_PAGINATION)
         
-        // 2. 요약 카드 업데이트 (프론트에서 억지로 0으로 만들지 않고, 서버가 준 값을 그대로 믿고 꽂아 넣습니다!)
         if (summaryData) {
           setSummary(summaryData)
         }
