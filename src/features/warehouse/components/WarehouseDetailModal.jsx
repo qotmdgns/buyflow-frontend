@@ -73,6 +73,8 @@ export default function WarehouseDetailModal({
     return null
   }
 
+  const isActive = warehouse.activeStatus === "사용 중";
+
   return (
     <div
       role="presentation"
@@ -164,14 +166,18 @@ export default function WarehouseDetailModal({
         </div>
 
         <footer className="flex flex-wrap justify-between gap-2 border-t border-slate-200 bg-slate-50 px-5 py-3">
-          <button
-            type="button"
-            onClick={() => onDelete(warehouse)}
-            className="flex h-10 items-center gap-1.5 rounded-md border border-rose-200 bg-white px-4 text-[13px] font-semibold text-rose-600 transition hover:bg-rose-50"
-          >
-            <Trash2 size={14} />
-            삭제
-          </button>
+          {isActive ? (
+            <button
+              type="button"
+              onClick={() => onDelete(warehouse)}
+              className="flex h-10 items-center gap-1.5 rounded-md border border-rose-200 bg-white px-4 text-[13px] font-semibold text-rose-600 transition hover:bg-rose-50"
+            >
+              <Trash2 size={14} />
+              사용 중지
+            </button>
+          ) : (
+            <div></div>
+          )}
 
           <div className="flex gap-2">
             <button
@@ -181,15 +187,16 @@ export default function WarehouseDetailModal({
             >
               닫기
             </button>
-
-            <button
-              type="button"
-              onClick={() => onEdit(warehouse)}
-              className="flex h-10 items-center gap-1.5 rounded-md bg-blue-600 px-4 text-[13px] font-semibold text-white transition hover:bg-blue-700"
-            >
-              <Pencil size={14} />
-              수정하기
-            </button>
+            {isActive && (
+              <button
+                type="button"
+                onClick={() => onEdit(warehouse)}
+                className="flex h-10 items-center gap-1.5 rounded-md bg-blue-600 px-4 text-[13px] font-semibold text-white transition hover:bg-blue-700"
+              >
+                <Pencil size={14} />
+                수정하기
+              </button>
+            )}  
           </div>
         </footer>
       </section>

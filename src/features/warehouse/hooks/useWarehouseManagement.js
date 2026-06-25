@@ -191,9 +191,9 @@ export default function useWarehouseManagement() {
     setDetailWarehouse(null)
   }
 
-async function removeWarehouse(warehouse) {
+  async function removeWarehouse(warehouse) {
     const confirmed = window.confirm(
-      `${warehouse.name} 창고를 삭제하시겠습니까?`,
+      `${warehouse.name} 창고를 '사용 중지' 처리하시겠습니까?\n(과거 발주 내역 보존을 위해 완전히 삭제되지 않고 미사용 상태로 변경됩니다.)`,
     )
 
     if (!confirmed) {
@@ -205,10 +205,11 @@ async function removeWarehouse(warehouse) {
       
       setDetailWarehouse(null)
       refreshWarehouses()
+      
+      window.alert("사용 중지 처리되었습니다.")
     } catch (requestError) {
       const serverMessage = requestError.response?.data?.message || requestError.response?.data;
-      
-      window.alert(serverMessage || "해당 창고를 사용하는 발주 내역이 존재하여 삭제할 수 없습니다.")
+      window.alert(serverMessage || "상태를 변경하지 못했습니다.")
     }
   }
 
