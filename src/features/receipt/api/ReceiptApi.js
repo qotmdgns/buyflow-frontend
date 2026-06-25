@@ -115,8 +115,16 @@ function createDetailedReceipt(receipt) {
 let receiptDatabase = structuredClone(mockReceipts).map(createDetailedReceipt)
 
 function matchesActiveTab(receipt, activeTab) {
+  if (activeTab === "ALL") {
+    return true
+  }
+
   if (activeTab === "EXPECTED") {
-    return receipt.status === "EXPECTED" || receipt.status === "DELAYED"
+    return receipt.status === "EXPECTED"
+  }
+
+  if (activeTab === "DELAYED") {
+    return receipt.status === "DELAYED"
   }
 
   if (activeTab === "PARTIAL") {
