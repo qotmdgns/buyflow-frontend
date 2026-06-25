@@ -459,40 +459,30 @@ export default function ReceiptManagement() {
 
         <div className="overflow-x-auto">
           <table className="w-full min-w-[1380px] text-left text-[13px]">
-            <thead className="bg-slate-50 text-slate-500">
-              <tr>
-                <th className="w-10 px-3 py-3">
-                  <input
-                    type="checkbox"
-                    checked={allCurrentRowsSelected}
-                    onChange={toggleAllRows}
-                    className="h-3.5 w-3.5 accent-blue-600"
-                    aria-label="현재 페이지 입고 목록 전체 선택"
-                  />
-                </th>
-
-                {[
-                  "발주 번호",
-                  "공급업체",
-                  "발주일",
-                  "입고 예정일",
-                  "입고 창고",
-                  "품목 수",
-                  "발주 수량",
-                  "누적 입고",
-                  "미입고",
-                  "상태",
-                  "관리",
-                ].map((heading) => (
-                  <th
-                    key={heading}
-                    className="whitespace-nowrap px-3 py-3 font-semibold"
-                  >
-                    {heading}
-                  </th>
-                ))}
-              </tr>
-            </thead>
+           <thead className="bg-slate-50 text-slate-500">
+  <tr>
+    {[
+      "발주 번호",
+      "공급업체",
+      "발주일",
+      "입고 예정일",
+      "입고 창고",
+      "품목 수",
+      "발주 수량",
+      "누적 입고",
+      "미입고",
+      "상태",
+      "관리",
+    ].map((heading) => (
+      <th
+        key={heading}
+        className="whitespace-nowrap px-3 py-3 font-semibold"
+      >
+        {heading}
+      </th>
+    ))}
+  </tr>
+</thead>
             
             
 
@@ -520,16 +510,9 @@ export default function ReceiptManagement() {
     receipt.status === "DELAYED" ? "bg-rose-50/60" : ""
   }`}
 >
-                    <td className="px-3 py-3">
-                      <input
-                        type="checkbox"
-                        checked={selectedIds.has(receipt.id)}
-                        onChange={() => toggleRow(receipt.id)}
-                        onClick={(event) => event.stopPropagation()}
-                        className="h-3.5 w-3.5 accent-blue-600"
-                        aria-label={`${receipt.orderNumber} 선택`}
-                      />
-                    </td>
+                    <td className="whitespace-nowrap px-3 py-3 font-semibold">
+  {receipt.orderNumber}
+</td>
 
                     <td className="whitespace-nowrap px-3 py-3 font-semibold">
   {receipt.orderNumber}
