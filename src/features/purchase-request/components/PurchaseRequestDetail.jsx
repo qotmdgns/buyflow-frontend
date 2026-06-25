@@ -338,7 +338,7 @@ export default function PurchaseRequestDetail({ requestId }) {
 
   async function handleDeleteRequest() {
     const confirmed = window.confirm(
-      `${request.requestNumber} 구매 요청을 삭제하시겠습니까?\n삭제 후 목록에서 숨김 처리됩니다.`,
+      "구매요청을 삭제하시겠습니까? \n(삭제 후 목록은 숨김 처리 됩니다.)",
     )
 
     if (!confirmed) {
