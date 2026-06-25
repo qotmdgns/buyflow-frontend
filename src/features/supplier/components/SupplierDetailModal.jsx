@@ -170,14 +170,16 @@ export default function SupplierDetailModal({
             닫기
           </button>
 
-          <button
-            type="button"
-            onClick={() => onEdit(supplier)}
-            className="flex h-10 items-center gap-1.5 rounded-md bg-blue-600 px-4 text-[13px] font-semibold text-white transition hover:bg-blue-700"
-          >
-            <Pencil size={14} />
-            수정하기
-          </button>
+          {onEdit && (
+            <button
+              type="button"
+              onClick={() => onEdit(supplier)}
+              className="flex h-10 items-center gap-1.5 rounded-md bg-blue-600 px-4 text-[13px] font-semibold text-white transition hover:bg-blue-700"
+            >
+              <Pencil size={14} />
+              수정하기
+            </button>
+          )}
         </footer>
       </section>
     </div>

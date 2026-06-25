@@ -10,8 +10,21 @@ export const metadata = {
   title: "대시보드 | BuyFlow ERP",
 }
 
-export default async function DashboardPage() {
-  const data = await getDashboardData()
+function normalizeReceiptMonths(value) {
+  const months = Number(value)
+
+  if ([3, 6, 12].includes(months)) {
+    return months
+  }
+
+  return 6
+}
+
+export default async function DashboardPage({ searchParams }) {
+  const params = await searchParams
+  const receiptMonths = normalizeReceiptMonths(params?.receiptMonths)
+
+  const data = await getDashboardData({ receiptMonths })
 
   return (
     <>
@@ -29,7 +42,11 @@ export default async function DashboardPage() {
       />
 
       <div className="mt-3 grid gap-3 xl:grid-cols-[minmax(0,2fr)_minmax(280px,1fr)]">
-        <MonthlyReceiptChart data={data.monthlyReceipt ?? []} />
+        <MonthlyReceiptChart
+          data={data.monthlyReceipt ?? []}
+          details={data.monthlyReceiptDetails ?? []}
+          receiptMonths={receiptMonths}
+        />
 
         <StockStatusChart data={data.stockStatus ?? []} />
       </div>

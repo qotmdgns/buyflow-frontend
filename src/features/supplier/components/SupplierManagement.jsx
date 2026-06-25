@@ -1,12 +1,19 @@
 "use client"
 
+import Link from "next/link"
+import { useRouter } from "next/navigation"
+import { Plus } from "lucide-react"
 import SupplierDetailModal from "@/features/supplier/components/SupplierDetailModal"
 import SupplierPagination from "@/features/supplier/components/SupplierPagination"
 import SupplierSearchForm from "@/features/supplier/components/SupplierSearchForm"
 import SupplierTable from "@/features/supplier/components/SupplierTable"
 import useSupplierManagement from "@/features/supplier/hooks/useSupplierManagement"
+import { hasPermission } from "@/utils/permissions"
+import useClientReady from "@/utils/useClientReady"
 
 export default function SupplierManagement() {
+  const router = useRouter()
+  const ready = useClientReady()
   const {
     draftFilters,
     filterOptions,
@@ -25,10 +32,17 @@ export default function SupplierManagement() {
     closeSupplierDetail,
   } = useSupplierManagement()
 
+  const canManageSuppliers = ready && hasPermission("suppliers.write")
+
   function openSupplierEdit(supplier) {
     closeSupplierDetail()
 
-    window.alert(`${supplier.name} 수정 화면은 추후 연결합니다.`)
+    if (!supplier?.id) {
+      window.alert("수정할 공급업체 ID를 찾을 수 없습니다.")
+      return
+    }
+
+    router.push(`/suppliers/${supplier.id}/edit`)
   }
 
   return (
@@ -48,14 +62,26 @@ export default function SupplierManagement() {
       />
 
       <section className="mt-3 overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm">
-        <div className="flex items-center gap-2 border-b border-slate-100 px-4 py-3">
-          <h2 className="text-[15px] font-bold text-slate-800">
-            공급업체 목록
-          </h2>
+        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 px-4 py-3">
+          <div className="flex items-center gap-2">
+            <h2 className="text-[15px] font-bold text-slate-800">
+              공급업체 목록
+            </h2>
 
-          <span className="text-[13px] text-slate-500">
-            총 {pagination.totalElements}건
-          </span>
+            <span className="text-[13px] text-slate-500">
+              총 {pagination.totalElements}건
+            </span>
+          </div>
+
+          {canManageSuppliers && (
+            <Link
+              href="/suppliers/new"
+              className="flex h-9 items-center gap-1.5 rounded-md bg-blue-600 px-3 text-[13px] font-semibold text-white transition hover:bg-blue-700"
+            >
+              <Plus size={14} />
+              신규 공급업체 등록
+            </Link>
+          )}
         </div>
 
         <SupplierTable
@@ -77,7 +103,7 @@ export default function SupplierManagement() {
         open={Boolean(detailSupplier)}
         supplier={detailSupplier}
         onClose={closeSupplierDetail}
-        onEdit={openSupplierEdit}
+        onEdit={canManageSuppliers ? openSupplierEdit : undefined}
       />
     </div>
   )

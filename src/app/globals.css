@@ -134,3 +134,23 @@ input {
 .erp-dashboard main .min-h-\[118px\] {
   min-height: 108px;
 }
+
+/* 대시보드 본문 위치 / 여백 보정 */
+.dashboard-main-shell {
+  min-height: 100vh;
+  min-width: 0;
+}
+
+.dashboard-main-content {
+  padding: 16px 12px;
+}
+
+@media (min-width: 1024px) {
+  .dashboard-main-shell {
+    padding-left: 244px;
+  }
+
+  .dashboard-main-content {
+    padding: 18px 22px 18px 0;
+  }
+}

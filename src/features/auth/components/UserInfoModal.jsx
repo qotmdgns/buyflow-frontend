@@ -21,7 +21,9 @@ function getInitial(name) {
 }
 
 function getDisplayName(profile) {
-  return [profile?.name, profile?.rank].filter(Boolean).join(" ")
+  const displayName = [profile?.name, profile?.rank].filter(Boolean).join(" ")
+
+  return displayName || profile?.loginId || "-"
 }
 
 function InfoRow({ icon: Icon, label, value, valueClassName = "" }) {
@@ -66,16 +68,20 @@ export default function UserInfoModal({ user, onClose, onLogout }) {
   }
 
   const profile = {
-    employeeNo: user?.employeeNo ?? "EMP-2024-001",
-    loginId: user?.loginId ?? "kimcs",
-    name: user?.name ?? "김철수",
-    rank: user?.rank ?? "대리",
-    department: user?.department ?? "물류운영팀",
-    email: user?.email ?? "kimcs@buyflow.co.kr",
-    phone: user?.phone ?? "010-1234-5678",
-    role: user?.role ?? "물류 운영 담당자",
-    accountStatus: user?.accountStatus ?? "정상",
-    lastLoginAt: user?.lastLoginAt ?? "2026-06-12 15:30",
+    employeeNo: user?.employeeNo ?? user?.userId ?? user?.loginId ?? "",
+    loginId: user?.loginId ?? "",
+    name: user?.name ?? user?.userName ?? "",
+    rank: user?.rank ?? user?.jobRank ?? user?.positionName ?? "",
+    department: user?.department ?? user?.departmentName ?? "",
+    email: user?.email ?? "",
+    phone: user?.phone ?? "",
+    role:
+      user?.role ??
+      (Array.isArray(user?.roles) && user.roles.length > 0
+        ? user.roles.join(", ")
+        : ""),
+    accountStatus: user?.accountStatus ?? user?.status ?? "",
+    lastLoginAt: user?.lastLoginAt ?? "",
   }
 
   return createPortal(
@@ -131,7 +137,7 @@ export default function UserInfoModal({ user, onClose, onLogout }) {
               </p>
 
               <p className="mt-1 truncate text-[12px] font-medium text-emerald-500">
-                ● {profile.department}
+                ● {profile.department || "-"}
               </p>
             </div>
           </div>
