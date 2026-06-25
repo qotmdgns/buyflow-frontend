@@ -22,7 +22,6 @@ export default function useProductManagement() {
 
   const [filterOptions, setFilterOptions] = useState(DEFAULT_FILTER_OPTIONS)
 
-  const [selectedIds, setSelectedIds] = useState(new Set())
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState("")
   const [reloadKey, setReloadKey] = useState(0)
@@ -70,7 +69,6 @@ export default function useProductManagement() {
 
         setProducts(data.items)
         setPagination(data.pagination)
-        setSelectedIds(new Set())
       } catch (requestError) {
         if (!ignore) {
           setError(requestError.message || "품목 목록을 불러오지 못했습니다.")
@@ -88,10 +86,6 @@ export default function useProductManagement() {
       ignore = true
     }
   }, [appliedFilters, pagination.page, pageSize, reloadKey])
-
-  const allCurrentRowsSelected =
-    products.length > 0 &&
-    products.every((product) => selectedIds.has(product.id))
 
   function updateFilter(name, value) {
     setDraftFilters((currentFilters) => ({
@@ -140,29 +134,6 @@ export default function useProductManagement() {
     }))
   }
 
-  function toggleAllRows() {
-    if (allCurrentRowsSelected) {
-      setSelectedIds(new Set())
-      return
-    }
-
-    setSelectedIds(new Set(products.map((product) => product.id)))
-  }
-
-  function toggleRow(productId) {
-    setSelectedIds((currentIds) => {
-      const nextIds = new Set(currentIds)
-
-      if (nextIds.has(productId)) {
-        nextIds.delete(productId)
-      } else {
-        nextIds.add(productId)
-      }
-
-      return nextIds
-    })
-  }
-
   async function openProductDetail(product) {
     try {
       const detail = await fetchProductById(product.id)
@@ -188,8 +159,6 @@ export default function useProductManagement() {
     products,
     pagination,
     pageSize,
-    selectedIds,
-    allCurrentRowsSelected,
     loading,
     error,
     detailProduct,
@@ -198,8 +167,6 @@ export default function useProductManagement() {
     resetFilters,
     movePage,
     changePageSize,
-    toggleAllRows,
-    toggleRow,
     openProductDetail,
     closeProductDetail,
     reloadProducts,

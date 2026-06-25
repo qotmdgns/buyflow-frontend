@@ -21,7 +21,7 @@ function TableMessage({ children, isError = false }) {
   return (
     <tr>
       <td
-        colSpan={11}
+        colSpan={10}
         className={`h-52 text-center text-[14px] ${
           isError ? "text-rose-500" : "text-slate-400"
         }`}
@@ -32,7 +32,7 @@ function TableMessage({ children, isError = false }) {
   )
 }
 
-function ProductRow({ product, isSelected, onToggle, onDetail, onEdit }) {
+function ProductRow({ product, onDetail, onEdit }) {
   function openDetail() {
     onDetail(product)
   }
@@ -67,18 +67,6 @@ function ProductRow({ product, isSelected, onToggle, onDetail, onEdit }) {
       onKeyDown={handleRowKeyDown}
       className="cursor-pointer border-t border-slate-100 text-slate-600 transition hover:bg-blue-50/40 focus:bg-blue-50/40 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-200"
     >
-      <td className="px-4 py-2.5">
-        <input
-          type="checkbox"
-          checked={isSelected}
-          onClick={stopRowEvent}
-          onKeyDown={stopRowEvent}
-          onChange={() => onToggle(product.id)}
-          className="h-3.5 w-3.5 accent-blue-600"
-          aria-label={`${product.name} 선택`}
-        />
-      </td>
-
       <td className="whitespace-nowrap px-3 py-2.5 font-medium text-blue-600">
         {product.code}
       </td>
@@ -97,7 +85,11 @@ function ProductRow({ product, isSelected, onToggle, onDetail, onEdit }) {
         </div>
       </td>
 
-      <td className="whitespace-nowrap px-3 py-2.5">{product.unit}</td>
+      <td className="px-3 py-2.5">
+        <div className="truncate" title={product.unit ?? ""}>
+          {product.unit || "-"}
+        </div>
+      </td>
 
       <td className="whitespace-nowrap px-3 py-2.5 font-medium text-slate-700">
         {formatWon(product.unitPrice)}
@@ -146,10 +138,6 @@ export default function ProductTable({
   products,
   loading,
   error,
-  selectedIds,
-  allCurrentRowsSelected,
-  onToggleAll,
-  onToggleRow,
   onDetail,
   onEdit,
 }) {
@@ -170,8 +158,6 @@ export default function ProductTable({
       <ProductRow
         key={product.id}
         product={product}
-        isSelected={selectedIds.has(product.id)}
-        onToggle={onToggleRow}
         onDetail={onDetail}
         onEdit={onEdit}
       />
@@ -180,32 +166,22 @@ export default function ProductTable({
 
   return (
     <div className="overflow-x-auto">
-      <table className="w-full min-w-[1320px] table-fixed text-left text-[13px]">
+      <table className="w-full min-w-[1500px] table-fixed text-left text-[13px]">
         <colgroup>
-          <col className="w-[44px]" />
           <col className="w-[95px]" />
           <col className="w-[220px]" />
           <col className="w-[135px]" />
-          <col className="w-[360px]" />
-          <col className="w-[70px]" />
-          <col className="w-[120px]" />
+          <col className="w-[320px]" />
+          <col className="w-[160px]" />
+          <col className="w-[130px]" />
           <col className="w-[90px]" />
           <col className="w-[120px]" />
           <col className="w-[150px]" />
           <col className="w-[80px]" />
         </colgroup>
+
         <thead className="bg-slate-50 text-slate-500">
           <tr>
-            <th className="w-12 px-4 py-2.5">
-              <input
-                type="checkbox"
-                checked={allCurrentRowsSelected}
-                onChange={onToggleAll}
-                className="h-3.5 w-3.5 accent-blue-600"
-                aria-label="현재 페이지 전체 선택"
-              />
-            </th>
-
             {PRODUCT_TABLE_HEADERS.map((heading) => (
               <th
                 key={heading}

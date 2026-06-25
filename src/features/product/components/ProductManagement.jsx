@@ -19,8 +19,6 @@ export default function ProductManagement() {
     products,
     pagination,
     pageSize,
-    selectedIds,
-    allCurrentRowsSelected,
     loading,
     error,
     detailProduct,
@@ -29,8 +27,6 @@ export default function ProductManagement() {
     resetFilters,
     movePage,
     changePageSize,
-    toggleAllRows,
-    toggleRow,
     openProductDetail,
     closeProductDetail,
     reloadProducts,
@@ -133,10 +129,6 @@ export default function ProductManagement() {
             products={products}
             loading={loading}
             error={error}
-            selectedIds={selectedIds}
-            allCurrentRowsSelected={allCurrentRowsSelected}
-            onToggleAll={toggleAllRows}
-            onToggleRow={toggleRow}
             onDetail={openProductDetail}
             onEdit={openProductEdit}
           />

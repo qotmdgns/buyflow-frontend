@@ -48,7 +48,7 @@ function TableMessage({ children, isError = false }) {
   return (
     <tr>
       <td
-        colSpan={13}
+        colSpan={12}
         className={`h-52 text-center text-[14px] ${
           isError ? "text-rose-500" : "text-slate-400"
         }`}
@@ -63,10 +63,6 @@ export default function PurchaseRequestTable({
   requests,
   loading,
   error,
-  selectedIds,
-  allCurrentRowsSelected,
-  onToggleAll,
-  onToggleRow,
   onDeleteRequest,
 }) {
   const router = useRouter()
@@ -80,7 +76,7 @@ export default function PurchaseRequestTable({
       "a, button, input, label, select, textarea",
     )
 
-    // 체크박스, 링크, 버튼 등 별도 기능이 있는 영역은
+    // 링크, 버튼 등 별도 기능이 있는 영역은
     // 행 클릭 이동 대상에서 제외합니다.
     if (interactiveElement) {
       return
@@ -90,7 +86,7 @@ export default function PurchaseRequestTable({
   }
 
   function handleRowKeyDown(event, requestId) {
-    // 행 내부의 체크박스나 버튼에서 발생한 키보드 이벤트는 제외합니다.
+    // 행 내부의 버튼 등에서 발생한 키보드 이벤트는 제외합니다.
     if (event.target !== event.currentTarget) {
       return
     }
@@ -106,16 +102,6 @@ export default function PurchaseRequestTable({
       <table className="w-full min-w-[1550px] text-left text-[13px]">
         <thead className="bg-slate-50 text-slate-500">
           <tr>
-            <th className="w-10 px-3 py-2.5">
-              <input
-                type="checkbox"
-                checked={allCurrentRowsSelected}
-                onChange={onToggleAll}
-                className="h-3.5 w-3.5 accent-blue-600"
-                aria-label="현재 페이지 구매 요청 전체 선택"
-              />
-            </th>
-
             {PURCHASE_REQUEST_TABLE_HEADERS.map((heading) => (
               <th
                 key={heading}
@@ -156,17 +142,6 @@ export default function PurchaseRequestTable({
                   onKeyDown={(event) => handleRowKeyDown(event, request.id)}
                   className="cursor-pointer border-t border-slate-100 text-slate-600 transition hover:bg-blue-50/40 focus:bg-blue-50/40 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-200"
                 >
-                  <td className="px-4 py-2.5">
-                    <input
-                      type="checkbox"
-                      checked={selectedIds.has(request.id)}
-                      onChange={() => onToggleRow(request.id)}
-                      onClick={(event) => event.stopPropagation()}
-                      className="h-3.5 w-3.5 accent-blue-600"
-                      aria-label={`${request.requestNumber} 선택`}
-                    />
-                  </td>
-
                   <td className="whitespace-nowrap px-3 py-2.5 font-semibold text-blue-600">
                     <Link
                       href={`/purchase-requests/${request.id}`}

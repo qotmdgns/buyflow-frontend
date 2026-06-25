@@ -71,20 +71,20 @@ export default function ProductSearchForm({
             onChange={(event) => onChange("category", event.target.value)}
           />
         </label>
+
+        <label>
+          <FieldLabel>단위</FieldLabel>
+
+          <SelectField
+            value={filters.unit}
+            options={filterOptions.units}
+            onChange={(event) => onChange("unit", event.target.value)}
+          />
+        </label>
       </div>
 
       <div className="mt-3 flex flex-wrap items-end justify-between gap-3">
         <div className="flex flex-wrap items-end gap-3">
-          <label className="w-[220px] max-w-full">
-            <FieldLabel>단위</FieldLabel>
-
-            <SelectField
-              value={filters.unit}
-              options={filterOptions.units}
-              onChange={(event) => onChange("unit", event.target.value)}
-            />
-          </label>
-
           <label className="w-[220px] max-w-full">
             <FieldLabel>사용 여부</FieldLabel>
 

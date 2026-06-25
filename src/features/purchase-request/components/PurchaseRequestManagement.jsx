@@ -17,8 +17,6 @@ export default function PurchaseRequestManagement() {
     summary,
     requests,
     pagination,
-    selectedIds,
-    allCurrentRowsSelected,
     loading,
     error,
     updateFilter,
@@ -28,44 +26,41 @@ export default function PurchaseRequestManagement() {
     movePage,
     exportRequests,
     deleteRequest,
-    toggleAllRows,
-    toggleRow,
   } = usePurchaseRequestManagement()
 
   async function handleDownload() {
     try {
-      const excelApiUrl = "http://localhost:8080/api/purchase-requests/excel"; 
+      const excelApiUrl = "http://localhost:8080/api/purchase-requests/excel"
 
       const response = await fetch(excelApiUrl, {
         method: "GET",
-      });
+      })
 
       if (!response.ok) {
-        throw new Error("엑셀 파일을 생성하지 못했습니다.");
+        throw new Error("엑셀 파일을 생성하지 못했습니다.")
       }
 
       // 1. 서버에서 넘어온 바이너리 데이터(Excel)를 Blob 객체로 변환
-      const blob = await response.blob();
+      const blob = await response.blob()
 
       // 2. 브라우저 메모리에 가상의 다운로드 URL 생성
-      const url = window.URL.createObjectURL(blob);
-      const link = document.createElement("a");
-      
-      link.href = url;
+      const url = window.URL.createObjectURL(blob)
+      const link = document.createElement("a")
+
+      link.href = url
       // 3. 다운로드될 파일명 강제 지정 (서버 헤더를 읽어와도 되지만 프론트에서 고정하는 것이 편합니다)
-      link.download = `구매요청목록_${new Date().toISOString().slice(0,10).replace(/-/g,"")}.xlsx`;
+      link.download = `구매요청목록_${new Date().toISOString().slice(0, 10).replace(/-/g, "")}.xlsx`
 
       // 4. 링크를 클릭한 것처럼 이벤트를 발생시켜 다운로드 실행
-      document.body.appendChild(link);
-      link.click();
-      link.remove();
+      document.body.appendChild(link)
+      link.click()
+      link.remove()
 
       // 5. 메모리 누수 방지를 위해 가상 URL 해제
-      window.URL.revokeObjectURL(url);
-
+      window.URL.revokeObjectURL(url)
     } catch (error) {
-      console.error("엑셀 다운로드 중 오류가 발생했습니다.", error);
-      window.alert("엑셀 파일을 다운로드하지 못했습니다.");
+      console.error("엑셀 다운로드 중 오류가 발생했습니다.", error)
+      window.alert("엑셀 파일을 다운로드하지 못했습니다.")
     }
   }
 
@@ -146,10 +141,6 @@ export default function PurchaseRequestManagement() {
             requests={requests}
             loading={loading}
             error={error}
-            selectedIds={selectedIds}
-            allCurrentRowsSelected={allCurrentRowsSelected}
-            onToggleAll={toggleAllRows}
-            onToggleRow={toggleRow}
             onDeleteRequest={handleDeleteRequest}
           />
 

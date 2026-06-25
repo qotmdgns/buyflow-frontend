@@ -73,7 +73,6 @@ export default function usePurchaseRequestManagement() {
   )
 
   const [summary, setSummary] = useState(DEFAULT_SUMMARY)
-  const [selectedIds, setSelectedIds] = useState(new Set())
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState("")
   const [refreshkey, setRefreshKey] = useState(0)
@@ -121,7 +120,6 @@ export default function usePurchaseRequestManagement() {
 
         setRequests(data.items)
         setPagination(data.pagination)
-        setSelectedIds(new Set())
       } catch (requestError) {
         if (!ignore) {
           setError(
@@ -141,10 +139,6 @@ export default function usePurchaseRequestManagement() {
       ignore = true
     }
   }, [appliedFilters, pagination.page, pageSize, refreshkey])
-
-  const allCurrentRowsSelected =
-    requests.length > 0 &&
-    requests.every((request) => selectedIds.has(request.id))
 
   function updateFilter(name, value) {
     setDraftFilters((currentFilters) => ({
@@ -233,29 +227,6 @@ export default function usePurchaseRequestManagement() {
     await refreshSummaryAndList()
   }
 
-  function toggleAllRows() {
-    if (allCurrentRowsSelected) {
-      setSelectedIds(new Set())
-      return
-    }
-
-    setSelectedIds(new Set(requests.map((request) => request.id)))
-  }
-
-  function toggleRow(requestId) {
-    setSelectedIds((currentIds) => {
-      const nextIds = new Set(currentIds)
-
-      if (nextIds.has(requestId)) {
-        nextIds.delete(requestId)
-      } else {
-        nextIds.add(requestId)
-      }
-
-      return nextIds
-    })
-  }
-
   const displayedSummary = useMemo(
     () =>
       createDisplayedSummary(
@@ -270,12 +241,10 @@ export default function usePurchaseRequestManagement() {
     draftFilters,
     appliedFilters,
     filterOptions,
-    summary: displayedSummary,
+    summary,
     requests,
     pagination,
     pageSize,
-    selectedIds,
-    allCurrentRowsSelected,
     loading,
     error,
     updateFilter,
@@ -285,9 +254,6 @@ export default function usePurchaseRequestManagement() {
     movePage,
     changePageSize,
     exportRequests,
-    cancelRequest,
     deleteRequest,
-    toggleAllRows,
-    toggleRow,
   }
 }
