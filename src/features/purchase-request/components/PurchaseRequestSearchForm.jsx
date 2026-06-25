@@ -27,25 +27,14 @@ function SelectField({ value, options, onChange }) {
   )
 }
 
-function DateRangeField({ from, to, onFromChange, onToChange }) {
+function DateField({ value, onChange }) {
   return (
-    <div className="grid grid-cols-[minmax(0,1fr)_10px_minmax(0,1fr)] items-center gap-1">
-      <input
-        type="date"
-        value={from}
-        onChange={(event) => onFromChange(event.target.value)}
-        className={`${INPUT_CLASS_NAME} px-2`}
-      />
-
-      <span className="text-center text-[13px] text-slate-300">-</span>
-
-      <input
-        type="date"
-        value={to}
-        onChange={(event) => onToChange(event.target.value)}
-        className={`${INPUT_CLASS_NAME} px-2`}
-      />
-    </div>
+    <input
+      type="date"
+      value={value}
+      onChange={(event) => onChange(event.target.value)}
+      className={`${INPUT_CLASS_NAME} px-2`}
+    />
   )
 }
 
@@ -126,24 +115,11 @@ export default function PurchaseRequestSearchForm({
         </label>
 
         <label>
-          <FieldLabel>요청일</FieldLabel>
-
-          <DateRangeField
-            from={filters.requestedFrom}
-            to={filters.requestedTo}
-            onFromChange={(value) => onChange("requestedFrom", value)}
-            onToChange={(value) => onChange("requestedTo", value)}
-          />
-        </label>
-
-        <label>
           <FieldLabel>희망 입고일</FieldLabel>
 
-          <DateRangeField
-            from={filters.desiredReceiptFrom}
-            to={filters.desiredReceiptTo}
-            onFromChange={(value) => onChange("desiredReceiptFrom", value)}
-            onToChange={(value) => onChange("desiredReceiptTo", value)}
+          <DateField
+            value={filters.desiredReceiptAt}
+            onChange={(value) => onChange("desiredReceiptAt", value)}
           />
         </label>
       </div>

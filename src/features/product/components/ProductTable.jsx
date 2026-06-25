@@ -21,7 +21,7 @@ function TableMessage({ children, isError = false }) {
   return (
     <tr>
       <td
-        colSpan={10}
+        colSpan={11}
         className={`h-52 text-center text-[14px] ${
           isError ? "text-rose-500" : "text-slate-400"
         }`}
@@ -108,7 +108,11 @@ function ProductRow({ product, isSelected, onToggle, onDetail, onEdit }) {
       </td>
 
       <td className="whitespace-nowrap px-3 py-2.5 text-slate-500">
-        {product.registeredAt}
+        {product.registeredAt || "-"}
+      </td>
+
+      <td className="whitespace-nowrap px-3 py-2.5 text-slate-500">
+        {product.updatedAt || "-"}
       </td>
 
       <td className="whitespace-nowrap px-3 py-2.5">
@@ -176,7 +180,7 @@ export default function ProductTable({
 
   return (
     <div className="overflow-x-auto">
-      <table className="w-full min-w-[1180px] table-fixed text-left text-[13px]">
+      <table className="w-full min-w-[1320px] table-fixed text-left text-[13px]">
         <colgroup>
           <col className="w-[44px]" />
           <col className="w-[95px]" />
@@ -186,7 +190,8 @@ export default function ProductTable({
           <col className="w-[70px]" />
           <col className="w-[120px]" />
           <col className="w-[90px]" />
-          <col className="w-[100px]" />
+          <col className="w-[120px]" />
+          <col className="w-[150px]" />
           <col className="w-[80px]" />
         </colgroup>
         <thead className="bg-slate-50 text-slate-500">

@@ -5,10 +5,7 @@ export const DEFAULT_PURCHASE_REQUEST_FILTERS = {
   department: "전체 부서",
   status: "전체",
   priority: "전체",
-  requestedFrom: "",
-  requestedTo: "",
-  desiredReceiptFrom: "",
-  desiredReceiptTo: "",
+  desiredReceiptAt: "",
 }
 
 export const DEFAULT_PURCHASE_REQUEST_FILTER_OPTIONS = {
@@ -36,7 +33,7 @@ export const PURCHASE_REQUEST_TABLE_HEADERS = [
   "요청 제목",
   "요청자",
   "요청 부서",
-  "등록일",
+  "요청일",
   "수정일",
   "희망 입고일",
   "품목 수",
@@ -92,13 +89,14 @@ export function downloadPurchaseRequestCsv(requests) {
     "요청 제목",
     "요청자",
     "요청 부서",
-    "등록일",
+    "요청일",
     "수정일",
     "희망 입고일",
     "품목 수",
     "총 요청 금액",
     "우선순위",
     "상태",
+    "관리",
   ]
 
   const rows = requests.map((request) => [
@@ -106,7 +104,7 @@ export function downloadPurchaseRequestCsv(requests) {
     request.title,
     request.requester,
     request.department,
-    request.createdAt ?? request.requestedAt,
+    request.requestedAt ?? request.createdAt,
     request.updatedAt,
     request.desiredReceiptAt,
     request.itemCount,

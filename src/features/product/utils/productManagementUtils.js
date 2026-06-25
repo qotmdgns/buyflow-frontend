@@ -28,6 +28,7 @@ export const PRODUCT_TABLE_HEADERS = [
   "기준 단가",
   "사용 여부",
   "등록일",
+  "수정일",
   "관리",
 ]
 
@@ -81,6 +82,7 @@ export function downloadProductCsv(products) {
     "기준 단가",
     "사용 여부",
     "등록일",
+    "수정일",
   ]
 
   const rows = products.map((product) => [
@@ -92,6 +94,7 @@ export function downloadProductCsv(products) {
     product.unitPrice,
     product.isActive ? "사용" : "미사용",
     product.registeredAt,
+    product.updatedAt,
   ])
 
   const csv = [headers, ...rows]

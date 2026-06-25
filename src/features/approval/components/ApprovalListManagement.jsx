@@ -222,7 +222,7 @@ export default function ApprovalListManagement() {
                     "요청 제목",
                     "요청자",
                     "요청 부서",
-                    "등록일",
+                    "요청일",
                     "수정일",
                     "희망 입고일",
                     "총 요청 금액",
@@ -291,7 +291,7 @@ export default function ApprovalListManagement() {
                       </td>
 
                       <td className="whitespace-nowrap px-3 py-3">
-                        {approval.createdAt || approval.requestedAt || "-"}
+                        {approval.requestedAt || approval.createdAt || "-"}
                       </td>
 
                       <td className="whitespace-nowrap px-3 py-3">

@@ -166,6 +166,7 @@ export default function ProductDetailModal({
               <DetailItem label="유효 종료일" value={product.validEndDate} />
 
               <DetailItem label="등록일" value={product.registeredAt} />
+              <DetailItem label="수정일" value={product.updatedAt} />
             </div>
           </section>
           <section>

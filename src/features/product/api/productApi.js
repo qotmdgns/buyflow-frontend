@@ -23,6 +23,12 @@ function normalizeProductItem(product) {
     currentStock: product.currentStock ?? 0,
     isActive: product.isActive ?? product.useYn !== "N",
     registeredAt: product.registeredAt ?? product.createdAt ?? "",
+    updatedAt:
+      product.updatedAt ??
+      product.modifiedAt ??
+      product.registeredAt ??
+      product.createdAt ??
+      "",
   }
 }
 

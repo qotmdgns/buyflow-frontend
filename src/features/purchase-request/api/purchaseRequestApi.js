@@ -15,13 +15,6 @@ function includesKeyword(value, keyword) {
   return value.toLowerCase().includes(keyword.trim().toLowerCase())
 }
 
-function isWithinRange(value, from, to) {
-  if (from && value < from) return false
-  if (to && value > to) return false
-
-  return true
-}
-
 function filterMockPurchaseRequests(params = {}) {
   const {
     requestNumber = "",
@@ -30,10 +23,7 @@ function filterMockPurchaseRequests(params = {}) {
     department = "전체 부서",
     status = "전체",
     priority = "전체",
-    requestedFrom = "",
-    requestedTo = "",
-    desiredReceiptFrom = "",
-    desiredReceiptTo = "",
+    desiredReceiptAt = "",
   } = params
 
   return mockPurchaseRequests.filter((request) => {
@@ -52,17 +42,8 @@ function filterMockPurchaseRequests(params = {}) {
 
     const matchesPriority = priority === "전체" || request.priority === priority
 
-    const matchesRequestedAt = isWithinRange(
-      request.requestedAt,
-      requestedFrom,
-      requestedTo,
-    )
-
-    const matchesDesiredReceiptAt = isWithinRange(
-      request.desiredReceiptAt,
-      desiredReceiptFrom,
-      desiredReceiptTo,
-    )
+    const matchesDesiredReceiptAt =
+      !desiredReceiptAt || request.desiredReceiptAt === desiredReceiptAt
 
     return (
       matchesRequestNumber &&
@@ -71,7 +52,6 @@ function filterMockPurchaseRequests(params = {}) {
       matchesDepartment &&
       matchesStatus &&
       matchesPriority &&
-      matchesRequestedAt &&
       matchesDesiredReceiptAt
     )
   })
@@ -165,10 +145,6 @@ function normalizePurchaseRequestResponse(data) {
 
 function createQueryString(params) {
   const query = new URLSearchParams()
-  const queryKeyMap = {
-    desiredReceiptFrom: "desiredReceiptFrom",
-    desiredReceiptTo: "desiredReceiptTo",
-  }
 
   Object.entries(params).forEach(([key, value]) => {
     if (
@@ -180,11 +156,10 @@ function createQueryString(params) {
       return
     }
 
-    const queryKey = queryKeyMap[key] ?? key
     const queryValue =
       key === "page" ? String(Math.max(Number(value) - 1, 0)) : String(value)
 
-    query.set(queryKey, queryValue)
+    query.set(key, queryValue)
   })
 
   return query.toString()
