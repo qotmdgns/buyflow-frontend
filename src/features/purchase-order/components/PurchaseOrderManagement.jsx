@@ -131,8 +131,6 @@ export default function PurchaseOrderManagement() {
 
   async function handleDownload() {
     try {
-      // 🚀 백엔드 엑셀 다운로드 API 주소 (환경에 맞게 포트/경로 조절)
-      // 만약 검색 필터(draftFilters) 조건까지 넘기고 싶다면 URL 뒤에 쿼리스트링(?status=... 등)을 붙여주시면 됩니다.
       const excelApiUrl = "http://localhost:8080/api/orders/excel"; 
 
       const response = await fetch(excelApiUrl, {
@@ -303,6 +301,8 @@ export default function PurchaseOrderManagement() {
               총 <span className="font-medium text-slate-700"> {pagination.totalElements}</span>건
             </p>
           </div>
+          
+          <div className="flex gap-2"> 
             <button
               type="button"
               onClick={handleDownload}
@@ -311,13 +311,14 @@ export default function PurchaseOrderManagement() {
               <Download size={13} />
               엑셀 다운로드
             </button>
-          <Link
-            href="/purchase-orders/new"
-            className="flex h-10 items-center gap-1.5 rounded-md bg-blue-600 px-4 text-[13px] font-semibold text-white transition hover:bg-blue-700"
-          >
-            <Plus size={14} />
-            신규 발주 등록
-          </Link>
+            <Link
+              href="/purchase-orders/new"
+              className="flex h-10 items-center gap-1.5 rounded-md bg-blue-600 px-4 text-[13px] font-semibold text-white transition hover:bg-blue-700"
+            >
+              <Plus size={14} />
+              신규 발주 등록
+            </Link>
+          </div>
         </div>
 
         <div className="overflow-x-auto">

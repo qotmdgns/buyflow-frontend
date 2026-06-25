@@ -81,23 +81,34 @@ export default function useCompletedInspectionManagement() {
       setError("")
 
       try {
-        const data = await fetchCompletedInspections({
+
+        const [listData, summaryData] = await Promise.all([
+          fetchCompletedInspections({
           ...appliedFilters,
           inspectionResult: resultFilter,
           page: pagination.page,
           size: pagination.size,
-        })
+          }),
+          fetchCompletedInspectionSummary(appliedFilters)
+        ])
 
         if (ignore) return
 
-        setInspections(data.items ?? [])
-        setPagination(data.pagination ?? DEFAULT_INSPECTION_PAGINATION)
+        setInspections(listData.items || [])
+        setPagination(listData.pagination ?? DEFAULT_INSPECTION_PAGINATION)
+
+        if (summaryData) {
+          setSummary(summaryData)
+        }
+
       } catch (requestError) {
-        if (ignore) return
-
-        setError(
-          requestError.message || "검수 완료 목록을 불러오지 못했습니다.",
-        )
+        if (!ignore) {
+          setInspections([])
+          setSummary({ total: 0, pass: 0, defect: 0 })
+          setError(
+            requestError.message || "검수 완료 목록을 불러오지 못했습니다.",
+          )
+        }
       } finally {
         if (!ignore) {
           setLoading(false)
@@ -111,6 +122,8 @@ export default function useCompletedInspectionManagement() {
       ignore = true
     }
   }, [appliedFilters, resultFilter, pagination.page, pagination.size])
+
+
 
   function updateFilter(name, value) {
     setDraftFilters((currentFilters) => ({

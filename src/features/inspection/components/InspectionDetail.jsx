@@ -350,7 +350,7 @@ export default function InspectionDetail({ inspectionId }) {
               className="inline-flex h-10 items-center gap-1.5 rounded-md bg-blue-600 px-4 text-[13px] font-semibold text-white transition hover:bg-blue-700"
             >
               <ClipboardCheck size={14} />
-              검수 등록
+              검수 수정
             </Link>
           )}
         </div>

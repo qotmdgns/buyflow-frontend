@@ -145,20 +145,14 @@ useEffect(() => {
           memo: detail.memo || "",
           status: detail.orderStatus || detail.status || "CONFIRMED",
         }
+        
         if (detail.attachmentId) {
             setAttachment({
                 id: detail.attachmentId,
                 name: detail.attachmentName || "첨부파일 존재"
             });
-            console.log("=== [EDIT] 첨부파일 상태 세팅 완료 ===", {
-                id: detail.attachmentId,
-                name: detail.attachmentName
-            });
         }
         const forceEditableCoreFields = true
-        console.log("=== [EDIT] editableCoreFields 강제 설정 ===", forceEditableCoreFields)
-
-        console.log("=== [EDIT] setForm 상태 ===", assignedFormState)
         setForm(assignedFormState)
 
         setDetailState({
@@ -264,7 +258,6 @@ function removeItem(requestItemId) {
     const filtered = currentItems.filter(
       (item) => Number(item.requestItemId) !== Number(requestItemId)
     );
-    console.log("=== [REMOVE] 삭제 후 items ===", filtered);
     return filtered;
   });
 }

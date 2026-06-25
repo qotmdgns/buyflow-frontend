@@ -131,10 +131,10 @@ function InspectionResultForm({ form, onChange }) {
           </span>
 
           <input
-            value={form.inspectorName}
-            onChange={(event) => onChange("inspectorName", event.target.value)}
-            className={INPUT_CLASS_NAME}
-            placeholder="검수 담당자 이름을 입력해 주세요."
+            value={form.inspectorName || "로그인 정보 없음"}
+            readOnly
+            disabled
+            className={`${INPUT_CLASS_NAME} cursor-not-allowed bg-slate-50 text-slate-500`}
           />
         </label>
 

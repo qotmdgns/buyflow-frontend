@@ -131,14 +131,6 @@ export function calculatePurchaseOrderLine(item = {}) {
   const supplyAmount = quantity * unitPrice
   const vatAmount = Math.round(supplyAmount * 0.1)   // 또는 Math.floor
 
-  console.log("=== [LINE] 계산 ===", { 
-    quantity, 
-    unitPrice, 
-    supplyAmount, 
-    vatAmount, 
-    totalAmount: supplyAmount + vatAmount 
-  })
-
   return {
     supplyAmount,
     vatAmount,

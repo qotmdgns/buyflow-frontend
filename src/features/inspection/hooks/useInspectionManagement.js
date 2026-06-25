@@ -74,7 +74,7 @@ export default function useInspectionManagement() {
     }
   }, [])
 
-  useEffect(() => {
+useEffect(() => {
     let ignore = false
 
     async function loadInspections() {
@@ -82,23 +82,33 @@ export default function useInspectionManagement() {
       setError("")
 
       try {
-        const data = await fetchPendingInspections({
-          ...appliedFilters,
-
-          summaryFilter,
-
-          page: pagination.page,
-
-          size: pagination.size,
-        })
+        // 🚀 핵심 해결책: Promise.all을 써서 목록(List)과 요약(Summary)을 '항상 동시에' 서버에 요청합니다.
+        const [listData, summaryData] = await Promise.all([
+          fetchPendingInspections({
+            ...appliedFilters,
+            summaryFilter,
+            page: pagination.page,
+            size: pagination.size,
+          }),
+          // 💡 요약 데이터도 새로 요청! (검색 조건이 요약에 반영되길 원한다면 appliedFilters를 넘겨주면 됩니다)
+          fetchPendingInspectionSummary(appliedFilters) 
+        ]);
 
         if (ignore) return
 
-        setInspections(data.items)
+        // 1. 목록 업데이트
+        setInspections(listData.items || [])
+        setPagination(listData.pagination ?? DEFAULT_INSPECTION_PAGINATION)
+        
+        // 2. 요약 카드 업데이트 (프론트에서 억지로 0으로 만들지 않고, 서버가 준 값을 그대로 믿고 꽂아 넣습니다!)
+        if (summaryData) {
+          setSummary(summaryData)
+        }
 
-        setPagination(data.pagination)
       } catch (requestError) {
         if (!ignore) {
+          setInspections([])
+          setSummary({ total: 0, receivedToday: 0, urgent: 0, overdue: 0 })
           setError(
             requestError.message || "검수 대기 목록을 불러오지 못했습니다.",
           )
