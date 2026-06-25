@@ -18,7 +18,7 @@ function SelectField({ value, options, onChange }) {
       onChange={onChange}
       className={`${INPUT_CLASS_NAME} bg-white`}
     >
-      {options.map((option) => (
+      {(options || []).map((option) => (
         <option key={option} value={option}>
           {option}
         </option>
@@ -49,17 +49,16 @@ export default function WarehouseSearchForm({
           <FieldLabel>창고 유형</FieldLabel>
 
           <SelectField
-            value={filters.type}
-            options={filterOptions.warehouseTypes}
+            value={filters.type || ""}
+            options={filterOptions?.warehouseTypes} 
             onChange={(event) => onChange("type", event.target.value)}
           />
         </label>
 
         <label>
           <FieldLabel>창고명</FieldLabel>
-
           <input
-            value={filters.warehouseName}
+            value={filters.warehouseName || ""} 
             onChange={(event) => onChange("warehouseName", event.target.value)}
             placeholder="창고명 입력"
             className={INPUT_CLASS_NAME}
@@ -70,7 +69,7 @@ export default function WarehouseSearchForm({
           <FieldLabel>담당자</FieldLabel>
 
           <input
-            value={filters.managerName}
+            value={filters.managerName || ""} 
             onChange={(event) => onChange("managerName", event.target.value)}
             placeholder="성명 입력"
             className={INPUT_CLASS_NAME}
@@ -81,8 +80,8 @@ export default function WarehouseSearchForm({
           <FieldLabel>사용 여부</FieldLabel>
 
           <SelectField
-            value={filters.useYn}
-            options={filterOptions.useYn}
+            value={filters.useYn || ""}
+            options={filterOptions?.useYn} 
             onChange={(event) => onChange("useYn", event.target.value)}
           />
         </label>

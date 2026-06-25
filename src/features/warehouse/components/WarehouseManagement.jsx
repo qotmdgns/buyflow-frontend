@@ -103,7 +103,7 @@ export default function WarehouseManagement() {
 
       {formMode && (
         <WarehouseFormModal
-          key={`${formMode}-${editingWarehouse?.id ?? "new"}`}
+          key={`${formMode}-${editingWarehouse?.warehouseCode ?? "new"}`}
           mode={formMode}
           initialValue={editingWarehouse}
           onClose={closeWarehouseForm}
