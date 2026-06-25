@@ -486,7 +486,6 @@ export default function PurchaseOrderForm({
 
             <tbody>
             {items.map((item, index) => {
-              console.log(`=== [TABLE ITEM ${index}] 실제 데이터 ===`, item)
               const line = calculatePurchaseOrderLine(item)
 
               return (
@@ -523,14 +522,14 @@ export default function PurchaseOrderForm({
                   <td className="px-3 py-2.5 text-right">{formatWon(line.vatAmount)}</td>
                   <td className="px-3 py-2.5 text-right font-semibold">{formatWon(line.totalAmount)}</td>
                   <td className="px-3 py-2.5 text-center">
-<button 
-  type="button" 
-  onClick={() => onRemoveItem(item.requestItemId)} 
-  disabled={!editableCoreFields} 
-  className="text-slate-400 hover:text-rose-500 disabled:opacity-30"
->
-  <Trash2 size={14} />
-</button>
+                    <button 
+                      type="button" 
+                      onClick={() => onRemoveItem(item.requestItemId)} 
+                      disabled={!editableCoreFields} 
+                      className="text-slate-400 hover:text-rose-500 disabled:opacity-30"
+                    >
+                      <Trash2 size={14} />
+                    </button>
                   </td>
                 </tr>
               )

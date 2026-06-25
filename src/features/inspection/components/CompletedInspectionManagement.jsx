@@ -55,14 +55,24 @@ export default function CompletedInspectionManagement() {
       />
 
       <section className="mt-3 overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm">
-        <div className="border-b border-slate-100 px-4 py-3">
-          <h2 className="text-[15px] font-bold text-slate-800">
-            검수 완료 목록
-          </h2>
+        <div className="flex flex-col gap-3 border-b border-slate-100 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <h2 className="text-[15px] font-bold text-slate-800">
+              검수 완료 목록
+            </h2>
 
-          <p className="mt-0.5 text-[13px] text-slate-400">
-            총 {pagination.totalElements.toLocaleString("ko-KR")}건
-          </p>
+            <p className="mt-0.5 text-[13px] text-slate-400">
+              총 {pagination.totalElements.toLocaleString("ko-KR")}건
+            </p>
+          </div>
+
+          <Link
+            href="/inspections"
+            className="inline-flex h-9 w-fit items-center justify-center gap-1.5 rounded-md border border-slate-200 bg-white px-3 text-[13px] font-semibold text-slate-600 shadow-sm transition hover:bg-slate-50 hover:text-blue-600"
+          >
+            <ClipboardList size={15} />
+            검수 대기 목록
+          </Link>
         </div>
 
         <CompletedInspectionTable

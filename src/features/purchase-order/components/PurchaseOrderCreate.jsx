@@ -17,12 +17,9 @@ export default function PurchaseOrderCreate() {
     if (!result) {
       return
     }
-
-    window.alert(
-      status === "CONFIRMED"
-        ? `${result.orderNumber} 발주를 확정했습니다.`
-        : `${result.orderNumber} 발주를 임시 저장했습니다.`,
-    )
+    if (status === "CONFIRMED") {
+      window.alert("발주를 확정했습니다.")
+    }
 
     router.push("/purchase-orders")
   }

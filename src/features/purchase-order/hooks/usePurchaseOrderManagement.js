@@ -64,7 +64,6 @@ export default function usePurchaseOrderManagement() {
         }
         
         const response = await res.json();
-        console.log("✅ 성공적으로 받아옴:", response);
 
         if (ignore) {
           return
@@ -98,8 +97,6 @@ export default function usePurchaseOrderManagement() {
           size: pagination.size,
         };
 
-        console.log("📤 [SEARCH] 최종 params:", params);
-
         const data = await fetchPurchaseOrders(params);
 
         if (!ignore) {
@@ -113,7 +110,6 @@ export default function usePurchaseOrderManagement() {
             totalPages: data.totalPages ?? data.pagination?.totalPages ?? 1,
           };
 
-          console.log("🆕 새 pagination 적용:", newPagination);
           setPagination(newPagination);
         }
       } catch (requestError) {
@@ -156,7 +152,6 @@ export default function usePurchaseOrderManagement() {
 
   function movePage(page) {
     const newPage = Math.max(1, Math.min(page, pagination.totalPages || 1));
-    console.log(`🔄 movePage: ${pagination.page} → ${newPage}`);
 
     setPagination(prev => ({ ...prev, page: newPage }));
     setRefreshKey(k => k + 1);   // 강제 트리거
