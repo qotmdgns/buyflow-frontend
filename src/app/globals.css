@@ -154,3 +154,26 @@ input {
     }
   }
 }
+
+/* 대시보드 본문 위치 / 여백 보정 */
+.dashboard-main-shell {
+  min-height: 100vh;
+}
+
+.dashboard-main-content {
+  padding: 16px 12px;
+}
+
+@media (min-width: 1024px) {
+  .dashboard-main-shell {
+    /*
+      sidebar 기본 폭 220px + 본문 여백 24px
+      zoom 0.9 적용 후 실제 화면에서는 약 22px 여백처럼 보임
+    */
+    padding-left: 244px;
+  }
+
+  .dashboard-main-content {
+    padding: 18px 22px 18px 0;
+  }
+}

@@ -7,10 +7,10 @@ export default function DashboardLayout({ children }) {
     <div className="erp-dashboard dashboard-density-90 min-h-screen bg-[#f8fafc] text-slate-800">
       <Sidebar />
 
-      <div className="lg:pl-[220px]">
+      <div className="dashboard-main-shell">
         <Header />
 
-        <main className="px-3 py-4 lg:px-4">{children}</main>
+        <main className="dashboard-main-content">{children}</main>
       </div>
     </div>
   )
