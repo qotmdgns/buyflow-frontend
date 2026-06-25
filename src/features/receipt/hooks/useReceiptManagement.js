@@ -32,6 +32,7 @@ export default function useReceiptManagement() {
   const [appliedFilters, setAppliedFilters] = useState(DEFAULT_RECEIPT_FILTERS)
 
   const [activeTab, setActiveTab] = useState("EXPECTED")
+  const [cardFilter, setCardFilter] = useState("ALL")
 
   const [filterOptions, setFilterOptions] = useState({
     warehouses: ["전체 창고"],
@@ -89,6 +90,7 @@ export default function useReceiptManagement() {
   const data = await fetchReceipts({
     ...appliedFilters,
     activeTab,
+    cardFilter,
     page: currentPage,
     size: currentSize,
   })
@@ -130,7 +132,7 @@ const nextPagination = {
     return () => {
       ignore = true
     }
-  }, [activeTab, appliedFilters, currentPage, currentSize])
+  }, [activeTab, cardFilter, appliedFilters, currentPage, currentSize])
 
   const allCurrentRowsSelected = useMemo(() => {
     return (
@@ -171,6 +173,7 @@ const nextPagination = {
 
   function selectTab(tab) {
     setActiveTab(tab)
+    setCardFilter("ALL")
 
     setDraftFilters((currentFilters) => ({
       ...currentFilters,
@@ -188,6 +191,19 @@ const nextPagination = {
       page: 1,
     }))
   }
+
+ function selectCard(filter) {
+  setCardFilter(filter)
+
+  // 카드를 누르면 탭은 전체 기준으로 조회
+  setActiveTab("ALL")
+
+  setPagination((currentPagination) => ({
+    ...DEFAULT_RECEIPT_PAGINATION,
+    ...(currentPagination ?? {}),
+    page: 1,
+  }))
+}
 
   function movePage(page) {
     setPagination((currentPagination) => ({
@@ -243,6 +259,7 @@ const nextPagination = {
   return {
     draftFilters,
     activeTab,
+    cardFilter,
     filterOptions,
     summary,
     receipts,
@@ -255,6 +272,7 @@ const nextPagination = {
     searchReceipts,
     resetFilters,
     selectTab,
+    selectCard,
     movePage,
     changePageSize,
     toggleAllRows,

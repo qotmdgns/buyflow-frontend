@@ -9,6 +9,7 @@ import {
   ChevronRight,
   ChevronsLeft,
   ChevronsRight,
+  CheckCircle2,
   CircleAlert,
   Download,
   Package,
@@ -16,7 +17,6 @@ import {
   Printer,
   RefreshCcw,
   Search,
-  Settings2,
   Truck,
 } from "lucide-react"
 
@@ -32,7 +32,14 @@ import {
 const INPUT_CLASS_NAME =
   "h-10 w-full rounded-md border border-slate-200 bg-white px-3 text-[13px] text-slate-700 outline-none transition placeholder:text-slate-300 focus:border-blue-400 focus:ring-2 focus:ring-blue-100"
 
-function MetricCard({ title, value, helper, icon: Icon, tone }) {
+function MetricCard({
+  title,
+  value,
+  helper,
+  icon: Icon,
+  tone,
+  onClick,
+}) {
   const toneStyles = {
     slate: {
       card: "border-l-slate-700",
@@ -46,13 +53,18 @@ function MetricCard({ title, value, helper, icon: Icon, tone }) {
       card: "border-l-amber-500",
       icon: "bg-amber-50 text-amber-500",
     },
+    emerald: {
+  card: "border-l-emerald-500",
+  icon: "bg-emerald-50 text-emerald-500",
+},
   }
 
   const style = toneStyles[tone]
 
   return (
     <article
-      className={`flex min-h-[92px] items-center justify-between rounded-lg border border-slate-200 border-l-4 bg-white px-4 py-3 shadow-sm ${style.card}`}
+  onClick={onClick}
+      className={`cursor-pointer flex min-h-[92px] items-center justify-between rounded-lg border border-slate-200 border-l-4 bg-white px-4 py-3 shadow-sm ${style.card}`}
     >
       <div>
         <p className="text-[13px] font-semibold text-slate-500">{title}</p>
@@ -125,6 +137,7 @@ export default function ReceiptManagement() {
   const {
     draftFilters,
     activeTab,
+    cardFilter,
     filterOptions,
     summary,
     receipts,
@@ -137,6 +150,7 @@ export default function ReceiptManagement() {
     searchReceipts,
     resetFilters,
     selectTab,
+    selectCard,
     movePage,
     changePageSize,
     toggleAllRows,
@@ -200,57 +214,6 @@ export default function ReceiptManagement() {
           </Link>
         </div>
       </header>
-
-      <section className="grid gap-3 md:grid-cols-3">
-        <MetricCard
-          title="오늘 입고 예정"
-          value={summary.todayExpected}
-          helper={`어제 대비 +${summary.yesterdayDifference}건`}
-          icon={Truck}
-          tone="slate"
-        />
-
-        <MetricCard
-          title="납기 지연"
-          value={summary.delayed}
-          helper="즉시 확인 필요"
-          icon={CircleAlert}
-          tone="rose"
-        />
-
-        <MetricCard
-          title="부분 입고"
-          value={summary.partial}
-          helper={`진행률 ${summary.progressRate}%`}
-          icon={Package}
-          tone="amber"
-        />
-      </section>
-
-      <div className="mt-4 flex gap-4 border-b border-slate-200">
-        {RECEIPT_TABS.map((tab) => {
-          const isActive = activeTab === tab.key
-
-          return (
-            <button
-  key={tab.key}
-  type="button"
-  onClick={() => selectTab(tab.key)}
-  className={`border-b-2 px-1 pb-2 text-[13px] font-semibold transition ${
-    isActive
-      ? "border-slate-800 text-slate-800"
-      : "border-transparent text-slate-400 hover:text-slate-600"
-  }`}
->
-  {tab.label} (
-    {summary.tabCounts?.[tab.key] ??
-      summary.tabCounts?.[tab.key.toLowerCase()] ??
-      0}
-  )
-</button>
-          )
-        })}
-      </div>
 
       <form
         onSubmit={searchReceipts}
@@ -391,6 +354,84 @@ export default function ReceiptManagement() {
         </div>
       </form>
 
+      <section className="grid gap-3 md:grid-cols-5">
+        <MetricCard
+  title="전체"
+  value={
+  (summary.tabCounts?.expected ?? 0) +
+  (summary.tabCounts?.partial ?? 0) +
+  (summary.tabCounts?.completed ?? 0)
+}
+  helper="전체 입고 목록"
+  icon={Package}
+  tone="slate"
+  onClick={() => selectCard("ALL")}
+/>
+
+        <MetricCard
+          title="입고 예정"
+          value={summary.tabCounts?.expected ?? 0}
+          helper={"입고 대기"}
+          icon={Truck}
+          tone="slate"
+          onClick={() => selectCard("EXPECTED")}
+        />
+
+        <MetricCard
+          title="납기 지연"
+          value={summary.delayed}
+          helper="즉시 확인 필요"
+          icon={CircleAlert}
+          tone="rose"
+          onClick={() => selectCard("DELAYED")}
+        />
+
+        <MetricCard
+          title="부분 입고"
+          value={summary.partial}
+          helper={`진행률 ${summary.progressRate}%`}
+          icon={Package}
+          tone="amber"
+          onClick={() => selectCard("PARTIAL")}
+        />
+
+        <MetricCard
+  title="입고 완료"
+  value={summary.tabCounts?.completed ?? 0}
+  helper="입고 완료"
+  icon={CheckCircle2}
+  tone="emerald"
+  onClick={() => selectCard("COMPLETED")}
+/>
+      </section>
+
+      <div className="hidden">
+        {RECEIPT_TABS.map((tab) => {
+          const isActive = activeTab === tab.key
+
+          return (
+            <button
+  key={tab.key}
+  type="button"
+  onClick={() => selectTab(tab.key)}
+  className={`border-b-2 px-1 pb-2 text-[13px] font-semibold transition ${
+    isActive
+      ? "border-slate-800 text-slate-800"
+      : "border-transparent text-slate-400 hover:text-slate-600"
+  }`}
+>
+  {tab.label} (
+    {summary.tabCounts?.[tab.key] ??
+      summary.tabCounts?.[tab.key.toLowerCase()] ??
+      0}
+  )
+</button>
+          )
+        })}
+      </div>
+
+      
+
       <section className="mt-3 overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm">
         <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 px-4 py-3">
           <div className="flex items-center gap-2">
@@ -411,12 +452,7 @@ export default function ReceiptManagement() {
 엑셀 다운로드
             </button>
 
-            <button
-              type="button"
-              className="flex h-9 items-center gap-1.5 rounded-md border border-slate-200 bg-white px-3 text-[13px] font-semibold text-slate-600 transition hover:bg-slate-50"
-            >
-              <Settings2 size={13} />열 설정
-            </button>
+            
           </div>
         </div>
 
@@ -456,6 +492,8 @@ export default function ReceiptManagement() {
                 ))}
               </tr>
             </thead>
+            
+            
 
             <tbody>
               {loading && (
