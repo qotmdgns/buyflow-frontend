@@ -134,3 +134,23 @@ input {
 .erp-dashboard main .min-h-\[118px\] {
   min-height: 108px;
 }
+
+@media (min-width: 1024px) {
+  .dashboard-density-90 {
+    zoom: 0.9;
+    min-width: 111.111vw;
+    min-height: 111.111vh;
+  }
+}
+
+/* Firefox 등 zoom 미지원 브라우저 대비 */
+@supports not (zoom: 1) {
+  @media (min-width: 1024px) {
+    .dashboard-density-90 {
+      transform: scale(0.9);
+      transform-origin: top left;
+      width: 111.111vw;
+      min-height: 111.111vh;
+    }
+  }
+}
