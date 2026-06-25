@@ -215,6 +215,13 @@ export default function PurchaseOrderForm({
                     value={form.requestId || ""}
                     onChange={(event) => {
                       const value = event.target.value;
+                      if (value === "") {
+                        if (typeof onChange === "function") {
+                          onChange("requestId", "")
+                        }
+                        return;
+                      }
+                      
                       if (typeof onApplyPurchaseRequest === "function") {
                         onApplyPurchaseRequest(value);
                       } else {
@@ -223,6 +230,7 @@ export default function PurchaseOrderForm({
                           onChange("requestId", value);
                         }
                       }
+                      
                     }}  
                     disabled={!editableCoreFields}
                     className={INPUT_CLASS_NAME}
