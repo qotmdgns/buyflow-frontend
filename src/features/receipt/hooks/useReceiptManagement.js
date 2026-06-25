@@ -54,6 +54,7 @@ export default function useReceiptManagement() {
   useEffect(() => {
     fetchReceiptFilterOptions()
       .then((data) => {
+        console.log("filterOptions =", data)
         setFilterOptions(
           data ?? {
             warehouses: ["전체 창고"],
@@ -85,6 +86,7 @@ export default function useReceiptManagement() {
       try {
   console.log("loadReceipts 실행됨")
   console.log("activeTab =", activeTab)
+  console.log("draftFilters =", draftFilters)
   console.log("appliedFilters =", appliedFilters)
 
   const data = await fetchReceipts({
@@ -148,17 +150,20 @@ const nextPagination = {
     }))
   }
 
-  function searchReceipts(event) {
-    event.preventDefault()
+function searchReceipts(event) {
+  event.preventDefault()
 
-    setPagination((currentPagination) => ({
-      ...DEFAULT_RECEIPT_PAGINATION,
-      ...(currentPagination ?? {}),
-      page: 1,
-    }))
+  console.log("===== searchReceipts =====")
+  console.log("draftFilters =", draftFilters)
 
-    setAppliedFilters({ ...draftFilters })
-  }
+  setPagination((currentPagination) => ({
+    ...DEFAULT_RECEIPT_PAGINATION,
+    ...(currentPagination ?? {}),
+    page: 1,
+  }))
+
+  setAppliedFilters({ ...draftFilters })
+}
 
   function resetFilters() {
     setDraftFilters({ ...DEFAULT_RECEIPT_FILTERS })
