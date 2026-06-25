@@ -292,10 +292,12 @@ export async function updateDepartmentPermissions(departmentName, groups) {
   return buildGroupsFromPermissionCatalog(permissions, savedCodes)
 }
 
-export async function fetchUserFilterOptions() {
+export async function fetchUserFilterOptions(rolesSource) {
+  const rolesPromise =
+    rolesSource === undefined ? fetchRoles() : Promise.resolve(rolesSource)
   const [departments, roles] = await Promise.all([
     apiFetch(`/api/admin/users/departments`, { method: "GET" }),
-    fetchRoles(),
+    rolesPromise,
   ])
 
   return {

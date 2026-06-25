@@ -65,11 +65,14 @@ function getMockSuppliers(params) {
 
 function normalizeSupplierResponse(data) {
   if (Array.isArray(data.items) && data.pagination) {
-    return data
+    return {
+      ...data,
+      items: data.items.map(normalizeSupplierDetailResponse),
+    }
   }
 
   return {
-    items: data.content ?? [],
+    items: (data.content ?? []).map(normalizeSupplierDetailResponse),
     pagination: {
       page: (data.number ?? 0) + 1,
       size: data.size ?? 10,
@@ -119,7 +122,39 @@ const SUPPLIER_TRADE_STATUS_LABELS = {
   INACTIVE: "거래중지",
 }
 
+function toTradeStatusCode(value) {
+  if (value === "거래중" || value === "ACTIVE") {
+    return "ACTIVE"
+  }
+
+  if (value === "거래중지" || value === "STOPPED" || value === "INACTIVE") {
+    return "STOPPED"
+  }
+
+  return value || "ACTIVE"
+}
+
+function normalizeBusinessNumber(value) {
+  return String(value ?? "").replace(/[^0-9]/g, "")
+}
+
+function toSupplierRequestPayload(form) {
+  return {
+    supplierCode: form.code?.trim() || null,
+    supplierName: form.name?.trim() || "",
+    businessNumber: normalizeBusinessNumber(form.businessNumber) || null,
+    manager: form.manager?.trim() || null,
+    phone: form.phone?.trim() || null,
+    email: form.email?.trim() || null,
+    address: form.address?.trim() || null,
+    tradeStatus: toTradeStatusCode(form.tradeStatus),
+  }
+}
+
 function normalizeSupplierDetailResponse(data) {
+  const tradeStatusCode =
+    data.tradeStatusCode ?? toTradeStatusCode(data.tradeStatus)
+
   return {
     id: data.id ?? data.supplierId,
     code: data.code ?? data.supplierCode ?? "",
@@ -131,7 +166,8 @@ function normalizeSupplierDetailResponse(data) {
     email: data.email ?? "",
     address: data.address ?? "",
     tradeStatus:
-      SUPPLIER_TRADE_STATUS_LABELS[data.tradeStatus] ?? data.tradeStatus ?? "",
+      SUPPLIER_TRADE_STATUS_LABELS[tradeStatusCode] ?? data.tradeStatus ?? "",
+    tradeStatusCode,
     registeredAt:
       data.registeredAt ??
       data.createdAt?.slice?.(0, 10) ??
@@ -162,6 +198,47 @@ export async function fetchSupplierById(supplierId) {
   const data = await apiFetch(
     `/api/suppliers/${encodeURIComponent(supplierId)}`,
     { cache: "no-store" },
+  )
+
+  return normalizeSupplierDetailResponse(data)
+}
+
+export async function createSupplier(form) {
+  if (USE_MOCK) {
+    await wait(100)
+    return normalizeSupplierDetailResponse({
+      id: Date.now(),
+      ...toSupplierRequestPayload(form),
+    })
+  }
+
+  const data = await apiFetch("/api/suppliers", {
+    method: "POST",
+    body: JSON.stringify(toSupplierRequestPayload(form)),
+  })
+
+  return normalizeSupplierDetailResponse(data)
+}
+
+export async function updateSupplier(supplierId, form) {
+  if (!supplierId) {
+    throw new Error("수정할 공급업체 ID가 없습니다.")
+  }
+
+  if (USE_MOCK) {
+    await wait(100)
+    return normalizeSupplierDetailResponse({
+      id: supplierId,
+      ...toSupplierRequestPayload(form),
+    })
+  }
+
+  const data = await apiFetch(
+    `/api/suppliers/${encodeURIComponent(supplierId)}`,
+    {
+      method: "PUT",
+      body: JSON.stringify(toSupplierRequestPayload(form)),
+    },
   )
 
   return normalizeSupplierDetailResponse(data)

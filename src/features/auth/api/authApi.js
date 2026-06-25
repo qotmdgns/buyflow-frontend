@@ -3,6 +3,15 @@ import { apiFetch } from "@/lib/api/fetchClient"
 const LOCAL_SESSION_KEY = "buyflow.auth.local-session"
 const SESSION_SESSION_KEY = "buyflow.auth.session-session"
 
+const ROLE_LABELS = {
+  ADMIN: "시스템 관리자",
+  TEAM_MANAGER: "부서 팀장",
+  WAREHOUSE: "창고 담당자",
+  VIEWER: "조회 전용",
+  REQUESTER: "구매 요청자",
+  APPROVER: "구매 승인자",
+}
+
 function canUseBrowserStorage() {
   return typeof window !== "undefined"
 }
@@ -33,6 +42,56 @@ function saveSession(session, remember) {
   writeJson(window.sessionStorage, SESSION_SESSION_KEY, session)
 }
 
+function normalizeRank(user) {
+  const raw = user?.jobRank ?? user?.rank
+
+  if (raw && raw !== "USER" && raw !== "ADMIN") {
+    return raw
+  }
+
+  return user?.positionName ?? user?.position ?? ""
+}
+
+function normalizeStatus(user) {
+  if (user?.useYn === "N") return "사용 중지"
+  if (user?.status === "PENDING") return "승인 대기"
+  if (user?.status === "INACTIVE" || user?.status === "SUSPENDED") {
+    return "사용 중지"
+  }
+
+  return user?.status ? "정상" : ""
+}
+
+function formatRoles(roles) {
+  return (roles ?? [])
+    .map((role) => ROLE_LABELS[role] ?? role)
+    .filter(Boolean)
+    .join(", ")
+}
+
+function normalizeAuthUser(session) {
+  const user = session?.user ?? session
+
+  if (!user) {
+    return null
+  }
+
+  const roles = session?.roles ?? user.roles ?? []
+  const permissions = session?.permissions ?? user.permissions ?? []
+
+  return {
+    ...user,
+    roles,
+    permissions,
+    employeeNo: user.employeeNo ?? user.userId ?? user.loginId ?? "",
+    name: user.name ?? user.userName ?? "",
+    rank: normalizeRank(user),
+    department: user.department ?? user.departmentName ?? "",
+    role: user.role ?? formatRoles(roles),
+    accountStatus: user.accountStatus ?? normalizeStatus(user),
+  }
+}
+
 export function getCurrentUser() {
   if (!canUseBrowserStorage()) return null
 
@@ -40,7 +99,7 @@ export function getCurrentUser() {
     readJson(window.sessionStorage, SESSION_SESSION_KEY, null) ??
     readJson(window.localStorage, LOCAL_SESSION_KEY, null)
 
-  return session?.user ?? null
+  return normalizeAuthUser(session)
 }
 
 export async function login({ loginId, password, remember }) {
@@ -52,7 +111,7 @@ export async function login({ loginId, password, remember }) {
   // 백엔드 응답에 token, user 등이 담겨 옴
   saveSession(data, remember)
 
-  return data.user ?? data
+  return normalizeAuthUser(data)
 }
 
 export function logout() {

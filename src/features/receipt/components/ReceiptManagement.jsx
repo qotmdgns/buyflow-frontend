@@ -24,7 +24,6 @@ import useReceiptManagement from "@/features/receipt/hooks/useReceiptManagement"
 
 import {
   createPageNumbers,
-  downloadReceiptCsv,
   formatNumber,
   getReceiptStatusMeta,
   RECEIPT_TABS,
@@ -142,8 +141,7 @@ export default function ReceiptManagement() {
     changePageSize,
     toggleAllRows,
     toggleRow,
-    exportReceipts,
-  } = useReceiptManagement()
+    } = useReceiptManagement()
 
   const pageNumbers = useMemo(
     () => createPageNumbers(pagination.page, pagination.totalPages),
@@ -161,19 +159,12 @@ export default function ReceiptManagement() {
 
  
 
-  async function handleDownload() {
-    try {
-      const filteredReceipts = await exportReceipts()
-      downloadReceiptCsv(filteredReceipts)
-    } catch (downloadError) {
-      console.error(
-        "입고 목록 CSV 다운로드 중 오류가 발생했습니다.",
-        downloadError,
-      )
-
-      window.alert("입고 목록을 다운로드하지 못했습니다.")
-    }
-  }
+  function handleDownload() {
+  window.open(
+    `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/receipts/excel`,
+    "_blank",
+  )
+}
 
   function handlePrintReport() {
     window.print()
@@ -417,7 +408,7 @@ export default function ReceiptManagement() {
               className="flex h-9 items-center gap-1.5 rounded-md border border-slate-200 bg-white px-3 text-[13px] font-semibold text-slate-600 transition hover:bg-slate-50"
             >
               <Download size={13} />
-              CSV 다운로드
+엑셀 다운로드
             </button>
 
             <button

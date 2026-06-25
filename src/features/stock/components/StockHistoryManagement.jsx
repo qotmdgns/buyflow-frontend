@@ -220,13 +220,18 @@ export default function StockHistoryManagement({ initialFilters }) {
           </div>
 
           <button
-            type="button"
-            onClick={() => downloadStockHistoryCsv(histories)}
-            className="flex h-9 items-center gap-1.5 rounded-md border border-slate-200 bg-white px-3 text-[13px] font-semibold text-slate-600 transition hover:bg-slate-50"
-          >
-            <Download size={14} />
-            CSV 다운로드
-          </button>
+  type="button"
+  onClick={() => {
+    window.open(
+      `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/stock-history/excel`,
+      "_blank",
+    )
+  }}
+  className="flex h-9 items-center gap-1.5 rounded-md border border-slate-200 bg-white px-3 text-[13px] font-semibold text-slate-600 transition hover:bg-slate-50"
+>
+  <Download size={14} />
+  엑셀 다운로드
+</button>
         </div>
 
         <div className="overflow-x-auto">

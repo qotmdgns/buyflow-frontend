@@ -12,7 +12,11 @@ function getInitial(name) {
 }
 
 function getDisplayName(user) {
-  return [user?.name, user?.rank].filter(Boolean).join(" ")
+  const displayName = [user?.name ?? user?.userName, user?.rank ?? user?.jobRank]
+    .filter(Boolean)
+    .join(" ")
+
+  return displayName || user?.loginId || "-"
 }
 
 export default function SidebarAccount() {
@@ -67,7 +71,7 @@ export default function SidebarAccount() {
           className="flex min-w-0 flex-1 items-center gap-3 rounded-md p-1 text-left"
         >
           <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-slate-800 text-[12px] font-bold text-white">
-            {getInitial(user.name)}
+            {getInitial(user.name ?? user.userName ?? user.loginId)}
           </span>
 
           <span className="min-w-0 flex-1">
@@ -76,7 +80,7 @@ export default function SidebarAccount() {
             </span>
 
             <span className="block truncate text-[12px] text-emerald-500">
-              ● {user.department ?? "-"}
+              ● {user.department ?? user.departmentName ?? "-"}
             </span>
           </span>
         </button>

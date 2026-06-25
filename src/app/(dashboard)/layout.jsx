@@ -1,5 +1,6 @@
 import Header from "@/components/layout/Header"
 import Sidebar from "@/components/layout/Sidebar"
+import RequireAuth from "@/features/auth/components/RequireAuth"
 
 export default function DashboardLayout({ children }) {
   return (
