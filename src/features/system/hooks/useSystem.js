@@ -80,9 +80,10 @@ export default function useSystem({ delegateOnly = false } = {}) {
 
     async function loadInitialOptions() {
       try {
+        const rolesPromise = fetchRoles()
         const [nextFilterOptions, nextRoles, nextDepartmentProfiles] = await Promise.all([
-          fetchUserFilterOptions(),
-          fetchRoles(),
+          fetchUserFilterOptions(rolesPromise),
+          rolesPromise,
           fetchDepartmentPermissionProfiles(),
         ])
 
