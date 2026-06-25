@@ -196,15 +196,7 @@ export default function ReceiptManagement() {
         </div>
 
         <div className="flex items-center gap-2">
-          <button
-            type="button"
-            onClick={handlePrintReport}
-            className="flex h-10 items-center gap-1.5 rounded-md border border-slate-200 bg-white px-3 text-[13px] font-semibold text-slate-600 transition hover:bg-slate-50"
-          >
-            <Printer size={14} />
-            보고서 출력
-          </button>
-
+          
           <Link
             href="/receipts/new"
             className="flex h-10 items-center gap-1.5 rounded-md bg-blue-600 px-3 text-[13px] font-semibold text-white transition hover:bg-blue-700"
