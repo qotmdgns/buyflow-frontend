@@ -10,6 +10,8 @@ import {
   STOCK_HISTORY_TABLE_HEADERS,
 } from "@/features/stock/utils/stockManagementUtils"
 
+import { useRouter } from "next/navigation"
+
 const INPUT_CLASS_NAME =
   "h-10 w-full rounded-md border border-slate-200 px-3 text-[14px] outline-none transition placeholder:text-slate-300 focus:border-blue-400 focus:ring-2 focus:ring-blue-100"
 
@@ -95,6 +97,7 @@ function getStockHistoryRowKey(history, index) {
 }
 
 export default function StockHistoryManagement({ initialFilters }) {
+  const router = useRouter()
   const {
     draftFilters,
     filterOptions,
@@ -189,6 +192,14 @@ export default function StockHistoryManagement({ initialFilters }) {
 
         <div className="mt-3 flex justify-end gap-2">
           <button
+  type="button"
+  onClick={() => router.push("/stock")}
+  className="flex h-10 items-center gap-1.5 rounded-md border border-slate-200 bg-white px-4 text-[13px] font-semibold text-slate-600 transition hover:bg-slate-50"
+>
+  재고 현황
+</button>
+          
+          <button
             type="button"
             onClick={resetFilters}
             className="flex h-10 items-center gap-1.5 rounded-md border border-slate-200 bg-white px-4 text-[13px] font-semibold text-slate-600 transition hover:bg-slate-50"
@@ -204,6 +215,7 @@ export default function StockHistoryManagement({ initialFilters }) {
             <Search size={14} />
             검색
           </button>
+          
         </div>
       </form>
 
