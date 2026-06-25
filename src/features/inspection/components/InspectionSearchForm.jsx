@@ -129,12 +129,12 @@ export default function InspectionSearchForm({
           />
         </label>
 
-        <label className="xl:col-span-2">
+<label className="xl:col-span-2">
           <FieldLabel>입고일</FieldLabel>
 
           <DateRangeField
-            from={filters.receivedFrom}
-            to={filters.receivedTo}
+            from={filters.receivedFrom || ""}
+            to={filters.receivedTo || ""}
             onFromChange={(value) => onChange("receivedFrom", value)}
             onToChange={(value) => onChange("receivedTo", value)}
           />
