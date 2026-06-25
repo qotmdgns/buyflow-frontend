@@ -8,8 +8,8 @@ const CARD_ITEMS = [
   {
     status: "전체",
     summaryKey: "total",
-    title: "조회 재고 건수",
-    description: "검색 조건에 포함된 전체 품목",
+    title: "전체 재고 건수",
+    description: "전체 재고 목록",
     icon: Search,
     borderClassName: "border-l-slate-700",
     iconClassName: "bg-slate-100 text-slate-600",
