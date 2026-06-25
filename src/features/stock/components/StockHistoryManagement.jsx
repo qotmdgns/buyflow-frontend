@@ -59,6 +59,7 @@ function SelectField({
 }
 
 function MovementBadge({ type }) {
+  console.log("MovementBadge:", JSON.stringify(type))
   const labels = {
     INBOUND: "입고",
     INSPECTION_ADJUST: "검수 조정",

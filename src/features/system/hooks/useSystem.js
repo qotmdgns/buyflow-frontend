@@ -11,7 +11,8 @@ import {
   fetchRoles,
   fetchUserFilterOptions,
   fetchUsers,
-  isSystemAdminPermissionProfile,
+  isRolePermissionProfile,
+  roleCodeFromPermissionProfileId,
   updateDepartmentPermissions,
   updateRolePermissions,
   updateUser,
@@ -165,8 +166,8 @@ export default function useSystem({ delegateOnly = false } = {}) {
       setPermissionError("")
 
       try {
-        const data = isSystemAdminPermissionProfile(selectedRoleId)
-          ? await fetchRolePermissions("ADMIN")
+        const data = isRolePermissionProfile(selectedRoleId)
+          ? await fetchRolePermissions(roleCodeFromPermissionProfileId(selectedRoleId))
           : await fetchDepartmentPermissions(selectedRoleId)
 
         if (!ignore) {
@@ -317,8 +318,11 @@ export default function useSystem({ delegateOnly = false } = {}) {
     setPermissionError("")
 
     try {
-      const savedGroups = isSystemAdminPermissionProfile(selectedRoleId)
-        ? await updateRolePermissions("ADMIN", permissionGroups)
+      const savedGroups = isRolePermissionProfile(selectedRoleId)
+        ? await updateRolePermissions(
+            roleCodeFromPermissionProfileId(selectedRoleId),
+            permissionGroups,
+          )
         : await updateDepartmentPermissions(selectedRoleId, permissionGroups)
 
       setPermissionGroups(savedGroups)
