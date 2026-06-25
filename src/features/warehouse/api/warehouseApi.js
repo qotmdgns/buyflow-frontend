@@ -212,7 +212,6 @@ export async function fetchWarehouses(params = {}) {
   if (params.useYn && params.useYn !== "전체") query.set("useYn", toUseYn(params.useYn))
   if (params.managerName) query.set("managerName", params.managerName)
 
-  // 🟢 순수 fetch 대신 apiFetch 사용
   const queryString = query.toString() ? `?${query.toString()}` : ""
   const data = await apiFetch(`/api/warehouses${queryString}`, { method: "GET" })
 
@@ -222,7 +221,6 @@ export async function fetchWarehouses(params = {}) {
 export async function fetchWarehouseFilterOptions() {
   if (USE_MOCK) return warehouseFilterOptions
 
-  // 🟢 apiFetch 적용 (JSON 변환 자동 처리)
   const data = await apiFetch(`/api/warehouses/filter-options`, { method: "GET" })
   return data
 }
@@ -235,7 +233,6 @@ export async function fetchWarehouseById(warehouseCode) {
     return { ...warehouse }
   }
 
-  // 🟢 apiFetch 적용
   const data = await apiFetch(`/api/warehouses/${warehouseCode}`, { method: "GET" })
   return toFrontendWarehouse(data)
 }
@@ -253,13 +250,11 @@ export async function createWarehouse(payload) {
     return createdWarehouse
   }
 
-  // 🟢 apiFetch 적용 (Base URL, Headers 생략)
   const data = await apiFetch(`/api/warehouses`, {
     method: "POST",
     body: JSON.stringify(toBackendPayload(payload)),
   })
 
-  // apiFetch는 성공 시 바로 객체(Data)를 반환하므로 readJsonOrNull 필요 없음
   if (data) {
     return toFrontendWarehouse(data)
   }
@@ -282,7 +277,6 @@ export async function updateWarehouse(warehouseCode, payload) {
     return updatedWarehouse
   }
 
-  // 🟢 apiFetch 적용 (Base URL, Headers 생략)
   const data = await apiFetch(`/api/warehouses/${warehouseCode}`, {
     method: "PATCH",
     body: JSON.stringify(toBackendPayload(payload, false)),
@@ -303,6 +297,5 @@ export async function deleteWarehouse(warehouseCode) {
     return
   }
 
-  // 🟢 apiFetch 적용
   await apiFetch(`/api/warehouses/${warehouseCode}`, { method: "DELETE" })
 }
