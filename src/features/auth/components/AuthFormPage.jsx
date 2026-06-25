@@ -17,6 +17,42 @@ import {
 import AuthInput from "@/features/auth/components/AuthInput"
 import { useAuth } from "@/features/auth/context/AuthContext"
 
+const LOGIN_ID_PATTERN = /^[A-Za-z0-9._-]+$/
+const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+const NAME_PATTERN = /^[가-힣A-Za-z ]+$/
+const DEPARTMENT_OPTIONS = ["구매팀", "물류운영팀", "시스템관리팀", "영업팀", "재고관리팀"]
+const RANK_OPTIONS = ["사원", "주임", "대리", "과장"]
+
+function validateSignupInput({ name, loginId, email, department, rank, password }) {
+  if (loginId.length < 4 || loginId.length > 50) {
+    throw new Error("아이디는 4자 이상 50자 이하로 입력하세요.")
+  }
+
+  if (!LOGIN_ID_PATTERN.test(loginId)) {
+    throw new Error("아이디는 영문, 숫자, 점, 밑줄, 하이픈만 사용할 수 있습니다.")
+  }
+
+  if (name.length > 50 || !NAME_PATTERN.test(name)) {
+    throw new Error("이름은 한글, 영문, 공백만 입력할 수 있습니다.")
+  }
+
+  if (email.length > 100 || !EMAIL_PATTERN.test(email)) {
+    throw new Error("올바른 이메일 형식으로 입력하세요.")
+  }
+
+  if (!DEPARTMENT_OPTIONS.includes(department)) {
+    throw new Error("등록 가능한 부서를 선택하세요.")
+  }
+
+  if (!RANK_OPTIONS.includes(rank)) {
+    throw new Error("등록 가능한 직급을 선택하세요.")
+  }
+
+  if (password.length < 8 || password.length > 100) {
+    throw new Error("비밀번호는 8자 이상 100자 이하로 입력하세요.")
+  }
+}
+
 const FORM_CONFIG = {
   login: {
     submitLabel: "로그인",
@@ -69,13 +105,15 @@ const FORM_CONFIG = {
         id: "department",
         label: "부서",
         icon: Building2,
-        placeholder: "예: 물류운영팀",
+        placeholder: "부서를 선택하세요",
+        options: DEPARTMENT_OPTIONS,
       },
       {
         id: "rank",
         label: "직급",
         icon: UserRound,
-        placeholder: "예: 대리",
+        placeholder: "직급을 선택하세요",
+        options: RANK_OPTIONS,
       },
       {
         id: "password",
@@ -194,17 +232,27 @@ export default function AuthFormPage({ mode }) {
       if (mode === "signup") {
         const password = getValue("password")
         const passwordConfirm = getValue("passwordConfirm")
+        const signupValues = {
+          name: getValue("name"),
+          loginId: getValue("loginId"),
+          email: getValue("email"),
+          department: getValue("department"),
+          rank: getValue("rank"),
+          password,
+        }
+
+        validateSignupInput(signupValues)
 
         if (password !== passwordConfirm) {
           throw new Error("비밀번호와 비밀번호 확인이 일치하지 않습니다.")
         }
 
         await signup({
-          name: getValue("name"),
-          loginId: getValue("loginId"),
-          email: getValue("email"),
-          department: getValue("department"),
-          rank: getValue("rank"),
+          name: signupValues.name,
+          loginId: signupValues.loginId,
+          email: signupValues.email,
+          department: signupValues.department,
+          rank: signupValues.rank,
           password,
         })
 

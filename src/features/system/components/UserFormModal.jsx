@@ -5,46 +5,56 @@ import {
   EMPTY_USER_FORM,
   validateUserForm,
 } from "@/features/system/utils/systemUtils"
-import { recommendRole } from "@/features/system/utils/recommendRole"
 
-// roles 목록에서 코드(WAREHOUSE 등)에 해당하는 role.id 를 찾는다.
-// role.id 형식이 "WAREHOUSE" / "ROLE_WAREHOUSE" / 숫자+code 어느 쪽이든 대응.
+const USER_RANK_OPTIONS = ["사원", "주임", "대리", "과장", "팀장"]
+const USER_FORM_ROLE_CODES = new Set(["VIEWER", "TEAM_MANAGER"])
+const USER_FORM_ROLE_LABELS = {
+  VIEWER: "조회 전용",
+  TEAM_MANAGER: "부서 팀장",
+}
+
+// roles 목록에서 코드(VIEWER 등)에 해당하는 role.id 를 찾는다.
+// role.id 형식이 "VIEWER" / "ROLE_VIEWER" / 숫자+code 어느 쪽이든 대응.
+function normalizeRoleCode(roleOrCode) {
+  const value =
+    typeof roleOrCode === "object"
+      ? roleOrCode.roleCode ?? roleOrCode.code ?? roleOrCode.id
+      : roleOrCode
+
+  return String(value ?? "").replace(/^ROLE_/, "")
+}
+
 function findRoleIdByCode(roles, code) {
   if (!code) return null
   const match = roles.find(
     (role) =>
-      role.id === code ||
-      role.id === `ROLE_${code}` ||
-      role.code === code ||
-      role.roleCode === code,
+      normalizeRoleCode(role.id) === code ||
+      normalizeRoleCode(role.code) === code ||
+      normalizeRoleCode(role.roleCode) === code,
   )
   return match ? match.id : null
 }
 
-// 부서·직급 → 추천 역할 id (목록에 없으면 null)
-function recommendedRoleId(roles, department, position) {
-  return findRoleIdByCode(roles, recommendRole(department, position))
-}
-
 // ADMIN(시스템 관리자) 역할인지 — 등록 폼 드롭다운에서 숨기기 위함
 function isAdminRole(role) {
-  return (
-    role.id === "ADMIN" ||
-    role.id === "ROLE_ADMIN" ||
-    role.code === "ADMIN" ||
-    role.roleCode === "ADMIN" ||
-    role.group === "SYSTEM"
-  )
+  return normalizeRoleCode(role) === "ADMIN" || role.group === "SYSTEM"
 }
 
-// 생성 시 안전한 기본 역할: 추천값 → VIEWER → ADMIN 아닌 첫 항목 순으로 폴백
+function isUserFormRole(role) {
+  return USER_FORM_ROLE_CODES.has(normalizeRoleCode(role))
+}
+
+function getRoleLabel(role) {
+  const code = normalizeRoleCode(role)
+  return USER_FORM_ROLE_LABELS[code] ?? role.name
+}
+
+// 생성 시 안전한 기본 역할: VIEWER → 표시 가능한 첫 항목 순으로 폴백
 // (roles[0]=ADMIN 이 기본으로 잡혀 슈퍼유저가 양산되는 것을 방지)
-function safeDefaultRoleId(roles, department, position) {
+function safeDefaultRoleId(roles) {
   return (
-    recommendedRoleId(roles, department, position) ||
     findRoleIdByCode(roles, "VIEWER") ||
-    roles.find((role) => !isAdminRole(role))?.id ||
-    roles[0]?.id ||
+    roles.find((role) => isUserFormRole(role))?.id ||
     ""
   )
 }
@@ -54,62 +64,70 @@ function normalizeRoleIds(base, roles) {
     return base.roleIds
   }
 
-  const roleId = base.roleId || safeDefaultRoleId(roles, base.department, base.position)
+  const roleId = base.roleId || safeDefaultRoleId(roles)
   return roleId ? [roleId] : []
+}
+
+function normalizeRankOption(value) {
+  if (!value) return ""
+  if (USER_RANK_OPTIONS.includes(value)) return value
+  if (value.includes("팀장")) return "팀장"
+  return ""
+}
+
+function normalizeDepartmentOptions(departments) {
+  return [
+    ...new Set(
+      (departments ?? []).filter(
+        (department) => department && department !== "전체",
+      ),
+    ),
+  ]
+}
+
+function normalizeDepartmentOption(value, departmentOptions) {
+  if (!value) return ""
+  return departmentOptions.includes(value) ? value : ""
 }
 
 export default function UserFormModal({
   mode,
   initialValue,
   roles,
+  departments = [],
   delegateMode = false,
   onClose,
   onSubmit,
 }) {
   const base = { ...EMPTY_USER_FORM, ...initialValue }
+  const departmentOptions = normalizeDepartmentOptions(departments)
   const initialRoleIds = normalizeRoleIds(base, roles)
 
   const [form, setForm] = useState({
     ...base,
+    department: normalizeDepartmentOption(base.department, departmentOptions),
+    position: normalizeRankOption(base.position),
     roleIds: initialRoleIds,
     roleId: base.roleId || initialRoleIds[0] || "",
     departmentAuthorized: base.departmentAuthorized ?? true,
   })
 
-  // 수정 모드이거나 admin이 권한 그룹을 직접 고르면, 부서·직급 변경에 따른
-  // 자동 추천을 더 이상 덮어쓰지 않는다.
-  const [roleTouched, setRoleTouched] = useState(mode === "edit")
-
   const [errors, setErrors] = useState({})
   const [submitError, setSubmitError] = useState("")
 
-  // 권한 그룹 드롭다운: ADMIN(시스템 관리자)은 숨긴다.
-  // 단, 현재 선택값이 ADMIN이면(기존 admin 사용자 수정 중) 값 유지를 위해 표시.
   const selectableRoles = roles.filter(
-    (role) => !isAdminRole(role) || form.roleIds.includes(role.id),
+    (role) => !isAdminRole(role) && isUserFormRole(role),
   )
 
   const updateForm = (name, value) => {
     setForm((current) => {
-      const next = { ...current, [name]: value }
-
-      // 부서/직급을 바꾸면, 아직 역할을 손대지 않은 경우에만 추천 역할로 자동 세팅
-      if ((name === "department" || name === "position") && !roleTouched) {
-        const suggested = recommendedRoleId(roles, next.department, next.position)
-        if (suggested) {
-          next.roleId = suggested
-          next.roleIds = [suggested]
-        }
-      }
-
-      return next
+      return { ...current, [name]: value }
     })
 
     setErrors((current) => ({ ...current, [name]: "" }))
   }
 
   const handleRoleToggle = (value) => {
-    setRoleTouched(true)
     setForm((current) => {
       const hasRole = current.roleIds.includes(value)
       const roleIds = hasRole
@@ -176,13 +194,49 @@ export default function UserFormModal({
                 {label}
               </span>
 
-              <input
-                value={form[name]}
-                placeholder={placeholder}
-                disabled={delegateMode}
-                onChange={(event) => updateForm(name, event.target.value)}
-                className="h-10 w-full rounded-md border border-slate-200 px-3 text-[13px] disabled:bg-slate-50 disabled:text-slate-400"
-              />
+              {name === "department" ? (
+                <select
+                  value={form[name]}
+                  disabled={delegateMode}
+                  onChange={(event) => updateForm(name, event.target.value)}
+                  className="h-10 w-full rounded-md border border-slate-200 px-3 text-[13px] disabled:bg-slate-50 disabled:text-slate-400"
+                >
+                  <option value="" disabled>
+                    부서 선택
+                  </option>
+
+                  {departmentOptions.map((department) => (
+                    <option key={department} value={department}>
+                      {department}
+                    </option>
+                  ))}
+                </select>
+              ) : name === "position" ? (
+                <select
+                  value={form[name]}
+                  disabled={delegateMode}
+                  onChange={(event) => updateForm(name, event.target.value)}
+                  className="h-10 w-full rounded-md border border-slate-200 px-3 text-[13px] disabled:bg-slate-50 disabled:text-slate-400"
+                >
+                  <option value="" disabled>
+                    직급 선택
+                  </option>
+
+                  {USER_RANK_OPTIONS.map((rank) => (
+                    <option key={rank} value={rank}>
+                      {rank}
+                    </option>
+                  ))}
+                </select>
+              ) : (
+                <input
+                  value={form[name]}
+                  placeholder={placeholder}
+                  disabled={delegateMode}
+                  onChange={(event) => updateForm(name, event.target.value)}
+                  className="h-10 w-full rounded-md border border-slate-200 px-3 text-[13px] disabled:bg-slate-50 disabled:text-slate-400"
+                />
+              )}
 
               {errors[name] && (
                 <p className="mt-1 text-[12px] text-rose-500">{errors[name]}</p>
@@ -220,7 +274,7 @@ export default function UserFormModal({
                       onChange={() => handleRoleToggle(role.id)}
                       className="accent-blue-600"
                     />
-                    {role.name}
+                    {getRoleLabel(role)}
                   </label>
                 ))}
               </div>
@@ -232,11 +286,6 @@ export default function UserFormModal({
               </p>
             )}
 
-            {!delegateMode && mode !== "edit" && !roleTouched && (
-              <p className="mt-1 text-[12px] text-slate-400">
-                부서·직급에 따라 자동 추천됩니다. 필요하면 직접 바꾸세요.
-              </p>
-            )}
           </div>
 
           <label>

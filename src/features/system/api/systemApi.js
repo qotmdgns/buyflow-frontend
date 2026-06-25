@@ -20,6 +20,12 @@ const PERMISSION_GROUP_LABELS = {
   SYSTEM: "설정",
 }
 
+const USER_ROLE_LABELS = {
+  ADMIN: "시스템 관리자",
+  TEAM_MANAGER: "부서 팀장",
+  VIEWER: "조회 전용",
+}
+
 export const SYSTEM_ADMIN_PERMISSION_PROFILE_ID = "role:ADMIN"
 
 export function isSystemAdminPermissionProfile(profileId) {
@@ -104,6 +110,7 @@ function adaptUser(item) {
   const roles = item.roles ?? []
   const primary = pickPrimaryRole(roles)
   const roleIds = roles.map((role) => role.roleCode).filter(Boolean)
+  const departmentAuthorized = item.departmentAuthorized ?? true
 
   return {
     id: user.userId,
@@ -114,11 +121,27 @@ function adaptUser(item) {
     position: rankLabel(user),
     roleId: primary?.roleCode ?? "",
     roleIds,
-    roleName: roles.length ? roles.map((role) => role.roleName).join(", ") : "-",
-    departmentAuthorized: item.departmentAuthorized ?? true,
+    roleName: displayUserRoleName(roles, departmentAuthorized),
+    departmentAuthorized,
     activeStatus: statusLabel(user),
     registeredAt: String(user.createdAt ?? "").slice(0, 10),
   }
+}
+
+function displayUserRoleName(roles, departmentAuthorized) {
+  const roleCodes = new Set(
+    (roles ?? []).map((role) => normalizeRoleCode(role.roleCode)),
+  )
+  const labels = []
+
+  if (roleCodes.has("ADMIN")) labels.push(USER_ROLE_LABELS.ADMIN)
+  if (roleCodes.has("TEAM_MANAGER")) labels.push(USER_ROLE_LABELS.TEAM_MANAGER)
+  if (departmentAuthorized) labels.push("부서원")
+  if (!departmentAuthorized && roleCodes.has("VIEWER")) {
+    labels.push(USER_ROLE_LABELS.VIEWER)
+  }
+
+  return labels.length ? labels.join(", ") : "-"
 }
 
 function adaptRole(role) {

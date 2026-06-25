@@ -7,21 +7,24 @@ import UserFormModal from "./UserFormModal"
 import UserSearchForm from "./UserSearchForm"
 import UserTable from "./UserTable"
 import useSystem from "../hooks/useSystem"
-import { hasRole } from "@/utils/permissions"
+import { hasPermission, hasRole } from "@/utils/permissions"
 import useClientReady from "@/utils/useClientReady"
 
 export default function System() {
   const ready = useClientReady()
   const admin = ready && hasRole("ADMIN")
   const teamManager = ready && hasRole("TEAM_MANAGER")
+  const canManageRoles =
+    ready &&
+    (admin || hasPermission("roles.write") || hasPermission("ROLE_MANAGE"))
   const access = {
     admin,
     teamManager,
     users: admin || teamManager,
-    roles: admin,
+    roles: canManageRoles,
     ready,
   }
-  const delegateOnly = access.teamManager && !access.admin
+  const delegateOnly = access.teamManager && !access.admin && !access.roles
   const management = useSystem({ delegateOnly })
 
   // 마운트 전에는 깜빡임 방지로 렌더하지 않는다
@@ -149,6 +152,7 @@ export default function System() {
           mode={management.formMode}
           initialValue={management.editingUser}
           roles={management.roles}
+          departments={management.filterOptions.departments}
           delegateMode={delegateOnly}
           onClose={management.closeUserForm}
           onSubmit={management.saveUser}

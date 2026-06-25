@@ -135,29 +135,10 @@ input {
   min-height: 108px;
 }
 
-@media (min-width: 1024px) {
-  .dashboard-density-90 {
-    zoom: 0.9;
-    min-width: 111.111vw;
-    min-height: 111.111vh;
-  }
-}
-
-/* Firefox 등 zoom 미지원 브라우저 대비 */
-@supports not (zoom: 1) {
-  @media (min-width: 1024px) {
-    .dashboard-density-90 {
-      transform: scale(0.9);
-      transform-origin: top left;
-      width: 111.111vw;
-      min-height: 111.111vh;
-    }
-  }
-}
-
 /* 대시보드 본문 위치 / 여백 보정 */
 .dashboard-main-shell {
   min-height: 100vh;
+  min-width: 0;
 }
 
 .dashboard-main-content {
@@ -166,10 +147,6 @@ input {
 
 @media (min-width: 1024px) {
   .dashboard-main-shell {
-    /*
-      sidebar 기본 폭 220px + 본문 여백 24px
-      zoom 0.9 적용 후 실제 화면에서는 약 22px 여백처럼 보임
-    */
     padding-left: 244px;
   }
 

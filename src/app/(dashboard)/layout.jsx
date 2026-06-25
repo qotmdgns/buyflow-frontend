@@ -4,7 +4,7 @@ import RequireAuth from "@/features/auth/components/RequireAuth"
 
 export default function DashboardLayout({ children }) {
   return (
-    <div className="erp-dashboard dashboard-density-90 min-h-screen bg-[#f8fafc] text-slate-800">
+    <div className="erp-dashboard min-h-screen bg-[#f8fafc] text-slate-800">
       <Sidebar />
 
       <div className="dashboard-main-shell">

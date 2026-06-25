@@ -9,9 +9,11 @@ import SupplierSearchForm from "@/features/supplier/components/SupplierSearchFor
 import SupplierTable from "@/features/supplier/components/SupplierTable"
 import useSupplierManagement from "@/features/supplier/hooks/useSupplierManagement"
 import { hasPermission } from "@/utils/permissions"
+import useClientReady from "@/utils/useClientReady"
 
 export default function SupplierManagement() {
   const router = useRouter()
+  const ready = useClientReady()
   const {
     draftFilters,
     filterOptions,
@@ -30,7 +32,7 @@ export default function SupplierManagement() {
     closeSupplierDetail,
   } = useSupplierManagement()
 
-  const canManageSuppliers = hasPermission("suppliers.write")
+  const canManageSuppliers = ready && hasPermission("suppliers.write")
 
   function openSupplierEdit(supplier) {
     closeSupplierDetail()
