@@ -33,6 +33,7 @@ function saveSession(session, remember) {
   if (!canUseBrowserStorage()) return
 
   window.localStorage.removeItem(LOCAL_SESSION_KEY)
+  window.sessionStorage.removeItem(LOCAL_SESSION_KEY)
   window.sessionStorage.removeItem(SESSION_SESSION_KEY)
 
   if (remember) {
@@ -99,6 +100,11 @@ export function getCurrentUser() {
     readJson(window.sessionStorage, SESSION_SESSION_KEY, null) ??
     readJson(window.localStorage, LOCAL_SESSION_KEY, null)
 
+  if (!session?.accessToken) {
+    logout()
+    return null
+  }
+
   return normalizeAuthUser(session)
 }
 
@@ -118,6 +124,7 @@ export function logout() {
   if (!canUseBrowserStorage()) return
 
   window.localStorage.removeItem(LOCAL_SESSION_KEY)
+  window.sessionStorage.removeItem(LOCAL_SESSION_KEY)
   window.sessionStorage.removeItem(SESSION_SESSION_KEY)
 }
 

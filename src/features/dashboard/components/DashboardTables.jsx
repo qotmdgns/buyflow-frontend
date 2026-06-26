@@ -6,6 +6,8 @@ import { MoreVertical, Search } from "lucide-react"
 import { useMemo, useState } from "react"
 import StockAdjustmentModal from "@/features/stock/components/StockAdjustmentModal"
 import { createStockAdjustment } from "@/features/stock/api/stockApi"
+import useClientReady from "@/utils/useClientReady"
+import { hasPermission } from "@/utils/permissions"
 
 const LOW_STOCK_STATUS = "안전재고 미만"
 const VIEW_BUTTON_CLASS =
@@ -169,12 +171,18 @@ function RecentRequests({ requests = [] }) {
 
 function LowStockItems({ items = [], total = 0 }) {
   const router = useRouter()
+  const ready = useClientReady()
+  const canAdjustStock = ready && hasPermission("stock.adjust")
   const [keyword, setKeyword] = useState("")
   const [adjustmentTarget, setAdjustmentTarget] = useState(null)
 
   async function saveAdjustment(form) {
     if (!adjustmentTarget?.id) {
       throw new Error("재고 ID를 찾을 수 없습니다.")
+    }
+
+    if (!canAdjustStock) {
+      throw new Error("재고 조정 권한이 없습니다.")
     }
 
     await createStockAdjustment({
@@ -265,8 +273,16 @@ function LowStockItems({ items = [], total = 0 }) {
               {filteredItems.map((item) => (
                 <tr
                   key={`${item.stockId ?? item.code}-${item.warehouseCode ?? item.warehouse}`}
-                  onClick={() => setAdjustmentTarget(toAdjustmentStock(item))}
-                  className="cursor-pointer border-t border-slate-100 text-slate-600 transition hover:bg-blue-50/40"
+                  onClick={() => {
+                    if (canAdjustStock) {
+                      setAdjustmentTarget(toAdjustmentStock(item))
+                    }
+                  }}
+                  className={`border-t border-slate-100 text-slate-600 transition ${
+                    canAdjustStock
+                      ? "cursor-pointer hover:bg-blue-50/40"
+                      : "cursor-default"
+                  }`}
                 >
                   <td className="px-3 py-2.5 font-medium text-blue-600">
                     {item.code}
@@ -292,12 +308,14 @@ function LowStockItems({ items = [], total = 0 }) {
         </div>
 
         <div className="border-t border-slate-100 p-3 text-[13px] text-slate-400">
-          ※ 안전재고 미만 품목을 부족 수량 기준으로 표시합니다. 목록 행을
-          클릭하면 바로 재고 조정 창이 열립니다.
+          ※ 안전재고 미만 품목을 부족 수량 기준으로 표시합니다.
+          {canAdjustStock
+            ? " 목록 행을 클릭하면 바로 재고 조정 창이 열립니다."
+            : " 재고 조정은 권한이 있는 사용자만 실행할 수 있습니다."}
         </div>
       </section>
 
-      {adjustmentTarget && (
+      {adjustmentTarget && canAdjustStock && (
         <StockAdjustmentModal
           stock={adjustmentTarget}
           onClose={() => setAdjustmentTarget(null)}

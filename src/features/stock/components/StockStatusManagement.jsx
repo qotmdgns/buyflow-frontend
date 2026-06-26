@@ -18,6 +18,8 @@ import {
   getStockStatus,
   STOCK_TABLE_HEADERS,
 } from "@/features/stock/utils/stockManagementUtils"
+import useClientReady from "@/utils/useClientReady"
+import { hasPermission } from "@/utils/permissions"
 
 const INPUT_CLASS_NAME =
   "h-10 w-full rounded-md border border-slate-200 px-3 text-[14px] outline-none transition placeholder:text-slate-300 focus:border-blue-400 focus:ring-2 focus:ring-blue-100"
@@ -71,6 +73,8 @@ function StockStatusBadge({ stock }) {
 }
 
 export default function StockStatusManagement({ initialFilters = {} }) {
+  const ready = useClientReady()
+  const canAdjustStock = ready && hasPermission("stock.adjust")
   const {
     draftFilters,
     appliedFilters,
@@ -320,14 +324,16 @@ export default function StockStatusManagement({ initialFilters = {} }) {
 
                       <td className="whitespace-nowrap px-3 py-3">
                         <div className="flex gap-2">
-                          <button
-                            type="button"
-                            onClick={() => openAdjustment(stock)}
-                            className="flex items-center gap-1 text-[12px] font-semibold text-blue-600 hover:underline"
-                          >
-                            <SlidersHorizontal size={13} />
-                            재고 조정
-                          </button>
+                          {canAdjustStock && (
+                            <button
+                              type="button"
+                              onClick={() => openAdjustment(stock)}
+                              className="flex items-center gap-1 text-[12px] font-semibold text-blue-600 hover:underline"
+                            >
+                              <SlidersHorizontal size={13} />
+                              재고 조정
+                            </button>
+                          )}
 
                           <Link
                             href={`/stock/history?itemCode=${encodeURIComponent(
@@ -357,7 +363,7 @@ export default function StockStatusManagement({ initialFilters = {} }) {
         />
       </section>
 
-      {adjustmentTarget && (
+      {adjustmentTarget && canAdjustStock && (
         <StockAdjustmentModal
           stock={adjustmentTarget}
           onClose={closeAdjustment}

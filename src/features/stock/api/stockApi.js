@@ -3,6 +3,7 @@ import {
   mockStocks,
   mockStockHistories,
 } from "@/features/stock/data/mockStockData"
+import { apiFetch } from "@/lib/api/fetchClient"
 import { getStockStatus } from "@/features/stock/utils/stockManagementUtils"
 
 const USE_MOCK = process.env.NEXT_PUBLIC_USE_STOCK_MOCK !== "false"
@@ -315,22 +316,10 @@ export async function createStockAdjustment(payload) {
     return history
   }
 
-  const response = await fetch(
-    `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/inventories/${payload.stockId}/adjustments`,
-    {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(payload),
-    },
-  )
-
-  if (!response.ok) {
-    throw new Error("재고 수량을 조정하지 못했습니다.")
-  }
-
-  return response.json()
+  return apiFetch(`/api/inventories/${payload.stockId}/adjustments`, {
+    method: "POST",
+    body: JSON.stringify(payload),
+  })
 }
 
 export async function fetchStocks(params = {}) {
