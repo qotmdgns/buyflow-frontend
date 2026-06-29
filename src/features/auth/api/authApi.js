@@ -142,14 +142,16 @@ export function signup({ loginId, password, name, email, department, rank }) {
   })
 }
 
-export function findLoginId({ name, email }) {
-  return apiFetch("/api/auth/find-login-id", {
+export async function findLoginId({ name, email }) {
+  const result = await apiFetch("/api/auth/find-login-id", {
     method: "POST",
     body: JSON.stringify({
       userName: name?.trim(),
       email: email?.trim().toLowerCase(),
     }),
   })
+
+  return result.loginId
 }
 
 export function resetPassword({ loginId, email, newPassword }) {
