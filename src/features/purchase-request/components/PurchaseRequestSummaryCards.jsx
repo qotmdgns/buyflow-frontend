@@ -8,10 +8,22 @@ const summaryItems = [
 ]
 
 const toneStyles = {
-  default: "border-slate-900 text-slate-900",
-  muted: "border-slate-300 text-slate-700",
-  primary: "border-blue-500 text-blue-700",
-  danger: "border-rose-400 text-rose-600",
+  default: {
+    accent: "border-l-slate-700",
+    active: "bg-slate-50 ring-2 ring-slate-300",
+  },
+  muted: {
+    accent: "border-l-slate-500",
+    active: "bg-slate-50 ring-2 ring-slate-300",
+  },
+  primary: {
+    accent: "border-l-blue-600",
+    active: "bg-blue-50/60 ring-2 ring-blue-200",
+  },
+  danger: {
+    accent: "border-l-rose-500",
+    active: "bg-rose-50/60 ring-2 ring-rose-200",
+  },
 }
 
 export default function PurchaseRequestSummaryCards({
@@ -30,13 +42,25 @@ export default function PurchaseRequestSummaryCards({
             type="button"
             onClick={() => onSelect(item.status)}
             aria-pressed={isActive}
-            className={`rounded-md border-2 bg-white px-3 py-3 text-left shadow-sm transition hover:-translate-y-0.5 hover:shadow ${
-              toneStyles[item.tone]
-            } ${isActive ? "ring-2 ring-slate-200 ring-offset-1" : ""}`}
+            className={`group flex flex-col rounded-lg border border-l-4 border-slate-200 bg-white px-4
+            py-3
+            text-left
+            shadow-sm
+            transition-all
+            duration-200
+            ease-out
+            hover:-translate-y-1
+            hover:shadow-md
+            focus:outline-none
+            focus:ring-2
+            focus:ring-blue-200
+            ${toneStyles[item.tone].accent}
+            ${isActive ? toneStyles[item.tone].active : ""}
+            `}
           >
-            <span className="block text-[13px] font-semibold">
-              {item.label}
-            </span>
+          <p className="text-[13px] font-semibold text-slate-500">
+            {item.label}
+          </p>
 
             <strong className="mt-1 block text-[22px] leading-none">
               {String(summary[item.key] ?? 0).padStart(2, "0")}

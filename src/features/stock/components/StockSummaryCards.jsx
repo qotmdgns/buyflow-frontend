@@ -14,6 +14,7 @@ const CARD_ITEMS = [
     borderClassName: "border-l-slate-700",
     iconClassName: "bg-slate-100 text-slate-600",
     valueClassName: "text-slate-900",
+    activeClassName: "bg-slate-50 ring-2 ring-slate-300",
   },
   {
     status: "정상",
@@ -24,6 +25,7 @@ const CARD_ITEMS = [
     borderClassName: "border-l-emerald-500",
     iconClassName: "bg-emerald-50 text-emerald-500",
     valueClassName: "text-emerald-600",
+    activeClassName: "bg-emerald-50/60 ring-2 ring-emerald-200",
   },
   {
     status: "안전재고 미만",
@@ -34,6 +36,7 @@ const CARD_ITEMS = [
     borderClassName: "border-l-amber-500",
     iconClassName: "bg-amber-50 text-amber-500",
     valueClassName: "text-amber-500",
+    activeClassName: "bg-amber-50/60 ring-2 ring-amber-200",
   },
   {
     status: "재고 없음",
@@ -44,6 +47,7 @@ const CARD_ITEMS = [
     borderClassName: "border-l-rose-500",
     iconClassName: "bg-rose-50 text-rose-500",
     valueClassName: "text-rose-500",
+    activeClassName: "bg-rose-50/60 ring-2 ring-rose-200",
   },
 ]
 
@@ -65,14 +69,27 @@ export default function StockSummaryCards({
             aria-pressed={isSelected}
             onClick={() => onSelectStatus(card.status)}
             className={`
-              group rounded-lg border border-l-4 bg-white p-4 text-left
-              shadow-sm transition duration-200 ease-out
-              hover:-translate-y-1 hover:shadow-md
-              active:translate-y-0 active:shadow-sm
+              group
+              rounded-lg
+              border
+              border-l-4
+              border-slate-200
+              bg-white
+              p-4
+              text-left
+              shadow-sm
+              transition-all
+              duration-200
+              ease-out
+              hover:-translate-y-1
+              hover:shadow-md
+              focus:outline-none
+              focus:ring-2
+              focus:ring-blue-200
               ${card.borderClassName}
               ${
                 isSelected
-                  ? "ring-2 ring-blue-200 ring-offset-1"
+                  ? card.activeClassName
                   : "hover:border-slate-300"
               }
             `}

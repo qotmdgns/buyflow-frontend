@@ -38,33 +38,43 @@ function MetricCard({
   helper,
   icon: Icon,
   tone,
+  active,
   onClick,
 }) {
   const toneStyles = {
     slate: {
       card: "border-l-slate-700",
       icon: "bg-slate-100 text-slate-600",
+      active: "bg-slate-50 ring-2 ring-slate-300",
     },
     rose: {
       card: "border-l-rose-500",
       icon: "bg-rose-50 text-rose-500",
+      active: "bg-rose-50/60 ring-2 ring-rose-200",
     },
     amber: {
       card: "border-l-amber-500",
       icon: "bg-amber-50 text-amber-500",
+      active: "bg-amber-50/60 ring-2 ring-amber-200",
     },
     emerald: {
-  card: "border-l-emerald-500",
-  icon: "bg-emerald-50 text-emerald-500",
-},
+      card: "border-l-emerald-500",
+      icon: "bg-emerald-50 text-emerald-500",
+      active: "bg-emerald-50/60 ring-2 ring-emerald-200",
+    },
   }
 
   const style = toneStyles[tone]
 
   return (
-    <article
-  onClick={onClick}
-      className={`cursor-pointer flex min-h-[92px] items-center justify-between rounded-lg border border-slate-200 border-l-4 bg-white px-4 py-3 shadow-sm ${style.card}`}
+    <button
+      type="button"
+      onClick={onClick}
+      aria-pressed={active}
+      className={`cursor-pointer flex min-h-[92px] items-center justify-between rounded-lg border border-slate-200 border-l-4 bg-white px-4 py-3 shadow-sm transition-all duration-200 ease-out hover:-translate-y-1 hover:shadow-md 
+        ${style.card}
+        ${active ? style.active : ""}
+      `}
     >
       <div>
         <p className="text-[13px] font-semibold text-slate-500">{title}</p>
@@ -76,16 +86,17 @@ function MetricCard({
             건
           </span>
         </p>
-
-        <p className="mt-2 text-[12px] text-slate-400">{helper}</p>
+        <p className="mt-2 text-[12px] text-slate-400">
+          {helper}
+        </p>
       </div>
 
       <span
-        className={`flex h-9 w-9 items-center justify-center rounded-full ${style.icon}`}
+        className={`flex h-9 w-9 items-center justify-center rounded-full transition-transform durtion-200 ease-out group-hover:scale-110 group-hover:-rotate-3 ${style.icon}`}
       >
         <Icon size={17} />
       </span>
-    </article>
+    </button>
   )
 }
 
@@ -106,8 +117,7 @@ function TableMessage({ children, isError = false }) {
     <tr>
       <td
         colSpan={12}
-        className={`h-48 text-center text-[13px] ${
-          isError ? "text-rose-500" : "text-slate-400"
+        className={`h-48 text-center text-[13px] ${isError ? "text-rose-500" : "text-slate-400"
         }`}
       >
         {children}
@@ -131,7 +141,6 @@ function PageIconButton({ children, label, disabled, onClick }) {
 }
 
 export default function ReceiptManagement() {
-  console.log("ReceiptManagement 렌더링")
   const router = useRouter()
 
   const {
@@ -348,18 +357,19 @@ export default function ReceiptManagement() {
 
       <section className="grid gap-3 md:grid-cols-5">
         <MetricCard
-  title="전체"
-  value={
-  (summary.tabCounts?.expected ?? 0) +
-  (summary.delayed ?? 0) +
-  (summary.tabCounts?.partial ?? 0) +
-  (summary.tabCounts?.completed ?? 0)
-}
-  helper="전체 입고 목록"
-  icon={Package}
-  tone="slate"
-  onClick={() => selectCard("ALL")}
-/>
+          title="전체"
+          value={
+          (summary.tabCounts?.expected ?? 0) +
+          (summary.delayed ?? 0) +
+          (summary.tabCounts?.partial ?? 0) +
+          (summary.tabCounts?.completed ?? 0)
+          }
+          helper="전체 입고 목록"
+          icon={Package}
+          tone="slate"
+          active={cardFilter === "ALL"}
+          onClick={() => selectCard("ALL")}
+        />
 
         <MetricCard
           title="입고 예정"
@@ -367,6 +377,7 @@ export default function ReceiptManagement() {
           helper={"입고 대기"}
           icon={Truck}
           tone="slate"
+          active={cardFilter === "EXPECTED"}
           onClick={() => selectCard("EXPECTED")}
         />
 
@@ -376,6 +387,7 @@ export default function ReceiptManagement() {
           helper="즉시 확인 필요"
           icon={CircleAlert}
           tone="rose"
+          active={cardFilter === "DELAYED"}
           onClick={() => selectCard("DELAYED")}
         />
 
@@ -385,17 +397,19 @@ export default function ReceiptManagement() {
           helper={`진행률 ${summary.progressRate}%`}
           icon={Package}
           tone="amber"
+          active={cardFilter === "PARTIAL"}
           onClick={() => selectCard("PARTIAL")}
         />
 
         <MetricCard
-  title="입고 완료"
-  value={summary.tabCounts?.completed ?? 0}
-  helper="입고 완료"
-  icon={CheckCircle2}
-  tone="emerald"
-  onClick={() => selectCard("COMPLETED")}
-/>
+          title="입고 완료"
+          value={summary.tabCounts?.completed ?? 0}
+          helper="입고 완료"
+          icon={CheckCircle2}
+          tone="emerald"
+          active={cardFilter === "COMPLETED"}
+          onClick={() => selectCard("COMPLETED")}
+        />
       </section>
 
       <div className="hidden">
@@ -404,21 +418,22 @@ export default function ReceiptManagement() {
 
           return (
             <button
-  key={tab.key}
-  type="button"
-  onClick={() => selectTab(tab.key)}
-  className={`border-b-2 px-1 pb-2 text-[13px] font-semibold transition ${
-    isActive
-      ? "border-slate-800 text-slate-800"
-      : "border-transparent text-slate-400 hover:text-slate-600"
-  }`}
->
-  {tab.label} (
-    {summary.tabCounts?.[tab.key] ??
-      summary.tabCounts?.[tab.key.toLowerCase()] ??
-      0}
-  )
-</button>
+              key={tab.key}
+              type="button"
+              onClick={() => selectTab(tab.key)}
+              className={`border-b-2 px-1 pb-2 text-[13px] font-semibold transition ${
+                isActive
+                  ? "border-slate-800 text-slate-800"
+                  : "border-transparent text-slate-400 hover:text-slate-600"
+              }`}
+            >
+            {tab.label} (
+              {summary.tabCounts?.[tab.key] ??
+                summary.tabCounts?.[tab.key.toLowerCase()] ??
+                0
+              }
+            )
+            </button>
           )
         })}
       </div>
@@ -442,7 +457,7 @@ export default function ReceiptManagement() {
               className="flex h-9 items-center gap-1.5 rounded-md border border-slate-200 bg-white px-3 text-[13px] font-semibold text-slate-600 transition hover:bg-slate-50"
             >
               <Download size={13} />
-엑셀 다운로드
+                엑셀 다운로드
             </button>
 
             
