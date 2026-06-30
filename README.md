@@ -1,9 +1,8 @@
-# BuyFlow ERP Frontend
+# BuyFlow ERP
 
-구매 요청부터 승인, 발주, 입고, 검수, 재고 관리까지 물류 업무의 흐름을 통합적으로 관리하기 위한 **BuyFlow ERP 시스템의 프론트엔드 애플리케이션**입니다.
+구매 요청부터 승인, 발주, 입고, 검수, 재고 관리까지 물류 업무의 흐름을 통합적으로 관리하기 위한 **웹 기반 ERP 시스템**입니다.
 
-본 저장소는 JavaScript ES6+ 기반의 React와 Next.js를 사용하여 구성합니다.
-백엔드는 Spring Boot 기반 REST API 서버와 연동할 예정입니다.
+BuyFlow ERP는 **Next.js 프론트엔드**, **Spring Boot 백엔드**, **Oracle Autonomous Database**를 기반으로 구현했으며, 최종적으로 **Docker, OCIR, Oracle Kubernetes Engine(OKE), NGINX Ingress, GitHub Actions**를 이용한 CI/CD 자동화 배포까지 완료했습니다.
 
 ---
 
@@ -15,20 +14,20 @@
 BuyFlow ERP
 ```
 
-### Repository
+### 서비스 주소
 
 ```text
-frontend-buyflow
+https://buyflow-system.168-110-117-4.nip.io
 ```
 
 ### 프로젝트 목적
 
-기업 또는 조직 내부에서 발생하는 구매 및 재고 관리 업무를 하나의 시스템에서 처리할 수 있도록 물류 ERP 서비스를 구현합니다.
+기업 내부의 구매 및 물류 업무는 품목 등록, 구매 요청, 승인, 발주, 입고, 검수, 재고 반영 등 여러 단계를 거칩니다.
 
-기존의 수기 문서, 개별 파일, 단순 목록 중심 업무에서 벗어나 다음 업무 흐름을 체계적으로 관리하는 것을 목표로 합니다.
+BuyFlow ERP는 이러한 업무 흐름을 하나의 시스템에서 처리할 수 있도록 구성한 물류 ERP 프로젝트입니다.
 
 ```text
-품목·공급업체·창고 관리
+품목 / 공급업체 / 창고 관리
         ↓
 구매 요청 등록
         ↓
@@ -45,7 +44,36 @@ frontend-buyflow
 
 ---
 
-## 2. 주요 기능
+## 2. Repository 구성
+
+```text
+BuyFlow-ERP
+├── frontend-buyflow
+├── backend-buyflow
+└── buyflow-deploy
+```
+
+| Repository       | 역할                                                | 운영 기준 브랜치 |
+| ---------------- | --------------------------------------------------- | ---------------- |
+| frontend-buyflow | Next.js 프론트엔드                                  | master           |
+| backend-buyflow  | Spring Boot REST API                                | main             |
+| buyflow-deploy   | Kubernetes manifest 및 GitHub Actions 배포 workflow | master           |
+
+---
+
+## 3. 주요 기능
+
+### 인증 및 사용자 관리
+
+- 로그인
+- 회원가입
+- 아이디 찾기
+- 비밀번호 재설정
+- 직원 등록
+- 사용자 관리
+- 역할 및 권한 관리
+- 관리자 / 요청자 / 구매담당자 역할 구분
+- 메뉴 접근 권한 제어
 
 ### 대시보드
 
@@ -66,269 +94,374 @@ frontend-buyflow
 - 공급업체 관리
 - 창고 관리
 
-### 구매 및 입고 관리
+### 구매 요청 관리
 
-- 구매 요청 등록 및 조회
-- 구매 요청 승인 및 반려
-- 발주 관리
-- 입고 관리
-- 검수 관리
+- 구매 요청 등록
+- 구매 요청 목록 조회
+- 구매 요청 상세 조회
+- 구매 요청 수정 및 삭제
+- 구매 요청 취소
+- 요청 상태 관리
+- 품목 선택 모달
+- 첨부파일 업로드
+- 구매 요청 검색 및 필터링
+
+### 승인 관리
+
+- 승인 목록 조회
+- 승인 상세 조회
+- 승인 처리
+- 반려 처리
+- 요청 취소 처리
+- 승인 이력 확인
+- 첨부파일 확인
+
+### 발주 관리
+
+- 발주 등록
+- 발주 목록 조회
+- 발주 상세 조회
+- 발주 수정
+- 발주 상태 변경
+
+### 입고 관리
+
+- 입고 목록 조회
+- 입고 등록
+- 발주 기반 입고 처리
+- 입고 상세 조회
+- 입고 처리에 따른 재고 증가
+
+### 검수 관리
+
+- 검수 목록 조회
+- 검수 등록
+- 검수 결과 처리
+- 검수 완료 목록 조회
 
 ### 재고 관리
 
-- 재고 현황 조회
+- 재고 조회
 - 창고별 재고 확인
 - 안전재고 부족 품목 확인
-- 재고 변동 이력 조회
+- 재고 이력 조회
+- 재고 변동 이력 관리
 
-### 시스템 관리
+### 공통 기능
 
-- 사용자 관리
-- 권한 관리
-- 시스템 설정
+- 공통 레이아웃
+- 사이드바 메뉴
+- 권한 기반 메뉴 접근
+- 첨부파일 처리
+- 엑셀 다운로드
+- 공통 API 요청 처리
 
 ---
 
-## 3. 시스템 아키텍처
+## 4. 기술 스택
 
-BuyFlow ERP는 프론트엔드, 백엔드, 데이터베이스를 분리한 3-Tier 구조를 기준으로 구성합니다.
+### Frontend
 
-```mermaid
-flowchart LR
-    USER[사용자 브라우저]
-    WEB[Apache HTTP Server]
-    FRONT[Next.js Frontend]
-    BACK[Spring Boot REST API]
-    WAS[Apache Tomcat]
-    DB[(DBMS)]
+| 구분            | 기술                      |
+| --------------- | ------------------------- |
+| Language        | JavaScript ES6+           |
+| UI Library      | React 19                  |
+| Framework       | Next.js 16                |
+| Routing         | Next.js App Router        |
+| Styling         | Tailwind CSS              |
+| Chart           | Recharts                  |
+| Icon            | lucide-react              |
+| Build           | Next.js standalone output |
+| Package Manager | npm                       |
 
-    USER --> WEB
-    WEB --> FRONT
-    FRONT --> BACK
-    BACK --> WAS
-    WAS --> DB
+### Backend
+
+| 구분       | 기술                 |
+| ---------- | -------------------- |
+| Language   | Java                 |
+| Framework  | Spring Boot          |
+| Security   | Spring Security, JWT |
+| ORM        | Spring Data JPA      |
+| DB Driver  | Oracle JDBC          |
+| Build Tool | Gradle               |
+| Runtime    | Java 17              |
+
+### Database
+
+| 구분       | 기술                       |
+| ---------- | -------------------------- |
+| DBMS       | Oracle Autonomous Database |
+| Connection | Oracle Wallet              |
+| Schema     | BuyFlow.sql                |
+
+### DevOps / Infra
+
+| 구분               | 기술                                       |
+| ------------------ | ------------------------------------------ |
+| Container          | Docker                                     |
+| Container Registry | Oracle Cloud Infrastructure Registry, OCIR |
+| Orchestration      | Oracle Kubernetes Engine, OKE              |
+| Ingress            | NGINX Ingress Controller                   |
+| TLS                | cert-manager, Let's Encrypt                |
+| CI/CD              | GitHub Actions                             |
+| Domain             | nip.io                                     |
+
+---
+
+## 5. 시스템 아키텍처
+
+```text
+사용자
+  ↓
+https://buyflow-system.168-110-117-4.nip.io
+  ↓
+nip.io DNS
+  ↓
+Oracle Cloud Load Balancer
+  ↓
+NGINX Ingress Controller
+  ↓
+Oracle Kubernetes Engine
+  ↓
+namespace: buyflow
+  ├── frontend Deployment
+  ├── frontend Service
+  ├── backend Deployment
+  ├── backend Service
+  ├── ConfigMap
+  ├── Secret
+  ├── Oracle Wallet Secret
+  └── OCIR Pull Secret
+  ↓
+Oracle Autonomous Database
 ```
 
-### 구성 요소
+---
 
-| 구분          | 기술                                         |
-| ------------- | -------------------------------------------- |
-| Frontend      | React, Next.js, JavaScript ES6+              |
-| Web Server    | Apache HTTP Server                           |
-| Backend       | Spring Boot REST API                         |
-| WAS           | Apache Tomcat 10 이상                        |
-| JDK           | Java 17                                      |
-| DBMS          | Oracle, MariaDB 또는 PostgreSQL 중 확정 예정 |
-| Container     | Docker                                       |
-| Orchestration | Kubernetes                                   |
-| CI/CD         | GitHub Actions 또는 Jenkins                  |
+## 6. CI/CD 배포 구조
+
+최종 배포 흐름은 다음과 같습니다.
+
+```text
+frontend-buyflow/master 또는 backend-buyflow/main push
+        ↓
+각 repository의 trigger-deploy workflow 실행
+        ↓
+buyflow-deploy/master의 deploy workflow 호출
+        ↓
+GitHub Actions 실행
+        ↓
+frontend-buyflow/master checkout
+backend-buyflow/main checkout
+        ↓
+Frontend Docker image build
+Backend Docker image build
+        ↓
+OCIR에 Docker image push
+        ↓
+Kubernetes manifest image tag 갱신
+        ↓
+OKE에 kubectl apply
+        ↓
+Deployment rollout 확인
+        ↓
+Ingress / LoadBalancer / Domain 연결
+        ↓
+사용자 접속
+```
+
+### 배포 이미지 예시
+
+```text
+yny.ocir.io/ax0caghpplpc/buyflow-frontend:<timestamp>
+yny.ocir.io/ax0caghpplpc/buyflow-backend:<timestamp>
+```
+
+### GitHub Actions workflow 구성
+
+| Repository       | Workflow                             | 역할                                             |
+| ---------------- | ------------------------------------ | ------------------------------------------------ |
+| frontend-buyflow | .github/workflows/trigger-deploy.yml | master push 시 buyflow-deploy 배포 workflow 호출 |
+| backend-buyflow  | .github/workflows/trigger-deploy.yml | main push 시 buyflow-deploy 배포 workflow 호출   |
+| buyflow-deploy   | .github/workflows/deploy.yml         | Docker build, OCIR push, OKE 배포 수행           |
+
+### buyflow-deploy workflow 주요 작업
+
+```text
+1. buyflow-deploy repository checkout
+2. frontend-buyflow/master checkout
+3. backend-buyflow/main checkout
+4. OCI CLI 설치 및 인증
+5. OCIR 로그인
+6. Frontend Docker image build
+7. Backend Docker image build
+8. OCIR push
+9. OKE kubeconfig 생성
+10. Kubernetes Secret 생성 또는 갱신
+11. Oracle Wallet Secret 생성 또는 갱신
+12. OCIR imagePullSecret 생성 또는 갱신
+13. ConfigMap 및 Service 적용
+14. Deployment manifest image tag 갱신
+15. Deployment apply
+16. Ingress apply
+17. rollout status 확인
+18. 실제 배포 이미지 확인
+19. 비정상 Pod 검사
+```
 
 ---
 
-## 4. ERD 개요
+## 7. Kubernetes 배포 구성
 
-현재 ERD는 물류 ERP 업무 흐름을 기준으로 설계하고 있습니다.
+```text
+namespace: buyflow
 
-세부 테이블명과 컬럼 정의는 DB 명세서에서 관리하며, README에서는 데이터 구조를 업무 영역 단위로 설명합니다.
+frontend
+  ├── Deployment
+  └── Service, ClusterIP, 3000
 
-### 데이터 영역
+backend
+  ├── Deployment
+  └── Service, ClusterIP, 8080
 
-| 영역           | 주요 데이터                           |
-| -------------- | ------------------------------------- |
-| 사용자 및 권한 | 사용자, 역할, 접근 권한               |
-| 기준정보       | 품목, 공급업체, 창고                  |
-| 구매 요청      | 구매 요청, 구매 요청 상세             |
-| 승인 관리      | 승인 상태, 승인 및 반려 이력          |
-| 발주 관리      | 발주 정보, 발주 상세 품목             |
-| 입고 관리      | 입고 정보, 입고 상세 품목             |
-| 검수 관리      | 검수 결과, 검수 상태                  |
-| 재고 관리      | 창고별 재고, 안전재고, 재고 변동 이력 |
+common
+  ├── ConfigMap
+  ├── Secret
+  ├── Oracle Wallet Secret
+  └── OCIR imagePullSecret
+
+external access
+  └── NGINX Ingress
+```
+
+### 주요 manifest
+
+```text
+buyflow-deploy/k8s/namespace.yaml
+buyflow-deploy/k8s/configmap.yaml
+buyflow-deploy/k8s/backend-deployment.yaml
+buyflow-deploy/k8s/backend-service.yaml
+buyflow-deploy/k8s/frontend-deployment.yaml
+buyflow-deploy/k8s/frontend-service.yaml
+buyflow-deploy/k8s/ingress.yaml
+buyflow-deploy/k8s/cert-manager/cluster-issuer-prod.yaml
+buyflow-deploy/k8s/cert-manager/cluster-issuer-staging.yaml
+```
+
+---
+
+## 8. 데이터베이스 구조
+
+BuyFlow ERP의 데이터베이스는 Oracle 기반으로 구성되어 있습니다.
+
+### 주요 테이블
+
+| 테이블                         | 역할                  |
+| ------------------------------ | --------------------- |
+| USERS                          | 사용자 정보           |
+| ROLES                          | 역할 정보             |
+| PERMISSIONS                    | 권한 정보             |
+| USER_ROLES                     | 사용자-역할 매핑      |
+| ROLE_PERMISSIONS               | 역할-권한 매핑        |
+| DEPARTMENT_PERMISSIONS         | 부서별 권한 정보      |
+| DEPARTMENT_ROLE_ASSIGN_RULES   | 부서별 역할 부여 규칙 |
+| USER_DEPARTMENT_AUTHORIZATIONS | 사용자 부서 권한 정보 |
+| PRODUCTS                       | 품목 기준정보         |
+| SUPPLIER                       | 공급업체 기준정보     |
+| WAREHOUSE                      | 창고 기준정보         |
+| PURCHASE_REQUESTS              | 구매 요청 마스터      |
+| PURCHASE_REQUEST_ITEM          | 구매 요청 품목 상세   |
+| APPROVAL_HISTORY               | 승인 이력             |
+| PURCHASE_ORDER                 | 발주 마스터           |
+| PURCHASE_ORDER_ITEM            | 발주 품목 상세        |
+| RECEIPT                        | 입고 마스터           |
+| RECEIPT_ITEM                   | 입고 품목 상세        |
+| INSPECTION                     | 검수 정보             |
+| STOCK                          | 재고 현황             |
+| STOCK_HISTORY                  | 재고 변동 이력        |
+| ATTACHMENT                     | 첨부파일 메타데이터   |
+| EXCEL_EXPORT_HISTORY           | 엑셀 다운로드 이력    |
+| EMAIL_VERIFICATION_CODES       | 이메일 인증 코드      |
+| PASSWORD_RESET_TOKENS          | 비밀번호 재설정 토큰  |
 
 ### 핵심 데이터 흐름
 
-```mermaid
-flowchart LR
-    PRODUCT[품목]
-    SUPPLIER[공급업체]
-    WAREHOUSE[창고]
-    REQUEST[구매 요청]
-    APPROVAL[승인 관리]
-    ORDER[발주 관리]
-    RECEIPT[입고 관리]
-    INSPECTION[검수 관리]
-    STOCK[재고 현황]
-    HISTORY[재고 이력]
-
-    PRODUCT --> REQUEST
-    SUPPLIER --> ORDER
-    REQUEST --> APPROVAL
-    APPROVAL --> ORDER
-    ORDER --> RECEIPT
-    RECEIPT --> INSPECTION
-    INSPECTION --> STOCK
-    WAREHOUSE --> STOCK
-    STOCK --> HISTORY
-```
-
-### ERD 이미지
-
-![BuyFlow ERP ERD](./docs/images/erd.png)
-
----
-
-## 5. 대시보드 UI 구성
-
-대시보드는 로그인 후 사용자가 가장 먼저 확인하는 화면입니다.
-
-업무 담당자가 구매, 입고, 검수, 재고 상태를 빠르게 파악할 수 있도록 요약 카드, 차트, 목록 영역으로 구성합니다.
-
-### 대시보드 레이아웃
-
-| 영역               | 구성 내용                                                     |
-| ------------------ | ------------------------------------------------------------- |
-| 상단 Header        | 창고 선택, 통합 검색, 알림, 사용자 메뉴                       |
-| 좌측 Sidebar       | 업무 기능별 메뉴                                              |
-| 현황 요약 카드     | 납기 지연, 승인 대기, 입고 예정, 검수 대기, 안전재고 부족     |
-| 월별 입고 현황     | 월별 입고 수량을 비교하는 막대 차트                           |
-| 재고 상태 비율     | 정상 재고, 안전재고 이하, 재고 부족 상태를 비교하는 원형 차트 |
-| 최근 구매 요청     | 최근 등록된 구매 요청 목록                                    |
-| 안전재고 부족 품목 | 우선 확인이 필요한 부족 품목 목록                             |
-
-### Sidebar 메뉴
-
 ```text
-대시보드
-
-기준정보 관리
-├── 품목 관리
-├── 공급업체
-└── 창고 관리
-
-구매 및 입고
-├── 구매 요청
-├── 승인 관리
-├── 발주 관리
-├── 입고 관리
-└── 검수 관리
-
-재고 관리
-├── 재고 현황
-└── 재고 이력
-
-설정
-└── 시스템 관리
+USERS
+  ↓
+PURCHASE_REQUESTS
+  ↓
+PURCHASE_REQUEST_ITEM
+  ↓
+APPROVAL_HISTORY
+  ↓
+PURCHASE_ORDER
+  ↓
+PURCHASE_ORDER_ITEM
+  ↓
+RECEIPT
+  ↓
+RECEIPT_ITEM
+  ↓
+INSPECTION
+  ↓
+STOCK
+  ↓
+STOCK_HISTORY
 ```
 
-### 대시보드 UI 이미지
+---
 
-![BuyFlow ERP Dashboard UI](./docs/images/dashboard-ui.png)
+## 9. 화면 개발 현황
+
+| 구분        | 화면                | URL                                  | 상태 |
+| ----------- | ------------------- | ------------------------------------ | ---- |
+| 인증        | 로그인              | /login                               | 완료 |
+| 인증        | 회원가입            | /signup                              | 완료 |
+| 인증        | 아이디 찾기         | /find-id                             | 완료 |
+| 인증        | 비밀번호 재설정     | /reset-password                      | 완료 |
+| 대시보드    | 현황 요약           | /dashboard                           | 완료 |
+| 품목 관리   | 품목 목록 및 검색   | /products                            | 완료 |
+| 품목 관리   | 품목 등록           | /products/new                        | 완료 |
+| 품목 관리   | 품목 수정           | /products/{productId}/edit           | 완료 |
+| 공급업체    | 공급업체 목록       | /suppliers                           | 완료 |
+| 공급업체    | 공급업체 등록       | /suppliers/new                       | 완료 |
+| 공급업체    | 공급업체 수정       | /suppliers/{supplierId}/edit         | 완료 |
+| 창고 관리   | 창고 목록           | /warehouses                          | 완료 |
+| 구매 요청   | 구매 요청 목록      | /purchase-requests                   | 완료 |
+| 구매 요청   | 구매 요청 등록      | /purchase-requests/new               | 완료 |
+| 구매 요청   | 구매 요청 상세      | /purchase-requests/{requestId}       | 완료 |
+| 구매 요청   | 구매 요청 수정      | /purchase-requests/{requestId}/edit  | 완료 |
+| 승인 관리   | 승인 목록           | /approvals                           | 완료 |
+| 승인 관리   | 승인 상세           | /approvals/{approvalId}              | 완료 |
+| 발주 관리   | 발주 목록           | /purchase-orders                     | 완료 |
+| 발주 관리   | 발주 등록           | /purchase-orders/new                 | 완료 |
+| 발주 관리   | 발주 수정           | /purchase-orders/{orderId}/edit      | 완료 |
+| 입고 관리   | 입고 목록           | /receipts                            | 완료 |
+| 입고 관리   | 입고 등록           | /receipts/new                        | 완료 |
+| 입고 관리   | 발주 기반 입고      | /receipts/order/{orderId}            | 완료 |
+| 검수 관리   | 검수 목록           | /inspections                         | 완료 |
+| 검수 관리   | 검수 상세           | /inspections/{inspectionId}          | 완료 |
+| 검수 관리   | 검수 등록           | /inspections/{inspectionId}/register | 완료 |
+| 검수 관리   | 검수 완료 목록      | /inspections/completed               | 완료 |
+| 재고 관리   | 재고 현황           | /stock                               | 완료 |
+| 재고 관리   | 재고 이력           | /stock/history                       | 완료 |
+| 시스템 관리 | 사용자 및 권한 관리 | /system                              | 완료 |
 
 ---
 
-## 6. 화면 개발 계획
-
-대시보드 UI 시안을 기준으로 업무 기능별 상세 화면을 순차적으로 개발합니다.
-
-| 구분        | 화면                  | URL                              | 개발 상태       |
-| ----------- | --------------------- | -------------------------------- | --------------- |
-| 인증        | 로그인                | `/login`                         | front 개발 완료 |
-| 대시보드    | 현황 요약             | `/dashboard`                     | front 개발 완료 |
-| 품목 관리   | 품목 목록 및 검색     | `/products`                      | front 개발 완료 |
-| 공급업체    | 공급업체 목록 및 상세 | `/suppliers`                     | front 개발 완료 |
-| 창고 관리   | 창고 목록 및 상세     | `/warehouses`                    | front 개발 완료 |
-| 구매 요청   | 구매 요청 목록        | `/purchase-requests`             | front 개발 완료 |
-| 구매 요청   | 구매 요청 등록        | `/purchase-requests/new`         | front 개발 완료 |
-| 구매 요청   | 구매 요청 상세        | `/purchase-requests/{requestId}` | front 개발 완료 |
-| 승인 관리   | 승인 대기 목록        | `/approvals`                     | front 개발 완료 |
-| 발주 관리   | 발주 목록 및 상세     | `/purchase-orders`               | 개발 예정       |
-| 입고 관리   | 입고 목록 및 등록     | `/receipts`                      | 개발 예정       |
-| 검수 관리   | 검수 목록 및 처리     | `/inspections`                   | 개발 예정       |
-| 재고 관리   | 재고 현황             | `/stock`                         | 개발 예정       |
-| 재고 관리   | 재고 이력             | `/stock-history`                 | 개발 예정       |
-| 시스템 관리 | 사용자 및 권한 관리   | `/system`                        | 개발 예정       |
-
----
-
-## 7. 프론트엔드 기술 스택
-
-| 구분            | 기술                                  |
-| --------------- | ------------------------------------- |
-| Language        | JavaScript ES6+                       |
-| UI Library      | React                                 |
-| Framework       | Next.js                               |
-| Routing         | Next.js App Router                    |
-| Styling         | Tailwind CSS                          |
-| Code Quality    | ESLint                                |
-| Package Manager | npm                                   |
-| Version Control | Git                                   |
-| Repository      | GitHub                                |
-| Backend API     | Spring Boot REST API 연동 예정        |
-| Deployment      | Docker, Kubernetes 적용 예정          |
-| CI/CD           | GitHub Actions 또는 Jenkins 적용 예정 |
-
----
-
-## 8. 프론트엔드 디렉터리 구조
-
-아래 구조는 업무 기능별 화면과 API 호출 코드를 분리하기 위한 확장 예정 구조입니다.
+## 10. 프론트엔드 디렉터리 구조
 
 ```text
 frontend-buyflow
-│
-├── docs
-│   └── images
-│       ├── erd.png
-│       └── dashboard-ui.png
-│
 ├── public
-│   ├── images
-│   └── icons
-│
 ├── src
 │   ├── app
 │   │   ├── (auth)
-│   │   │   └── login
-│   │   │       └── page.jsx
-│   │   │
-│   │   ├── (dashboard)
-│   │   │   ├── layout.jsx
-│   │   │   ├── dashboard
-│   │   │   │   └── page.jsx
-│   │   │   ├── products
-│   │   │   │   └── page.jsx
-│   │   │   ├── suppliers
-│   │   │   │   └── page.jsx
-│   │   │   ├── warehouses
-│   │   │   │   └── page.jsx
-│   │   │   ├── purchase-requests
-│   │   │   │   ├── page.jsx
-│   │   │   │   ├── new
-│   │   │   │   │   └── page.jsx
-│   │   │   │   └── [requestId]
-│   │   │   │       └── page.jsx
-│   │   │   ├── approvals
-│   │   │   │   └── page.jsx
-│   │   │   ├── purchase-orders
-│   │   │   │   └── page.jsx
-│   │   │   ├── receipts
-│   │   │   │   └── page.jsx
-│   │   │   ├── inspections
-│   │   │   │   └── page.jsx
-│   │   │   ├── stock
-│   │   │   │   └── page.jsx
-│   │   │   ├── stock-history
-│   │   │   │   └── page.jsx
-│   │   │   └── system
-│   │   │       └── page.jsx
-│   │   │
-│   │   ├── globals.css
-│   │   ├── layout.js
-│   │   └── page.js
-│   │
+│   │   └── (dashboard)
 │   ├── components
 │   │   ├── common
 │   │   └── layout
-│   │
 │   ├── features
 │   │   ├── auth
 │   │   ├── dashboard
@@ -342,325 +475,240 @@ frontend-buyflow
 │   │   ├── inspection
 │   │   ├── stock
 │   │   └── system
-│   │
 │   ├── lib
 │   │   └── api
-│   │       └── fetchClient.js
-│   │
 │   ├── constants
 │   ├── hooks
 │   └── utils
-│
-├── .env.local.example
-├── .gitignore
-├── eslint.config.mjs
-├── jsconfig.json
+├── Dockerfile
 ├── next.config.mjs
 ├── package.json
 └── package-lock.json
 ```
 
----
+### 주요 폴더 역할
 
-## 9. 폴더별 역할
-
-### `src/app`
-
-Next.js App Router 기반의 화면 경로를 관리합니다.
-
-`page.jsx` 파일은 실제 화면을 나타냅니다.
-
-```text
-src/app/(dashboard)/purchase-requests/page.jsx
-→ /purchase-requests
-```
-
-`(auth)`, `(dashboard)`처럼 괄호가 포함된 폴더는 URL에 포함되지 않는 Route Group입니다.
-
-```text
-src/app/(dashboard)/purchase-requests/[requestId]/page.jsx
-→ /purchase-requests/101
-```
-
-`[requestId]`처럼 대괄호가 포함된 폴더는 요청 번호에 따라 화면이 달라지는 동적 경로입니다.
-
-### `src/components`
-
-여러 화면에서 반복적으로 사용하는 공통 UI 컴포넌트를 관리합니다.
-
-```text
-src/components/common
-→ Button, Input, Modal, Pagination
-
-src/components/layout
-→ Header, Sidebar
-```
-
-### `src/features`
-
-업무 기능별 API 호출 코드와 전용 컴포넌트를 관리합니다.
-
-```text
-src/features/purchase-request
-├── api
-└── components
-```
-
-특정 업무에서만 사용하는 UI는 `src/components`가 아니라 해당 기능 폴더 내부에 배치합니다.
-
-### `src/lib/api`
-
-Spring Boot REST API 서버와 통신할 때 공통으로 사용하는 코드를 관리합니다.
-
-```text
-src/lib/api/fetchClient.js
-```
-
-### `src/constants`
-
-상태 코드, 메뉴명, 공통 메시지 등 고정값을 관리합니다.
-
-```js
-export const PURCHASE_REQUEST_STATUS = {
-  PENDING: "승인 대기",
-  APPROVED: "승인 완료",
-  REJECTED: "반려",
-}
-```
-
-### `src/hooks`
-
-여러 컴포넌트에서 재사용할 React Custom Hook을 관리합니다.
-
-```text
-useAuth.js
-usePagination.js
-```
-
-### `src/utils`
-
-날짜, 금액, 수량 표시 형식처럼 공통으로 사용하는 유틸리티 함수를 관리합니다.
-
-```text
-formatDate.js
-formatCurrency.js
-```
+| 폴더           | 역할                                    |
+| -------------- | --------------------------------------- |
+| src/app        | Next.js App Router 기반 화면 경로 관리  |
+| src/components | 공통 UI 및 레이아웃 컴포넌트 관리       |
+| src/features   | 업무 기능별 API, 컴포넌트, 훅 관리      |
+| src/lib/api    | 백엔드 API 통신 공통 로직 관리          |
+| src/constants  | 상태 코드, 메뉴명 등 상수 관리          |
+| src/hooks      | 공통 React Hook 관리                    |
+| src/utils      | 날짜, 금액, 수량 포맷 등 유틸 함수 관리 |
 
 ---
 
-## 10. 로컬 실행 방법
+## 11. 백엔드 디렉터리 구조
 
-### 10.1 Repository Clone
+```text
+backend-buyflow
+├── src/main/java/com/buyflow/erp
+│   ├── Common
+│   ├── Config
+│   ├── Controller
+│   ├── Dto
+│   ├── Entity
+│   ├── Exception
+│   ├── Repository
+│   ├── Security
+│   ├── Service
+│   └── Util
+├── src/main/resources
+│   ├── application.properties
+│   └── db
+├── Dockerfile
+├── build.gradle
+├── settings.gradle
+└── gradlew
+```
+
+### 주요 계층
+
+| 계층       | 역할                              |
+| ---------- | --------------------------------- |
+| Controller | REST API 요청 처리                |
+| Service    | 비즈니스 로직 처리                |
+| Repository | 데이터베이스 접근                 |
+| Entity     | DB 테이블 매핑                    |
+| DTO        | 요청 및 응답 데이터 전달          |
+| Security   | JWT 인증 및 권한 처리             |
+| Config     | Security, CORS, Swagger, Web 설정 |
+| Common     | 공통 응답, 예외, 에러 코드 관리   |
+
+---
+
+## 12. 로컬 실행 방법
+
+### Frontend
 
 ```bash
 git clone https://github.com/BuyFlow-ERP/frontend-buyflow.git
-```
-
-### 10.2 프로젝트 폴더 이동
-
-```bash
 cd frontend-buyflow
-```
-
-### 10.3 패키지 설치
-
-```bash
 npm install
-```
-
-### 10.4 개발 서버 실행
-
-```bash
 npm run dev
 ```
 
-브라우저에서 다음 주소로 접속합니다.
+로컬 접속 주소:
 
 ```text
 http://localhost:3000
 ```
 
+### Backend
+
+```bash
+git clone https://github.com/BuyFlow-ERP/backend-buyflow.git
+cd backend-buyflow
+./gradlew bootRun
+```
+
+백엔드 기본 주소:
+
+```text
+http://localhost:8080/api
+```
+
 ---
 
-## 11. 환경변수 설정
+## 13. 환경변수
+
+### Frontend
 
 프로젝트 루트에 `.env.local` 파일을 생성합니다.
 
 ```env
-NEXT_PUBLIC_API_BASE_URL=http://localhost:8080/api
+NEXT_PUBLIC_API_BASE_URL=http://localhost:8080
+API_INTERNAL_BASE_URL=http://localhost:8080
+
+NEXT_PUBLIC_USE_DASHBOARD_MOCK=false
+NEXT_PUBLIC_USE_PRODUCT_MOCK=false
+NEXT_PUBLIC_USE_PURCHASE_REQUEST_MOCK=false
+NEXT_PUBLIC_USE_APPROVAL_MOCK=false
+NEXT_PUBLIC_USE_SUPPLIER_MOCK=false
+NEXT_PUBLIC_USE_WAREHOUSE_MOCK=false
+NEXT_PUBLIC_USE_PURCHASE_ORDER_MOCK=false
+NEXT_PUBLIC_USE_RECEIPT_MOCK=false
+NEXT_PUBLIC_USE_INSPECTION_MOCK=false
+NEXT_PUBLIC_USE_STOCK_MOCK=false
 ```
 
-팀원에게 공유할 예시 파일은 `.env.local.example`로 관리합니다.
+### Backend
 
 ```env
-NEXT_PUBLIC_API_BASE_URL=http://localhost:8080/api
+DB_URL=jdbc:oracle:thin:@<SERVICE_NAME>?TNS_ADMIN=/app/wallet
+DB_USERNAME=<DB_USERNAME>
+DB_PASSWORD=<DB_PASSWORD>
+JWT_SECRET=<JWT_SECRET>
+CORS_ALLOWED_ORIGIN=http://localhost:3000
+JWT_EXPIRATION_MINUTES=120
 ```
 
 주의 사항:
 
-- `.env.local` 파일은 GitHub에 업로드하지 않습니다.
-- 비밀번호, JWT Secret Key 등 민감한 값은 프론트엔드 환경변수에 저장하지 않습니다.
-- 브라우저에서 사용하는 환경변수만 `NEXT_PUBLIC_` 접두사를 붙입니다.
+- `.env.local`은 GitHub에 업로드하지 않습니다.
+- DB 비밀번호, JWT Secret, Oracle Wallet 파일은 GitHub에 직접 올리지 않습니다.
+- 운영 환경의 민감 정보는 GitHub Actions Secrets와 Kubernetes Secret으로 관리합니다.
 
 ---
 
-## 12. 주요 npm 명령어
+## 14. GitHub Actions Secrets
 
-| 명령어          | 설명                     |
-| --------------- | ------------------------ |
-| `npm install`   | 의존성 패키지 설치       |
-| `npm run dev`   | 개발 서버 실행           |
-| `npm run build` | 배포용 빌드              |
-| `npm run start` | 빌드된 애플리케이션 실행 |
-| `npm run lint`  | ESLint 검사              |
-
----
-
-## 13. 브랜치 전략
-
-| 브랜치      | 역할                            |
-| ----------- | ------------------------------- |
-| `main`      | 배포 또는 발표 가능한 안정 버전 |
-| `develop`   | 기능 통합 브랜치                |
-| `feature/*` | 기능 개발 브랜치                |
-| `fix/*`     | 오류 수정 브랜치                |
-| `chore/*`   | 환경설정 및 구조 변경 브랜치    |
-| `docs/*`    | 문서 작성 및 수정 브랜치        |
-
-예시:
+### buyflow-deploy repository
 
 ```text
-main
- └── develop
-      ├── feature/login
-      ├── feature/dashboard
-      ├── feature/product-list
-      ├── feature/purchase-request
-      ├── feature/approval
-      ├── feature/purchase-order
-      ├── feature/receipt
-      └── feature/stock
+CHECKOUT_TOKEN
+OCIR_USERNAME
+OCIR_AUTH_TOKEN
+OCI_USER_OCID
+OCI_TENANCY_OCID
+OCI_FINGERPRINT
+OCI_PRIVATE_KEY_B64
+OCI_REGION
+OKE_CLUSTER_OCID
+DB_URL
+DB_USERNAME
+DB_PASSWORD
+JWT_SECRET
+ORACLE_WALLET_ZIP_B64
 ```
 
-새로운 기능을 개발할 때는 `develop` 브랜치에서 기능 브랜치를 생성합니다.
-
-```bash
-git switch develop
-git pull origin develop
-git switch -c feature/dashboard
-```
-
-작업 완료 후 커밋합니다.
-
-```bash
-git add .
-git commit -m "feat: add dashboard layout"
-git push -u origin feature/dashboard
-```
-
-그다음 GitHub에서 Pull Request를 생성합니다.
+### frontend-buyflow / backend-buyflow repository
 
 ```text
-feature/dashboard
-       ↓
-develop
+DEPLOY_PAT
+```
+
+`DEPLOY_PAT`는 frontend 또는 backend repository의 push 이벤트에서 `buyflow-deploy` repository의 `deploy.yml` workflow를 호출하기 위해 사용합니다.
+
+---
+
+## 15. 배포 결과 확인 명령어
+
+```bash
+kubectl get pods -n buyflow
+kubectl get svc -n buyflow
+kubectl get ingress -n buyflow
+```
+
+배포 이미지 확인:
+
+```bash
+kubectl get deployment buyflow-frontend -n buyflow -o jsonpath="{.spec.template.spec.containers[0].image}"
+kubectl get deployment buyflow-backend -n buyflow -o jsonpath="{.spec.template.spec.containers[0].image}"
+```
+
+rollout 확인:
+
+```bash
+kubectl rollout status deployment/buyflow-frontend -n buyflow
+kubectl rollout status deployment/buyflow-backend -n buyflow
 ```
 
 ---
 
-## 14. Commit Message 규칙
+## 16. 팀 정보
 
-| Prefix     | 용도                         | 예시                                            |
-| ---------- | ---------------------------- | ----------------------------------------------- |
-| `feat`     | 새로운 기능 추가             | `feat: add purchase request form`               |
-| `fix`      | 오류 수정                    | `fix: resolve login validation error`           |
-| `chore`    | 설정, 폴더 구조, 패키지 변경 | `chore: define frontend project structure`      |
-| `style`    | 디자인 및 CSS 수정           | `style: update sidebar layout`                  |
-| `refactor` | 기능 변경 없는 코드 개선     | `refactor: separate api request logic`          |
-| `docs`     | 문서 수정                    | `docs: update README with ERD and dashboard UI` |
-| `test`     | 테스트 코드 추가 및 수정     | `test: add login component test`                |
+| 이름   | 역할 | 담당 기능                                                                                                                                                                                                             |
+| ------ | ---- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --- |
+| 김호현 | 팀장 | Docker, Kubernetes, OKE, OCIR, GitHub Actions CI/CD 구성<br>대시보드, 품목관리, 구매 요청, 승인 관리 담당<br>구매 요청 등록, 구매 요청 목록, 구매 요청 상세, 구매 요청 수정/삭제, 승인/반려 처리, 요청 상태 관리 구현 |
+| 하지수 | 팀원 | 발주, 검수, 첨부파일, 엑셀 다운로드 기능 담당<br>공급업체 관리, 발주 등록, 발주 목록, 발주 상세, 발주 상태 변경, 검수 등록, 검수 결과 처리 구현                                                                       |
+| 배승훈 | 팀원 | 회원, 권한, 공통 기능 담당<br>로그인, 회원가입, 직원 등록 기능, 권한 관리, 관리자/요청자/구매담당자 역할 구분, 공통 레이아웃, 메뉴 접근 권한 구현                                                                     |
+| 김연준 | 팀원 | 입고, 재고 기능 담당<br>입고 처리, 재고 증가, 재고 조회, 재고 이력 조회 구현                                                                                                                                          |     |
 
 ---
 
-## 15. 개발 규칙
+## 17. 최종 완료 상태
 
-- JavaScript ES6+ 문법을 사용합니다.
-- React 컴포넌트 파일은 `.jsx` 확장자를 사용합니다.
-- 일반 JavaScript 파일은 `.js` 확장자를 사용합니다.
-- React 컴포넌트 이름은 PascalCase를 사용합니다.
-- 함수와 변수 이름은 camelCase를 사용합니다.
-- URL 경로는 소문자와 하이픈을 사용합니다.
-- 화면 컴포넌트 내부에서 API 주소를 직접 작성하지 않습니다.
-- 공통 API 호출 로직은 `src/lib/api`에서 관리합니다.
-- 특정 업무에서만 사용하는 컴포넌트는 `src/features` 내부에 배치합니다.
-- Pull Request 생성 전 `npm run lint`를 실행합니다.
-
----
-
-## 16. 개발 진행 현황
-
-### 기획 및 설계
-
-- [o] 프로젝트 주제 선정
-- [o] 주요 기능 정의
-- [o] ERD 초안 구성
-- [o] 대시보드 UI 시안 구성
-- [o] 기능별 상세 UI 설계
-- [ ] 요구사항정의서 작성
-- [ ] API 명세서 작성
-
-### 프론트엔드
-
-- [o] Next.js 프로젝트 생성
-- [o] GitHub Repository 생성
-- [o] 공통 레이아웃 구현
-- [o] 대시보드 구현
-- [o] 로그인 화면 구현
-- [o] 기준정보 관리 화면 구현
-- [o] 구매 요청 화면 구현
-- [o] 승인 관리 화면 구현
-- [ ] 발주 관리 화면 구현
-- [ ] 입고 및 검수 화면 구현
-- [ ] 재고 관리 화면 구현
-- [ ] 시스템 관리 화면 구현
-
-### 백엔드 및 배포
-
-- [ ] Spring Boot REST API 구현
-- [ ] JWT 인증 처리
-- [ ] 사용자 권한별 접근 제어
-- [ ] Docker 이미지 생성
-- [ ] Apache HTTP Server 연동
-- [ ] Kubernetes 배포
-- [ ] CI/CD 파이프라인 구성
+```text
+Frontend 구현: 완료
+Backend API 구현: 완료
+Oracle DB 연동: 완료
+Oracle Wallet 연동: 완료
+Docker 이미지 빌드: 완료
+OCIR 이미지 push: 완료
+Kubernetes manifest 구성: 완료
+OKE 배포: 완료
+NGINX Ingress 연결: 완료
+도메인 접속: 완료
+GitHub Actions CI/CD 자동화 배포: 완료
+```
 
 ---
 
-## 17. 향후 계획
+## 18. 향후 개선 사항
 
-- 기능별 상세 화면 설계
-- Spring Boot REST API 연동
-- JWT 기반 사용자 인증 처리
-- 권한별 Sidebar 메뉴 노출 제어
-- 공통 UI 컴포넌트 정리
-- API 예외 처리 통합
-- Docker 기반 컨테이너화
-- Kubernetes 기반 배포
-- GitHub Actions 또는 Jenkins 기반 CI/CD 구성
-
----
-
-## 18. 팀 정보
-
-| 역할     | 담당자         | 담당 기능                      |
-| -------- | -------------- | ------------------------------ |
-| Frontend | 김호현         | Next.js 화면 구현 및 API 연동  |
-| Backend  | 하지수, 김연준 | Spring Boot REST API 구현      |
-| Database | 배승훈         | ERD 및 DB 스키마 구성          |
-| DevOps   | 추후 작성      | Docker, Kubernetes, CI/CD 구성 |
+- 기능별 테스트 코드 보강
+- API 응답 표준화 고도화
+- 운영 로그 및 모니터링 구성
+- Docker layer cache 적용으로 GitHub Actions 빌드 속도 개선
+- 첨부파일 저장소를 PersistentVolume 또는 Object Storage 기반으로 분리
+- 사용자 권한별 메뉴 노출 및 API 권한 검증 강화
+- 배포 이력 태그 관리 및 릴리즈 노트 자동화
 
 ---
 
 ## 19. License
 
-본 프로젝트는 교육 및 포트폴리오 목적으로 제작합니다.
+본 프로젝트는 교육 및 포트폴리오 목적으로 제작되었습니다.
