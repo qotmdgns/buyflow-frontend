@@ -80,7 +80,6 @@ function normalizePurchaseOrderResponse(data) {
   const itemsArray = data.content || data.items || []
 
   return {
-    /* ⭕ map 안에서 호출하던 구형 이름(toFrontendWarehouse)을 새 이름으로 싱크 교정! */
     items: itemsArray.map(toFrontendPurchaseOrder),
     pagination: {
       page: (data.number ?? 0) + 1,
