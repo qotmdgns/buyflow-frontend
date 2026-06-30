@@ -1,4 +1,5 @@
-import { apiFetch } from "@/lib/api/fetchClient"
+import { apiFetch, getApiUrl } from "@/lib/api/fetchClient"
+import { getAccessToken } from "@/utils/authStorage"
 import {
   mockSuppliers,
   supplierFilterOptions,
@@ -11,7 +12,9 @@ function wait(milliseconds) {
 }
 
 function includesKeyword(value, keyword) {
-  return value.toLowerCase().includes(keyword.trim().toLowerCase())
+  return String(value ?? "")
+    .toLowerCase()
+    .includes(keyword.trim().toLowerCase())
 }
 
 function getMockSuppliers(params) {
@@ -242,4 +245,47 @@ export async function updateSupplier(supplierId, form) {
   )
 
   return normalizeSupplierDetailResponse(data)
+}
+
+export async function downloadSupplierExcel() {
+  if (USE_MOCK) {
+    throw new Error("Mock 모드에서는 공급업체 엑셀 다운로드를 사용할 수 없습니다.")
+  }
+
+  const headers = new Headers()
+  const token = getAccessToken()
+
+  headers.set(
+    "Accept",
+    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+  )
+
+  if (token) {
+    headers.set("Authorization", `Bearer ${token}`)
+  }
+
+  const response = await fetch(getApiUrl("/api/suppliers/excel"), {
+    method: "GET",
+    headers,
+  })
+
+  if (!response.ok) {
+    throw new Error("공급업체 엑셀 다운로드에 실패했습니다.")
+  }
+
+  const blob = await response.blob()
+  const url = window.URL.createObjectURL(blob)
+
+  const link = document.createElement("a")
+  link.href = url
+  link.download = `공급업체목록_${new Date()
+    .toISOString()
+    .slice(0, 10)
+    .replace(/-/g, "")}.xlsx`
+
+  document.body.appendChild(link)
+  link.click()
+  link.remove()
+
+  window.URL.revokeObjectURL(url)
 }
