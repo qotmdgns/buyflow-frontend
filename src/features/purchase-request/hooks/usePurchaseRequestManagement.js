@@ -26,7 +26,7 @@ const DEFAULT_SUMMARY = {
 const SUMMARY_KEY_BY_STATUS = {
   "승인 대기": "pending",
   "승인 완료": "approved",
-  반려: "rejected",
+  "반려": "rejected",
   "발주 완료": "ordered",
   "요청 취소": "canceled",
 }
