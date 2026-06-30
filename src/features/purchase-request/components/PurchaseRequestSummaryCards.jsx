@@ -42,27 +42,12 @@ export default function PurchaseRequestSummaryCards({
             type="button"
             onClick={() => onSelect(item.status)}
             aria-pressed={isActive}
-            className={`group flex flex-col rounded-lg border border-l-4 border-slate-200 bg-white px-4
-            py-3
-            text-left
-            shadow-sm
-            transition-all
-            duration-200
-            ease-out
-            hover:-translate-y-1
-            hover:shadow-md
-            focus:outline-none
-            focus:ring-2
-            focus:ring-blue-200
-            ${toneStyles[item.tone].accent}
-            ${isActive ? toneStyles[item.tone].active : ""}
-            `}
+            className={`group flex min-h-[92px] flex-col justify-between rounded-2xl border border-l-4 border-slate-200 bg-white px-4 py-3 text-left shadow-[0_8px_24px_rgba(15,23,42,0.06)] transition-all duration-200 ease-out hover:-translate-y-1 hover:shadow-[0_16px_34px_rgba(15,23,42,0.1)] focus:outline-none focus:ring-2 focus:ring-blue-200 ${toneStyles[item.tone].accent} ${isActive ? toneStyles[item.tone].active : ""}`}
           >
-          <p className="text-[13px] font-semibold text-slate-500">
-            {item.label}
-          </p>
-
-            <strong className="mt-1 block text-[22px] leading-none">
+            <p className="text-[13px] font-semibold text-slate-500">
+              {item.label}
+            </p>
+            <strong className="mt-2 block text-[26px] leading-none tracking-tight text-slate-900">
               {String(summary[item.key] ?? 0).padStart(2, "0")}
             </strong>
           </button>

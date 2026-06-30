@@ -47,10 +47,16 @@ export default function SupplierManagement() {
 
   return (
     <div className="w-full">
-      <header className="mb-3">
-        <h1 className="text-[22px] font-bold tracking-tight text-slate-900">
-          공급업체 관리
-        </h1>
+      <header className="bf-page-header">
+        <div>
+          <p className="bf-page-eyebrow">PARTNER</p>
+
+          <h1 className="bf-page-title">공급업체 관리</h1>
+
+          <p className="bf-page-description">
+            구매 및 입고 업무에 필요한 공급업체 관리 정보를 조회하고 관리합니다.
+          </p>
+        </div>
       </header>
 
       <SupplierSearchForm

@@ -86,12 +86,16 @@ export default function PurchaseRequestManagement() {
 
   return (
     <div className="w-full">
-      <header className="mb-3">
-        <h1 className="text-[22px] font-bold text-slate-900">구매 요청 목록</h1>
+      <header className="bf-page-header">
+        <div>
+          <p className="bf-page-eyebrow">PURCHASE REQUEST</p>
 
-        <p className="mt-1 text-[13px] text-slate-400">
-          등록된 구매 요청을 조회하고 진행 상태를 확인할 수 있습니다.
-        </p>
+          <h1 className="bf-page-title">구매요청 관리</h1>
+
+          <p className="bf-page-description">
+            구매요청 내역을 조회하고 진행 상태를 관리합니다.
+          </p>
+        </div>
       </header>
 
       <PurchaseRequestSearchForm
@@ -128,14 +132,14 @@ export default function PurchaseRequestManagement() {
             </button>
 
             {hasPermission("purchase-requests.write") && (
-  <Link
-    href="/purchase-requests/new"
-    className="flex h-10 items-center gap-1.5 rounded-md bg-blue-600 px-3 text-[13px] font-semibold text-white transition hover:bg-blue-700"
-  >
-    <Plus size={14} />
-    신규 구매 요청
-  </Link>
-)}
+              <Link
+                href="/purchase-requests/new"
+                className="flex h-10 items-center gap-1.5 rounded-md bg-blue-600 px-3 text-[13px] font-semibold text-white transition hover:bg-blue-700"
+              >
+                <Plus size={14} />
+                신규 구매 요청
+              </Link>
+            )}
           </div>
         </div>
 

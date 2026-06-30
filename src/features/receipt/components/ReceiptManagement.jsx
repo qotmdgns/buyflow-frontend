@@ -86,9 +86,7 @@ function MetricCard({
             건
           </span>
         </p>
-        <p className="mt-2 text-[12px] text-slate-400">
-          {helper}
-        </p>
+        <p className="mt-2 text-[12px] text-slate-400">{helper}</p>
       </div>
 
       <span
@@ -117,7 +115,8 @@ function TableMessage({ children, isError = false }) {
     <tr>
       <td
         colSpan={12}
-        className={`h-48 text-center text-[13px] ${isError ? "text-rose-500" : "text-slate-400"
+        className={`h-48 text-center text-[13px] ${
+          isError ? "text-rose-500" : "text-slate-400"
         }`}
       >
         {children}
@@ -164,7 +163,7 @@ export default function ReceiptManagement() {
     changePageSize,
     toggleAllRows,
     toggleRow,
-    } = useReceiptManagement()
+  } = useReceiptManagement()
 
   const pageNumbers = useMemo(
     () => createPageNumbers(pagination.page, pagination.totalPages),
@@ -180,14 +179,12 @@ export default function ReceiptManagement() {
     pagination.totalElements,
   )
 
- 
-
   function handleDownload() {
-  window.open(
-    `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/receipts/excel`,
-    "_blank",
-  )
-}
+    window.open(
+      `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/receipts/excel`,
+      "_blank",
+    )
+  }
 
   function handlePrintReport() {
     window.print()
@@ -195,17 +192,16 @@ export default function ReceiptManagement() {
 
   return (
     <div className="w-full">
-      <header className="mb-3 flex flex-wrap items-start justify-between gap-3">
+      <header className="bf-page-header">
         <div>
-          <h1 className="text-[22px] font-bold text-slate-900">입고 관리</h1>
-
-          <p className="mt-1 text-[13px] text-slate-400">
+          <p className="bf-page-eyebrow">RECEIPT </p>
+          <h1 className="bf-page-title">입고 관리</h1>
+          <p className="bf-page-description">
             발주별 입고 예정, 부분 입고, 완료 현황을 조회하고 관리합니다.
           </p>
         </div>
 
         <div className="flex items-center gap-2">
-          
           <Link
             href="/receipts/new"
             className="flex h-10 items-center gap-1.5 rounded-md bg-blue-600 px-3 text-[13px] font-semibold text-white transition hover:bg-blue-700"
@@ -359,10 +355,10 @@ export default function ReceiptManagement() {
         <MetricCard
           title="전체"
           value={
-          (summary.tabCounts?.expected ?? 0) +
-          (summary.delayed ?? 0) +
-          (summary.tabCounts?.partial ?? 0) +
-          (summary.tabCounts?.completed ?? 0)
+            (summary.tabCounts?.expected ?? 0) +
+            (summary.delayed ?? 0) +
+            (summary.tabCounts?.partial ?? 0) +
+            (summary.tabCounts?.completed ?? 0)
           }
           helper="전체 입고 목록"
           icon={Package}
@@ -427,18 +423,15 @@ export default function ReceiptManagement() {
                   : "border-transparent text-slate-400 hover:text-slate-600"
               }`}
             >
-            {tab.label} (
+              {tab.label} (
               {summary.tabCounts?.[tab.key] ??
                 summary.tabCounts?.[tab.key.toLowerCase()] ??
-                0
-              }
-            )
+                0}
+              )
             </button>
           )
         })}
       </div>
-
-      
 
       <section className="mt-3 overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm">
         <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 px-4 py-3">
@@ -457,41 +450,37 @@ export default function ReceiptManagement() {
               className="flex h-9 items-center gap-1.5 rounded-md border border-slate-200 bg-white px-3 text-[13px] font-semibold text-slate-600 transition hover:bg-slate-50"
             >
               <Download size={13} />
-                엑셀 다운로드
+              엑셀 다운로드
             </button>
-
-            
           </div>
         </div>
 
         <div className="overflow-x-auto">
           <table className="w-full min-w-[1380px] text-left text-[13px]">
-           <thead className="bg-slate-50 text-slate-500">
-  <tr>
-    {[
-      "발주 번호",
-      "공급업체",
-      "발주일",
-      "입고 예정일",
-      "입고 창고",
-      "품목 수",
-      "발주 수량",
-      "누적 입고",
-      "미입고",
-      "상태",
-      "관리",
-    ].map((heading) => (
-      <th
-        key={heading}
-        className="whitespace-nowrap px-3 py-3 font-semibold"
-      >
-        {heading}
-      </th>
-    ))}
-  </tr>
-</thead>
-            
-            
+            <thead className="bg-slate-50 text-slate-500">
+              <tr>
+                {[
+                  "발주 번호",
+                  "공급업체",
+                  "발주일",
+                  "입고 예정일",
+                  "입고 창고",
+                  "품목 수",
+                  "발주 수량",
+                  "누적 입고",
+                  "미입고",
+                  "상태",
+                  "관리",
+                ].map((heading) => (
+                  <th
+                    key={heading}
+                    className="whitespace-nowrap px-3 py-3 font-semibold"
+                  >
+                    {heading}
+                  </th>
+                ))}
+              </tr>
+            </thead>
 
             <tbody>
               {loading && (
@@ -512,18 +501,18 @@ export default function ReceiptManagement() {
                 !error &&
                 receipts.map((receipt) => (
                   <tr
-  key={receipt.id}
-  className={`border-t border-slate-100 text-slate-600 ${
-    receipt.status === "DELAYED" ? "bg-rose-50/60" : ""
-  }`}
->
+                    key={receipt.id}
+                    className={`border-t border-slate-100 text-slate-600 ${
+                      receipt.status === "DELAYED" ? "bg-rose-50/60" : ""
+                    }`}
+                  >
                     <td className="whitespace-nowrap px-3 py-3 font-semibold">
-  {receipt.orderNumber}
-</td>
+                      {receipt.orderNumber}
+                    </td>
 
                     <td className="whitespace-nowrap px-3 py-3 font-semibold">
-  {receipt.orderNumber}
-</td>
+                      {receipt.orderNumber}
+                    </td>
 
                     <td className="whitespace-nowrap px-3 py-3">
                       {receipt.supplierName}
@@ -574,18 +563,17 @@ export default function ReceiptManagement() {
                     </td>
 
                     <td className="whitespace-nowrap px-3 py-3 text-center">
-  
- <Link
-  href={
-    receipt.receiptId > 0
-      ? `/receipts/${receipt.receiptId}`
-      : `/receipts/order/${receipt.orderId}`
-  }
-  aria-label={`${receipt.orderNumber} 입고 상세 보기`}
-  className="inline-flex items-center justify-center rounded-md border border-blue-200 bg-blue-50 px-3 py-1.5 text-[13px] font-semibold text-blue-600 transition hover:bg-blue-100"
->
-  입고 상세
-</Link>
+                      <Link
+                        href={
+                          receipt.receiptId > 0
+                            ? `/receipts/${receipt.receiptId}`
+                            : `/receipts/order/${receipt.orderId}`
+                        }
+                        aria-label={`${receipt.orderNumber} 입고 상세 보기`}
+                        className="inline-flex items-center justify-center rounded-md border border-blue-200 bg-blue-50 px-3 py-1.5 text-[13px] font-semibold text-blue-600 transition hover:bg-blue-100"
+                      >
+                        입고 상세
+                      </Link>
                     </td>
                   </tr>
                 ))}

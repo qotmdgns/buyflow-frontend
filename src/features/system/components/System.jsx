@@ -56,13 +56,17 @@ export default function System() {
         : management.activeTab
 
   return (
-    <div>
-      <header className="mb-3">
-        <h1 className="text-[22px] font-bold">시스템 관리</h1>
+    <div className="w-full">
+      <header className="bf-page-header">
+        <div>
+          <p className="bf-page-eyebrow">SYSTEM</p>
 
-        <p className="mt-1 text-[13px] text-slate-400">
-          사용자 계정과 역할별 접근 권한을 관리합니다.
-        </p>
+          <h1 className="bf-page-title">시스템 관리</h1>
+
+          <p className="bf-page-description">
+            사용자 계정과 역할별 접근 권한을 관리합니다.
+          </p>
+        </div>
       </header>
 
       <div className="mb-3 flex gap-1 rounded-lg border border-slate-200 bg-white p-1">
@@ -112,7 +116,6 @@ export default function System() {
               <span className="font-bold">
                 사용자 목록 · 총 {management.pagination.totalElements}건
               </span>
-
             </div>
 
             <UserTable

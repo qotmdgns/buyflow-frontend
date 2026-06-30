@@ -21,15 +21,10 @@ import {
 import useClientReady from "@/utils/useClientReady"
 import { hasPermission } from "@/utils/permissions"
 
-const INPUT_CLASS_NAME =
-  "h-10 w-full rounded-md border border-slate-200 px-3 text-[14px] outline-none transition placeholder:text-slate-300 focus:border-blue-400 focus:ring-2 focus:ring-blue-100"
+const INPUT_CLASS_NAME = "bf-input"
 
 function FieldLabel({ children }) {
-  return (
-    <span className="mb-1 block text-[13px] font-semibold text-slate-600">
-      {children}
-    </span>
-  )
+  return <span className="bf-field-label">{children}</span>
 }
 
 function SelectField({ value, options = [], onChange }) {
@@ -99,20 +94,19 @@ export default function StockStatusManagement({ initialFilters = {} }) {
 
   return (
     <div className="w-full">
-      <header className="mb-3">
-        <h1 className="text-[22px] font-bold tracking-tight text-slate-900">
-          현재 재고 현황
-        </h1>
+      <header className="bf-page-header">
+        <div>
+          <p className="bf-page-eyebrow">STOCK</p>
 
-        <p className="mt-1 text-[13px] text-slate-400">
-          창고별 보유 재고와 안전재고 부족 여부를 조회합니다.
-        </p>
+          <h1 className="bf-page-title">재고 현황</h1>
+
+          <p className="bf-page-description">
+            품목별 현재 재고 수량과 창고별 보유 현황을 조회합니다.
+          </p>
+        </div>
       </header>
 
-      <form
-        onSubmit={searchStocks}
-        className="mt-3 rounded-lg border border-slate-200 bg-white p-3 shadow-sm"
-      >
+      <form onSubmit={searchStocks} className="bf-search-panel">
         <div className="grid gap-x-3 gap-y-2.5 md:grid-cols-2 xl:grid-cols-5">
           <label>
             <FieldLabel>품목 코드</FieldLabel>
@@ -175,16 +169,13 @@ export default function StockStatusManagement({ initialFilters = {} }) {
           <button
             type="button"
             onClick={resetFilters}
-            className="flex h-10 items-center gap-1.5 rounded-md border border-slate-200 bg-white px-4 text-[13px] font-semibold text-slate-600 transition hover:bg-slate-50"
+            className="bf-btn bf-btn-secondary"
           >
             <RefreshCcw size={14} />
             초기화
           </button>
 
-          <button
-            type="submit"
-            className="flex h-10 items-center gap-1.5 rounded-md bg-blue-600 px-4 text-[13px] font-semibold text-white transition hover:bg-blue-700"
-          >
+          <button type="submit" className="bf-btn bf-btn-primary">
             <Search size={14} />
             검색
           </button>
@@ -209,19 +200,19 @@ export default function StockStatusManagement({ initialFilters = {} }) {
             </span>
           </div>
 
-         <button
-  type="button"
-  onClick={() => {
-    window.open(
-      `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/inventories/excel`,
-      "_blank",
-    )
-  }}
-  className="flex h-9 items-center gap-1.5 rounded-md border border-slate-200 bg-white px-3 text-[13px] font-semibold text-slate-600 transition hover:bg-slate-50"
->
-  <Download size={14} />
-  엑셀 다운로드
-</button>
+          <button
+            type="button"
+            onClick={() => {
+              window.open(
+                `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/inventories/excel`,
+                "_blank",
+              )
+            }}
+            className="flex h-9 items-center gap-1.5 rounded-md border border-slate-200 bg-white px-3 text-[13px] font-semibold text-slate-600 transition hover:bg-slate-50"
+          >
+            <Download size={14} />
+            엑셀 다운로드
+          </button>
         </div>
 
         <div className="overflow-x-auto">

@@ -132,42 +132,41 @@ export default function PurchaseOrderManagement() {
 
   async function handleDownload() {
     try {
-      const excelApiUrl = "http://localhost:8080/api/orders/excel"; 
+      const excelApiUrl = "http://localhost:8080/api/orders/excel"
 
       const response = await fetch(excelApiUrl, {
         method: "GET",
         // 만약 JWT 토큰 등 인증 헤더가 필요하다면 아래 주석을 풀고 넣어주세요.
         // headers: {
-        //   "Authorization": `Bearer ${localStorage.getItem('token')}` 
+        //   "Authorization": `Bearer ${localStorage.getItem('token')}`
         // }
-      });
+      })
 
       if (!response.ok) {
-        throw new Error("엑셀 파일을 생성하지 못했습니다.");
+        throw new Error("엑셀 파일을 생성하지 못했습니다.")
       }
 
       // 1. 서버에서 넘어온 바이너리 데이터(Excel)를 Blob 객체로 변환
-      const blob = await response.blob();
+      const blob = await response.blob()
 
       // 2. 브라우저 메모리에 가상의 다운로드 URL 생성
-      const url = window.URL.createObjectURL(blob);
-      const link = document.createElement("a");
-      
-      link.href = url;
+      const url = window.URL.createObjectURL(blob)
+      const link = document.createElement("a")
+
+      link.href = url
       // 3. 다운로드될 파일명 강제 지정 (서버 헤더를 읽어와도 되지만 프론트에서 고정하는 것이 편합니다)
-      link.download = `발주 목록_${new Date().toISOString().slice(0,10).replace(/-/g,"")}.xlsx`;
+      link.download = `발주 목록_${new Date().toISOString().slice(0, 10).replace(/-/g, "")}.xlsx`
 
       // 4. 링크를 클릭한 것처럼 이벤트를 발생시켜 다운로드 실행
-      document.body.appendChild(link);
-      link.click();
-      link.remove();
+      document.body.appendChild(link)
+      link.click()
+      link.remove()
 
       // 5. 메모리 누수 방지를 위해 가상 URL 해제
-      window.URL.revokeObjectURL(url);
-
+      window.URL.revokeObjectURL(url)
     } catch (error) {
-      console.error("엑셀 다운로드 중 오류가 발생했습니다.", error);
-      window.alert("엑셀 파일을 다운로드하지 못했습니다.");
+      console.error("엑셀 다운로드 중 오류가 발생했습니다.", error)
+      window.alert("엑셀 파일을 다운로드하지 못했습니다.")
     }
   }
 
@@ -178,11 +177,16 @@ export default function PurchaseOrderManagement() {
 
   return (
     <div className="w-full">
-      <header className="mb-3">
-        <h1 className="text-[22px] font-bold text-slate-900">발주 관리</h1>
-        <p className="mt-1 text-[13px] text-slate-400">
-          공급업체에 전달한 발주 내역과 입고 진행 상태를 관리합니다.
-        </p>
+      <header className="bf-page-header">
+        <div>
+          <p className="bf-page-eyebrow">PURCHASE ORDER</p>
+
+          <h1 className="bf-page-title">발주 관리</h1>
+
+          <p className="bf-page-description">
+            승인된 구매요청을 기반으로 발주 정보를 조회하고 관리합니다.
+          </p>
+        </div>
       </header>
 
       <form
@@ -197,9 +201,7 @@ export default function PurchaseOrderManagement() {
 
             <input
               value={draftFilters.orderNo}
-              onChange={(event) =>
-                updateFilter("orderNo", event.target.value)
-              }
+              onChange={(event) => updateFilter("orderNo", event.target.value)}
               placeholder="PO-YYYY-XXXX"
               className={INPUT_CLASS_NAME}
             />
@@ -249,9 +251,7 @@ export default function PurchaseOrderManagement() {
 
             <input
               value={draftFilters.userName}
-              onChange={(event) =>
-                updateFilter("userName", event.target.value)
-              }
+              onChange={(event) => updateFilter("userName", event.target.value)}
               placeholder="담당자 이름 입력"
               className={INPUT_CLASS_NAME}
             />
@@ -262,7 +262,9 @@ export default function PurchaseOrderManagement() {
             </span>
             <select
               value={draftFilters.orderStatus}
-              onChange={(event) => updateFilter("orderStatus", event.target.value)}
+              onChange={(event) =>
+                updateFilter("orderStatus", event.target.value)
+              }
               className={INPUT_CLASS_NAME}
             >
               {(filterOptions?.statuses ?? []).map((orderStatus) => (
@@ -299,11 +301,16 @@ export default function PurchaseOrderManagement() {
           <div>
             <h2 className="text-[15px] font-bold text-slate-800">발주 목록</h2>
             <p className="mt-0.5 text-[13px] text-slate-400">
-              총 <span className="font-medium text-slate-700"> {pagination.totalElements}</span>건
+              총{" "}
+              <span className="font-medium text-slate-700">
+                {" "}
+                {pagination.totalElements}
+              </span>
+              건
             </p>
           </div>
-          
-          <div className="flex gap-2"> 
+
+          <div className="flex gap-2">
             <button
               type="button"
               onClick={handleDownload}
@@ -313,14 +320,14 @@ export default function PurchaseOrderManagement() {
               엑셀 다운로드
             </button>
             {hasPermission("purchase-orders.write") && (
-  <Link
-    href="/purchase-orders/new"
-    className="flex h-10 items-center gap-1.5 rounded-md bg-blue-600 px-4 text-[13px] font-semibold text-white transition hover:bg-blue-700"
-  >
-    <Plus size={14} />
-    신규 발주 등록
-  </Link>
-)}
+              <Link
+                href="/purchase-orders/new"
+                className="flex h-10 items-center gap-1.5 rounded-md bg-blue-600 px-4 text-[13px] font-semibold text-white transition hover:bg-blue-700"
+              >
+                <Plus size={14} />
+                신규 발주 등록
+              </Link>
+            )}
           </div>
         </div>
 

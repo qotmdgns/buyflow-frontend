@@ -128,15 +128,12 @@ const menuGroups = [
 
 function Logo() {
   return (
-    <Link
-      href="/dashboard"
-      className="flex h-14 items-center gap-2 border-b border-slate-200 px-4"
-    >
-      <span className="flex h-7 w-7 items-center justify-center rounded-md bg-blue-600 text-white">
-        <Package size={16} />
+    <Link href="/dashboard" className="app-logo">
+      <span className="app-logo-icon">
+        <Package size={18} />
       </span>
 
-      <span className="text-[15px] font-bold text-blue-600">BuyFlow ERP</span>
+      <span className="app-logo-title">BuyFlow ERP</span>
     </Link>
   )
 }
@@ -167,19 +164,14 @@ export default function Sidebar() {
     .filter((group) => group.items.length > 0)
 
   return (
-    <aside className="fixed inset-y-0 left-0 z-30 hidden w-[220px] border-r border-slate-200 bg-white lg:flex lg:flex-col">
+    <aside className="app-sidebar">
       <Logo />
 
       <nav className="flex-1 overflow-y-auto py-2">
         {visibleGroups.map((group, groupIndex) => (
-          <div
-            key={`${group.label}-${groupIndex}`}
-            className={groupIndex ? "mt-3" : ""}
-          >
+          <div key={`${group.label}-${groupIndex}`} className="app-nav-group">
             {group.label && (
-              <p className="px-4 pb-1 text-[12px] font-bold text-slate-400">
-                {group.label}
-              </p>
+              <p className="app-nav-group-label">{group.label}</p>
             )}
 
             <div className="space-y-0.5">
@@ -192,10 +184,8 @@ export default function Sidebar() {
                   <Link
                     key={label}
                     href={href}
-                    className={`flex h-9 items-center gap-2.5 border-r-2 px-4 text-[13px] transition ${
-                      active
-                        ? "border-blue-600 bg-blue-50 font-semibold text-blue-600"
-                        : "border-transparent text-slate-500 hover:bg-slate-50 hover:text-slate-800"
+                    className={`app-nav-link ${
+                      active ? "app-nav-link-active" : "app-nav-link-idle"
                     }`}
                   >
                     <Icon size={15} strokeWidth={1.8} />

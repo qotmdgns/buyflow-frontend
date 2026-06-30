@@ -1,14 +1,9 @@
 import { RefreshCcw, Search } from "lucide-react"
 
-const INPUT_CLASS_NAME =
-  "h-10 w-full rounded-md border border-slate-200 bg-white px-3 text-[13px] text-slate-700 outline-none transition placeholder:text-slate-300 focus:border-blue-400 focus:ring-2 focus:ring-blue-100"
+const INPUT_CLASS_NAME = "bf-input"
 
 function FieldLabel({ children }) {
-  return (
-    <span className="mb-1 block text-[13px] font-semibold text-slate-600">
-      {children}
-    </span>
-  )
+  return <span className="bf-field-label">{children}</span>
 }
 
 function SelectField({ value, options = [], onChange }) {
@@ -59,10 +54,7 @@ export default function InspectionSearchForm({
   inspectionNumberLabel = "검수 대기 번호",
 }) {
   return (
-    <form
-      onSubmit={onSearch}
-      className="rounded-lg border border-slate-200 bg-white p-3 shadow-sm"
-    >
+    <form onSubmit={onSearch} className="bf-search-panel">
       <div className="grid gap-x-3 gap-y-2.5 md:grid-cols-2 xl:grid-cols-4">
         <label>
           <FieldLabel>{inspectionNumberLabel}</FieldLabel>
@@ -129,7 +121,7 @@ export default function InspectionSearchForm({
           />
         </label>
 
-<label className="xl:col-span-2">
+        <label className="xl:col-span-2">
           <FieldLabel>입고일</FieldLabel>
 
           <DateRangeField
@@ -145,16 +137,13 @@ export default function InspectionSearchForm({
         <button
           type="button"
           onClick={onReset}
-          className="flex h-10 items-center gap-1.5 rounded-md border border-slate-200 px-4 text-[13px] font-semibold text-slate-500 transition hover:bg-slate-50"
+          className="bf-btn bf-btn-secondary"
         >
           <RefreshCcw size={13} />
           초기화
         </button>
 
-        <button
-          type="submit"
-          className="flex h-10 items-center gap-1.5 rounded-md bg-blue-600 px-4 text-[13px] font-semibold text-white transition hover:bg-blue-700"
-        >
+        <button type="submit" className="bf-btn bf-btn-primary">
           <Search size={13} />
           검색
         </button>

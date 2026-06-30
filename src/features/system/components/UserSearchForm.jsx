@@ -1,7 +1,6 @@
 import { RefreshCcw, Search } from "lucide-react"
 
-const INPUT_CLASS_NAME =
-  "h-10 w-full rounded-md border border-slate-200 bg-white px-3 text-[14px] text-slate-700 outline-none transition placeholder:text-slate-300 focus:border-blue-400 focus:ring-2 focus:ring-blue-100"
+const INPUT_CLASS_NAME = "bf-input"
 
 export default function UserSearchForm({
   filters,
@@ -11,10 +10,7 @@ export default function UserSearchForm({
   onReset,
 }) {
   return (
-    <form
-      onSubmit={onSearch}
-      className="rounded-lg border border-slate-200 bg-white p-3 shadow-sm"
-    >
+    <form onSubmit={onSearch} className="bf-search-panel">
       <div className="flex items-center gap-1.5 border-b border-slate-100 pb-2 text-[14px] font-semibold text-slate-700">
         <Search size={15} />
         검색 필터
@@ -67,13 +63,13 @@ export default function UserSearchForm({
         <button
           type="button"
           onClick={onReset}
-          className="flex h-10 items-center gap-1.5 rounded-md border border-slate-200 px-4 text-[13px] font-semibold text-slate-600"
+          className="bf-btn bf-btn-secondary"
         >
           <RefreshCcw size={15} />
           초기화
         </button>
 
-        <button className="flex h-10 items-center gap-1.5 rounded-md bg-blue-600 px-5 text-[13px] font-semibold text-white">
+        <button className="bf-btn bf-btn-primary">
           <Search size={15} />
           검색
         </button>

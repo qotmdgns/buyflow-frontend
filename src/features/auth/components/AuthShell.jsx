@@ -2,12 +2,12 @@ import { Package } from "lucide-react"
 
 export default function AuthShell({ children }) {
   return (
-    <main className="flex min-h-screen flex-col bg-[#f4f9ff] text-slate-900">
+    <main className="flex min-h-screen flex-col bg-[radial-gradient(circle_at_top_left,rgba(37,99,235,0.16),transparent_32rem),linear-gradient(180deg,#f4f8ff_0%,#eef4fb_100%)] text-slate-900">
       <section className="flex flex-1 items-center justify-center px-5 py-8">
-        <div className="w-full max-w-[440px] rounded-lg border border-slate-100 bg-white px-8 py-9 shadow-[0_5px_18px_rgba(15,48,86,0.04)]">
+        <div className="w-full max-w-[440px] rounded-2xl border border-white/80 bg-white/95 px-8 py-9 shadow-[0_24px_70px_rgba(15,48,86,0.14)] backdrop-blur">
           <header className="flex flex-col items-center text-center">
-            <div className="flex h-[52px] w-[52px] items-center justify-center rounded-xl bg-blue-100">
-              <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-blue-500 text-white shadow-sm">
+            <div className="flex h-[58px] w-[58px] items-center justify-center rounded-2xl bg-blue-100">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-blue-600 to-sky-500 text-white shadow-[0_12px_24px_rgba(37,99,235,0.28)]">
                 <Package size={20} />
               </div>
             </div>
