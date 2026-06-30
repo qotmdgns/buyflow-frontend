@@ -367,9 +367,7 @@ export default function AuthFormPage({ mode }) {
             </Link>
           </nav>
 
-          <p className="mt-6 text-center text-[10px] text-slate-400">
-            테스트 계정: kimcs / 1234
-          </p>
+          
         </>
       ) : (
         <Link

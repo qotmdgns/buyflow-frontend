@@ -18,6 +18,7 @@ import {
   getPurchaseOrderStatusLabel,
   getPurchaseOrderStatusMeta,
 } from "@/features/purchase-order/utils/purchaseOrderUtils"
+import { hasPermission } from "@/utils/permissions"
 
 const INPUT_CLASS_NAME =
   "h-10 w-full rounded-md border border-slate-200 bg-white px-3 text-[13px] text-slate-700 outline-none transition placeholder:text-slate-300 focus:border-blue-400 focus:ring-2 focus:ring-blue-100"
@@ -311,13 +312,15 @@ export default function PurchaseOrderManagement() {
               <Download size={13} />
               엑셀 다운로드
             </button>
-            <Link
-              href="/purchase-orders/new"
-              className="flex h-10 items-center gap-1.5 rounded-md bg-blue-600 px-4 text-[13px] font-semibold text-white transition hover:bg-blue-700"
-            >
-              <Plus size={14} />
-              신규 발주 등록
-            </Link>
+            {hasPermission("purchase-orders.write") && (
+  <Link
+    href="/purchase-orders/new"
+    className="flex h-10 items-center gap-1.5 rounded-md bg-blue-600 px-4 text-[13px] font-semibold text-white transition hover:bg-blue-700"
+  >
+    <Plus size={14} />
+    신규 발주 등록
+  </Link>
+)}
           </div>
         </div>
 

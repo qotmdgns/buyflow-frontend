@@ -2,18 +2,20 @@
 
 import Link from "next/link"
 import { useRouter } from "next/navigation"
-import { Plus } from "lucide-react"
+import { FileDown, Plus } from "lucide-react"
 import SupplierDetailModal from "@/features/supplier/components/SupplierDetailModal"
 import SupplierPagination from "@/features/supplier/components/SupplierPagination"
 import SupplierSearchForm from "@/features/supplier/components/SupplierSearchForm"
 import SupplierTable from "@/features/supplier/components/SupplierTable"
 import useSupplierManagement from "@/features/supplier/hooks/useSupplierManagement"
+import { downloadSupplierExcel } from "@/features/supplier/api/supplierApi"
 import { hasPermission } from "@/utils/permissions"
 import useClientReady from "@/utils/useClientReady"
 
 export default function SupplierManagement() {
   const router = useRouter()
   const ready = useClientReady()
+
   const {
     draftFilters,
     filterOptions,
@@ -33,6 +35,18 @@ export default function SupplierManagement() {
   } = useSupplierManagement()
 
   const canManageSuppliers = ready && hasPermission("suppliers.write")
+
+  const canReadSuppliers =
+    ready &&
+    (hasPermission("suppliers.read") || hasPermission("suppliers.write"))
+
+  async function handleExcelDownload() {
+    try {
+      await downloadSupplierExcel()
+    } catch (error) {
+      window.alert(error.message || "공급업체 엑셀 다운로드에 실패했습니다.")
+    }
+  }
 
   function openSupplierEdit(supplier) {
     closeSupplierDetail()
@@ -73,15 +87,28 @@ export default function SupplierManagement() {
             </span>
           </div>
 
-          {canManageSuppliers && (
-            <Link
-              href="/suppliers/new"
-              className="flex h-9 items-center gap-1.5 rounded-md bg-blue-600 px-3 text-[13px] font-semibold text-white transition hover:bg-blue-700"
-            >
-              <Plus size={14} />
-              신규 공급업체 등록
-            </Link>
-          )}
+          <div className="flex items-center gap-2">
+            {canReadSuppliers && (
+              <button
+                type="button"
+                onClick={handleExcelDownload}
+                className="flex h-9 items-center gap-1.5 rounded-md border border-slate-200 bg-white px-3 text-[13px] font-semibold text-slate-600 transition hover:bg-slate-50"
+              >
+                <FileDown size={14} />
+                엑셀 다운로드
+              </button>
+            )}
+
+            {canManageSuppliers && (
+              <Link
+                href="/suppliers/new"
+                className="flex h-9 items-center gap-1.5 rounded-md bg-blue-600 px-3 text-[13px] font-semibold text-white transition hover:bg-blue-700"
+              >
+                <Plus size={14} />
+                신규 공급업체 등록
+              </Link>
+            )}
+          </div>
         </div>
 
         <SupplierTable

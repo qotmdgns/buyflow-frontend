@@ -8,6 +8,7 @@ import PurchaseRequestSummaryCards from "@/features/purchase-request/components/
 import PurchaseRequestTable from "@/features/purchase-request/components/PurchaseRequestTable"
 import usePurchaseRequestManagement from "@/features/purchase-request/hooks/usePurchaseRequestManagement"
 import { downloadPurchaseRequestCsv } from "@/features/purchase-request/utils/purchaseRequestManagementUtils"
+import { hasPermission } from "@/utils/permissions"
 
 export default function PurchaseRequestManagement() {
   const {
@@ -126,13 +127,15 @@ export default function PurchaseRequestManagement() {
               엑셀 다운로드
             </button>
 
-            <Link
-              href="/purchase-requests/new"
-              className="flex h-10 items-center gap-1.5 rounded-md bg-blue-600 px-3 text-[13px] font-semibold text-white transition hover:bg-blue-700"
-            >
-              <Plus size={14} />
-              신규 구매 요청
-            </Link>
+            {hasPermission("purchase-requests.write") && (
+  <Link
+    href="/purchase-requests/new"
+    className="flex h-10 items-center gap-1.5 rounded-md bg-blue-600 px-3 text-[13px] font-semibold text-white transition hover:bg-blue-700"
+  >
+    <Plus size={14} />
+    신규 구매 요청
+  </Link>
+)}
           </div>
         </div>
 
