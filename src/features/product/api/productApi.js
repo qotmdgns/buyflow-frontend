@@ -1,4 +1,5 @@
-import { apiFetch } from "@/lib/api/fetchClient"
+import { apiFetch, getApiUrl } from "@/lib/api/fetchClient"
+import { getAccessToken } from "@/utils/authStorage"
 
 import {
   mockProducts,
@@ -298,4 +299,81 @@ export async function fetchProductById(productId) {
   )
 
   return normalizeProductItem(data)
+}
+
+function getFileNameFromDisposition(disposition, fallback) {
+  if (!disposition) return fallback
+
+  const utf8Match = disposition.match(/filename\*=UTF-8''([^;]+)/i)
+
+  if (utf8Match?.[1]) {
+    return decodeURIComponent(utf8Match[1])
+  }
+
+  const normalMatch = disposition.match(/filename="?([^"]+)"?/i)
+
+  if (normalMatch?.[1]) {
+    return decodeURIComponent(normalMatch[1])
+  }
+
+  return fallback
+}
+
+function createProductExcelQueryString(params = {}) {
+  const query = new URLSearchParams()
+
+  Object.entries(params).forEach(([key, value]) => {
+    if (
+      key === "page" ||
+      key === "size" ||
+      key === "lowStockOnly" ||
+      value === undefined ||
+      value === null ||
+      value === "" ||
+      value === false ||
+      value === "전체"
+    ) {
+      return
+    }
+
+    query.set(key, String(value))
+  })
+
+  return query.toString()
+}
+
+export async function downloadProductExcel(params = {}) {
+  const headers = new Headers()
+  const token = getAccessToken()
+
+  if (token) {
+    headers.set("Authorization", `Bearer ${token}`)
+  }
+
+  const queryString = createProductExcelQueryString(params)
+  const path = queryString
+    ? `/api/products/excel?${queryString}`
+    : "/api/products/excel"
+
+  const response = await fetch(getApiUrl(path), {
+    method: "GET",
+    headers,
+  })
+
+  if (!response.ok) {
+    throw new Error("품목 엑셀 파일을 생성하지 못했습니다.")
+  }
+
+  const fallbackFileName = `품목관리_${new Date()
+    .toISOString()
+    .slice(0, 10)
+    .replaceAll("-", "")}.xlsx`
+
+  return {
+    blob: await response.blob(),
+    fileName: getFileNameFromDisposition(
+      response.headers.get("Content-Disposition"),
+      fallbackFileName,
+    ),
+  }
 }

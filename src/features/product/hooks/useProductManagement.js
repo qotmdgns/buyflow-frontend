@@ -155,6 +155,7 @@ export default function useProductManagement() {
 
   return {
     draftFilters,
+    appliedFilters,
     filterOptions,
     products,
     pagination,

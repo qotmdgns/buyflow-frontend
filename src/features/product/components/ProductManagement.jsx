@@ -9,12 +9,15 @@ import ProductPagination from "@/features/product/components/ProductPagination"
 import ProductSearchForm from "@/features/product/components/ProductSearchForm"
 import ProductTable from "@/features/product/components/ProductTable"
 import useProductManagement from "@/features/product/hooks/useProductManagement"
-import { deleteProduct } from "@/features/product/api/productApi"
-import { downloadProductCsv } from "@/features/product/utils/productManagementUtils"
+import {
+  deleteProduct,
+  downloadProductExcel,
+} from "@/features/product/api/productApi"
 
 export default function ProductManagement() {
   const {
     draftFilters,
+    appliedFilters,
     filterOptions,
     products,
     pagination,
@@ -76,6 +79,27 @@ export default function ProductManagement() {
     }
   }
 
+  async function handleProductExcelDownload() {
+    try {
+      const { blob, fileName } = await downloadProductExcel(appliedFilters)
+
+      const url = window.URL.createObjectURL(blob)
+      const link = document.createElement("a")
+
+      link.href = url
+      link.download = fileName
+
+      document.body.appendChild(link)
+      link.click()
+      link.remove()
+
+      window.URL.revokeObjectURL(url)
+    } catch (error) {
+      console.error("품목 엑셀 다운로드 중 오류가 발생했습니다.", error)
+      window.alert(error.message || "품목 엑셀 파일을 다운로드하지 못했습니다.")
+    }
+  }
+
   return (
     <div className="w-full">
       <header className="bf-page-header">
@@ -111,11 +135,11 @@ export default function ProductManagement() {
           <div className="flex items-center gap-2">
             <button
               type="button"
-              onClick={() => downloadProductCsv(products)}
+              onClick={handleProductExcelDownload}
               className="bf-btn bf-btn-secondary"
             >
               <Download size={13} />
-              CSV 다운로드
+              엑셀 다운로드
             </button>
 
             <Link href="/products/new" className="bf-btn bf-btn-primary">
