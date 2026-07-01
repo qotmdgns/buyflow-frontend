@@ -516,10 +516,7 @@ export default function ReceiptManagement() {
   className={`border-t border-slate-100 text-slate-600 ${
     receipt.status === "DELAYED" ? "bg-rose-50/60" : ""
   }`}
->
-                    <td className="whitespace-nowrap px-3 py-3 font-semibold">
-  {receipt.orderNumber}
-</td>
+>                    
 
                     <td className="whitespace-nowrap px-3 py-3 font-semibold">
   {receipt.orderNumber}
