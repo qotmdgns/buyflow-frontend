@@ -259,7 +259,9 @@ function ApprovalActionCard({
   onCommentChange,
   onSubmitDecision,
 }) {
-  const canDecide = approval.requestStatus === "PENDING_APPROVAL"
+  const canDecide =
+    approval?.requestStatus === "PENDING_APPROVAL" &&
+    Boolean(approval?.canProcess)
 
   const disabled = !canDecide || Boolean(submittingAction)
 
@@ -294,7 +296,7 @@ function ApprovalActionCard({
           onChange={(event) => onCommentChange(event.target.value)}
           placeholder="승인 또는 반려 사유를 입력하세요."
           rows={4}
-          disabled={!canDecide}
+          disabled={disabled}
           className="w-full resize-none rounded-md border border-slate-200 px-3 py-2 text-[13px] leading-5 text-slate-600 outline-none transition placeholder:text-slate-300 focus:border-blue-400 focus:ring-2 focus:ring-blue-100 disabled:bg-slate-50"
         />
       </label>
@@ -443,7 +445,11 @@ export default function ApprovalManagement({ approvalId }) {
     )
   }
 
-  const isPendingApproval = approval.requestStatus === "PENDING_APPROVAL"
+  const isPendingApproval = approval?.requestStatus === "PENDING_APPROVAL"
+
+  const canProcessCurrentApproval =
+    isPendingApproval && Boolean(approval?.canProcess)
+
   const canCancel = isPendingApproval
 
   return (
@@ -502,7 +508,7 @@ export default function ApprovalManagement({ approvalId }) {
         </div>
 
         <aside className="space-y-3">
-          {isPendingApproval && (
+          {canProcessCurrentApproval && (
             <ApprovalActionCard
               approval={approval}
               comment={comment}

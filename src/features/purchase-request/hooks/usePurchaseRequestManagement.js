@@ -16,39 +16,32 @@ import {
 
 const DEFAULT_SUMMARY = {
   total: 0,
-  pending: 0,
-  approved: 0,
-  rejected: 0,
-  ordered: 0,
+  normalPriority: 0,
+  urgentPriority: 0,
   canceled: 0,
 }
 
 const SUMMARY_KEY_BY_STATUS = {
   "승인 대기": "pending",
   "승인 완료": "approved",
-  "반려": "rejected",
+  반려: "rejected",
   "발주 완료": "ordered",
   "요청 취소": "canceled",
 }
 
-function createDisplayedSummary(baseSummary, activeStatus, totalElements) {
-  if (!activeStatus || activeStatus === "전체") {
-    return baseSummary
-  }
+function createDisplayedSummary(baseSummary, activeFilters, totalElements) {
+  const status = activeFilters?.status ?? "전체"
+  const priority = activeFilters?.priority ?? "전체"
 
-  const selectedKey = SUMMARY_KEY_BY_STATUS[activeStatus]
-
-  if (!selectedKey) {
+  if (status === "전체" && priority === "전체") {
     return baseSummary
   }
 
   return {
     total: totalElements,
-    pending: selectedKey === "pending" ? totalElements : 0,
-    approved: selectedKey === "approved" ? totalElements : 0,
-    rejected: selectedKey === "rejected" ? totalElements : 0,
-    ordered: selectedKey === "ordered" ? totalElements : 0,
-    canceled: selectedKey === "canceled" ? totalElements : 0,
+    normalPriority: priority === "일반" ? totalElements : 0,
+    urgentPriority: priority === "긴급" ? totalElements : 0,
+    canceled: status === "요청 취소" ? totalElements : 0,
   }
 }
 
@@ -168,10 +161,11 @@ export default function usePurchaseRequestManagement() {
     }))
   }
 
-  function selectSummaryStatus(status) {
+  function selectSummaryFilter(filter) {
     const nextFilters = {
       ...appliedFilters,
-      status,
+      status: filter.status ?? "전체",
+      priority: filter.priority ?? "전체",
     }
 
     setDraftFilters(nextFilters)
@@ -229,31 +223,29 @@ export default function usePurchaseRequestManagement() {
 
   const displayedSummary = useMemo(
     () =>
-      createDisplayedSummary(
-        summary,
-        appliedFilters.status,
-        pagination.totalElements,
-      ),
-    [summary, appliedFilters.status, pagination.totalElements],
+      createDisplayedSummary(summary, appliedFilters, pagination.totalElements),
+    [summary, appliedFilters, pagination.totalElements],
   )
 
   return {
     draftFilters,
     appliedFilters,
     filterOptions,
-    summary,
     requests,
     pagination,
     pageSize,
+    summary: displayedSummary,
     loading,
     error,
+    selectSummaryFilter,
     updateFilter,
     searchRequests,
     resetFilters,
-    selectSummaryStatus,
     movePage,
     changePageSize,
     exportRequests,
     deleteRequest,
+
+    selectSummaryFilter,
   }
 }

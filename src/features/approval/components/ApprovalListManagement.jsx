@@ -3,8 +3,8 @@
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { ChevronLeft, ChevronRight, RotateCcw, Search } from "lucide-react"
-
 import useApprovalListManagement from "@/features/approval/hooks/useApprovalListManagement"
+import ApprovalSummaryCards from "@/features/approval/components/ApprovalSummaryCards"
 
 import {
   formatWon,
@@ -66,16 +66,19 @@ function TableMessage({ children, isError = false }) {
 export default function ApprovalListManagement() {
   const {
     draftFilters,
+    appliedFilters,
     approvals,
     pagination,
     pageSize,
     loading,
     error,
+    summary,
     updateFilter,
     searchApprovals,
     resetFilters,
     movePage,
     changePageSize,
+    selectSummaryFilter,
   } = useApprovalListManagement()
 
   const router = useRouter()
@@ -205,6 +208,12 @@ export default function ApprovalListManagement() {
           </button>
         </div>
       </section>
+
+      <ApprovalSummaryCards
+        summary={summary}
+        activeFilters={appliedFilters}
+        onSelect={selectSummaryFilter}
+      />
 
       <section className="mt-3">
         <div className="mb-3 flex items-center justify-between gap-3">

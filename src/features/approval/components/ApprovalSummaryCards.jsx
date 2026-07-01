@@ -4,36 +4,32 @@ const summaryItems = [
     label: "전체",
     filter: {
       status: "전체",
-      priority: "전체",
     },
     tone: "default",
   },
   {
-    key: "normalPriority",
-    label: "우선순위 - 일반",
+    key: "pending",
+    label: "승인 대기",
     filter: {
-      status: "전체",
-      priority: "일반",
+      status: "PENDING_APPROVAL",
     },
     tone: "muted",
   },
   {
-    key: "urgentPriority",
-    label: "우선순위 - 긴급",
+    key: "rejected",
+    label: "반려",
     filter: {
-      status: "전체",
-      priority: "긴급",
+      status: "REJECTED",
     },
     tone: "danger",
   },
   {
-    key: "canceled",
-    label: "요청 취소",
+    key: "approved",
+    label: "승인 완료",
     filter: {
-      status: "요청 취소",
-      priority: "전체",
+      status: "APPROVED",
     },
-    tone: "muted",
+    tone: "primary",
   },
 ]
 
@@ -50,9 +46,13 @@ const toneStyles = {
     accent: "border-l-rose-500",
     active: "bg-rose-50/60 ring-2 ring-rose-200",
   },
+  primary: {
+    accent: "border-l-blue-600",
+    active: "bg-blue-50/60 ring-2 ring-blue-200",
+  },
 }
 
-export default function PurchaseRequestSummaryCards({
+export default function ApprovalSummaryCards({
   summary,
   activeFilters,
   onSelect,
@@ -60,9 +60,7 @@ export default function PurchaseRequestSummaryCards({
   return (
     <section className="mt-3 grid gap-2 sm:grid-cols-2 xl:grid-cols-4">
       {summaryItems.map((item) => {
-        const isActive =
-          activeFilters?.status === item.filter.status &&
-          activeFilters?.priority === item.filter.priority
+        const isActive = activeFilters?.status === item.filter.status
 
         return (
           <button
