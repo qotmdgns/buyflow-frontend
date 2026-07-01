@@ -1,4 +1,5 @@
 import { apiFetch } from "@/lib/api/fetchClient"
+import { getAccessToken } from "@/utils/authStorage" 
 import {
   mockApprovedPurchaseRequests,
   mockPurchaseOrders,
@@ -332,9 +333,10 @@ export async function createPurchaseOrder(payload, attachment = null) {
 
     // 1-3. POST 메서드로 FormData 전송 (Content-Type 헤더는 비워둬야 합니다!)
     const response = await fetch(createApiUrl("/api/orders"), {
-      method: "POST",
-      body: formData,
-    })
+  method: "POST",
+  headers: { Authorization: `Bearer ${getAccessToken()}` },   // ← 추가 (Content-Type은 넣지 말 것)
+  body: formData,
+})
 
     if (!response.ok) {
       const errorText = await response.text().catch(() => "발주를 등록하지 못했습니다.")
@@ -379,9 +381,10 @@ export async function updatePurchaseOrder(orderId, payload, attachment = null) {
 
     // 1-3. Fetch 요청 발송 (Content-Type 헤더 제거 필수!)
     const response = await fetch(createApiUrl(`/api/orders/${orderId}`), {
-      method: "PUT",
-      body: formData, 
-    });
+  method: "PUT",
+  headers: { Authorization: `Bearer ${getAccessToken()}` },   // ← 추가
+  body: formData,
+});
 
     if (!response.ok) {
       // 서버에서 보내주는 에러 메시지가 있다면 그걸 보여주도록 개선
@@ -439,6 +442,7 @@ export async function cancelPurchaseOrder(orderId, cancelReason) {
       {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
+        Authorization: `Bearer ${getAccessToken()}`,
         body: JSON.stringify({ cancelReason }),
       },
     )
