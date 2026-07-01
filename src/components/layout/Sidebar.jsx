@@ -14,6 +14,7 @@ import {
   Settings,
   ShoppingCart,
   LogIn,
+  UserRound,
   Warehouse,
 } from "lucide-react"
 import SidebarAccount from "@/features/auth/components/SidebarAccount"
@@ -114,6 +115,11 @@ const menuGroups = [
   {
     label: "설정",
     items: [
+      {
+        label: "마이페이지",
+        href: "/mypage",
+        icon: UserRound,
+      },
       {
         label: "사용자 및 권한 관리",
         href: "/system",

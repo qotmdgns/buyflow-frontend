@@ -1,3 +1,4 @@
+import { apiFetch } from "@/lib/api/fetchClient"
 import {
   mockApprovedPurchaseRequests,
   mockPurchaseOrders,
@@ -13,7 +14,7 @@ import {
   getTodayString,
 } from "@/features/purchase-order/utils/purchaseOrderUtils"
 
-const USE_MOCK = (process.env.NEXT_PUBLIC_USE_PURCHASE_ORDER_MOCK = false)
+const USE_MOCK = process.env.NEXT_PUBLIC_USE_PURCHASE_ORDER_MOCK === "true"
 
 let purchaseOrderDatabase = structuredClone(mockPurchaseOrders)
 
