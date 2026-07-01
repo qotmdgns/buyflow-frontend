@@ -165,8 +165,8 @@ export default function ProductTable({
   }
 
   return (
-    <div className="overflow-x-auto">
-      <table className="w-full min-w-[1500px] table-fixed text-left text-[13px]">
+    <div className="bf-table-wrap">
+      <table className="bf-table min-w-[1500px] table-fixed">
         <colgroup>
           <col className="w-[95px]" />
           <col className="w-[220px]" />
@@ -180,13 +180,10 @@ export default function ProductTable({
           <col className="w-[80px]" />
         </colgroup>
 
-        <thead className="bg-slate-50 text-slate-500">
+        <thead>
           <tr>
             {PRODUCT_TABLE_HEADERS.map((heading) => (
-              <th
-                key={heading}
-                className="whitespace-nowrap px-3 py-2.5 font-semibold"
-              >
+              <th key={heading} className="whitespace-nowrap">
                 {heading}
               </th>
             ))}

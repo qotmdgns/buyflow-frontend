@@ -76,7 +76,7 @@ export default function PurchaseRequestBasicForm({
           label="요청 번호"
           value={safeForm.requestNumber || "자동 생성"}
           disabled
-          placeholder="승인 요청 시 자동 생성됩니다."
+          placeholder="구매 요청 시 자동 생성됩니다."
         />
         <TextField
           label="요청자"

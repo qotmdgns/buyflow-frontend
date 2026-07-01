@@ -322,11 +322,11 @@ export default function usePurchaseRequestCreate() {
 
       const createdRequest = await createPurchaseRequest(payload, attachment)
 
-      window.alert("승인 요청을 전송했습니다.")
+      window.alert("구매 요청을 전송했습니다.")
       router.push(`/purchase-requests/${createdRequest.id}`)
     } catch (error) {
-      console.error("승인 요청 처리 중 오류가 발생했습니다.", error)
-      window.alert("승인 요청 처리에 실패했습니다. 다시 시도해 주세요.")
+      console.error("구매 요청 처리 중 오류가 발생했습니다.", error)
+      window.alert("구매 요청 처리에 실패했습니다. 다시 시도해 주세요.")
     } finally {
       submittingRef.current = false
       setIsSubmitting(false)

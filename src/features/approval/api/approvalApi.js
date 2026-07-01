@@ -345,3 +345,34 @@ export async function fetchApprovals(params = {}) {
 
   return normalizeApprovalListResponse(data)
 }
+
+function normalizeApprovalSummary(data = {}) {
+  return {
+    total: Number(data.total ?? 0),
+    pending: Number(data.pending ?? 0),
+    rejected: Number(data.rejected ?? 0),
+    approved: Number(data.approved ?? 0),
+  }
+}
+
+export async function fetchApprovalSummary() {
+  if (USE_MOCK) {
+    await wait(100)
+
+    const rows = filterMockApprovals({})
+
+    return normalizeApprovalSummary({
+      total: rows.length,
+      pending: rows.filter((row) => row.requestStatus === "PENDING_APPROVAL")
+        .length,
+      rejected: rows.filter((row) => row.requestStatus === "REJECTED").length,
+      approved: rows.filter((row) => row.requestStatus === "APPROVED").length,
+    })
+  }
+
+  const data = await apiFetch("/api/approvals/summary", {
+    cache: "no-store",
+  })
+
+  return normalizeApprovalSummary(data)
+}

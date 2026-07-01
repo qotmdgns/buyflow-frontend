@@ -37,14 +37,16 @@ export default function WarehouseManagement() {
 
   return (
     <div className="w-full">
-      <header className="mb-3">
-        <h1 className="text-[22px] font-bold tracking-tight text-slate-900">
-          창고 관리
-        </h1>
+      <header className="bf-page-header">
+        <div>
+          <p className="bf-page-eyebrow">WAREHOUSE</p>
 
-        <p className="mt-1 text-[13px] text-slate-400">
-          스마트 물류를 위한 창고 정보를 관리합니다.
-        </p>
+          <h1 className="bf-page-title">창고 관리</h1>
+
+          <p className="bf-page-description">
+            물류 시스템에서 사용하는 창고 기준정보를 조회하고 관리합니다.
+          </p>
+        </div>
       </header>
 
       <WarehouseSearchForm

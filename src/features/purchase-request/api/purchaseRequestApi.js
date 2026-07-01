@@ -1,4 +1,5 @@
 import { apiFetch, getApiUrl } from "@/lib/api/fetchClient"
+import { getAccessToken } from "@/utils/authStorage"
 import {
   mockPurchaseRequests,
   purchaseRequestFilterOptions,
@@ -78,23 +79,18 @@ function getMockPurchaseRequests(params = {}) {
 }
 
 function getMockPurchaseRequestSummary() {
-  const statusCounts = mockPurchaseRequests.reduce(
-    (counts, request) => ({
-      ...counts,
-      [request.status]: (counts[request.status] ?? 0) + 1,
-    }),
-    {},
-  )
-
-  return {
+  return normalizePurchaseRequestSummary({
     total: mockPurchaseRequests.length,
-    draft: statusCounts["임시 저장"] ?? 0,
-    pending: statusCounts["승인 대기"] ?? 0,
-    approved: statusCounts["승인 완료"] ?? 0,
-    rejected: statusCounts["반려"] ?? 0,
-    ordered: statusCounts["발주 완료"] ?? 0,
-    canceled: statusCounts["요청 취소"] ?? 0,
-  }
+    normalPriority: mockPurchaseRequests.filter(
+      (request) => request.priority === "일반",
+    ).length,
+    urgentPriority: mockPurchaseRequests.filter(
+      (request) => request.priority === "긴급",
+    ).length,
+    canceled: mockPurchaseRequests.filter(
+      (request) => request.status === "요청 취소",
+    ).length,
+  })
 }
 
 function normalizePurchaseRequestListItem(item, index = 0) {
@@ -196,10 +192,8 @@ export async function fetchPurchaseRequestFilterOptions() {
 function normalizePurchaseRequestSummary(data = {}) {
   return {
     total: Number(data.total ?? 0),
-    pending: Number(data.pending ?? 0),
-    approved: Number(data.approved ?? 0),
-    rejected: Number(data.rejected ?? 0),
-    ordered: Number(data.ordered ?? 0),
+    normalPriority: Number(data.normalPriority ?? 0),
+    urgentPriority: Number(data.urgentPriority ?? 0),
     canceled: Number(data.canceled ?? 0),
   }
 }
@@ -311,6 +305,55 @@ function normalizePurchaseRequestDetailResponse(data) {
     totalAmount: Number(data.totalAmount ?? calculatedTotalAmount),
     items,
     attachments,
+  }
+}
+
+function getFileNameFromDisposition(disposition, fallback) {
+  if (!disposition) return fallback
+
+  const utf8Match = disposition.match(/filename\*=UTF-8''([^;]+)/i)
+  if (utf8Match?.[1]) {
+    return decodeURIComponent(utf8Match[1])
+  }
+
+  const normalMatch = disposition.match(/filename="?([^"]+)"?/i)
+  if (normalMatch?.[1]) {
+    return decodeURIComponent(normalMatch[1])
+  }
+
+  return fallback
+}
+
+export async function downloadPurchaseRequestExcel() {
+  const headers = new Headers()
+  const token = getAccessToken()
+
+  if (token) {
+    headers.set("Authorization", `Bearer ${token}`)
+  }
+
+  const response = await fetch(getApiUrl("/api/purchase-requests/excel"), {
+    method: "GET",
+    headers,
+  })
+
+  if (!response.ok) {
+    throw new Error("엑셀 파일을 생성하지 못했습니다.")
+  }
+
+  const fallbackFileName = `구매요청목록_${new Date()
+    .toISOString()
+    .slice(0, 10)
+    .replaceAll("-", "")}.xlsx`
+
+  const fileName = getFileNameFromDisposition(
+    response.headers.get("Content-Disposition"),
+    fallbackFileName,
+  )
+
+  return {
+    blob: await response.blob(),
+    fileName,
   }
 }
 
@@ -499,7 +542,13 @@ export async function deletePurchaseRequest(requestId) {
 
 export async function fetchPurchaseRequestProducts() {
   try {
-    const data = await apiFetch("/api/products", {
+    const query = new URLSearchParams()
+
+    query.set("page", "0")
+    query.set("size", "20000")
+    query.set("activeStatus", "사용")
+
+    const data = await apiFetch(`/api/products?${query.toString()}`, {
       cache: "no-store",
     })
 
@@ -510,8 +559,8 @@ export async function fetchPurchaseRequestProducts() {
     return products.map((product) => ({
       id: product.productId ?? product.id,
       productId: product.productId ?? product.id,
-      code: product.productNo ?? product.itemCode ?? "",
-      name: product.productName ?? product.itemName ?? "",
+      code: product.productNo ?? product.itemCode ?? product.code ?? "",
+      name: product.productName ?? product.itemName ?? product.name ?? "",
       category: product.categoryName ?? product.category ?? "",
       spec: product.spec ?? product.specification ?? "",
       unit: product.unit ?? "",

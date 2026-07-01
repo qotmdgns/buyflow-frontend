@@ -30,14 +30,17 @@ export default function InspectionManagement() {
 
   return (
     <div className="w-full">
-      <header className="mb-3">
-        <h1 className="text-[22px] font-bold text-slate-900">검수 관리</h1>
+      <header className="bf-page-header">
+        <div>
+          <p className="bf-page-eyebrow">INSPECTION</p>
 
-        <p className="mt-1 text-[13px] text-slate-400">
-          입고된 품목의 검수 대기 목록을 조회하고 검수 결과를 등록합니다.
-        </p>
+          <h1 className="bf-page-title">검수 관리</h1>
+
+          <p className="bf-page-description">
+            입고 품목의 검수 결과와 처리 상태를 조회하고 관리합니다.
+          </p>
+        </div>
       </header>
-
       <InspectionSearchForm
         filters={draftFilters}
         filterOptions={filterOptions}

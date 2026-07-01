@@ -3,8 +3,8 @@
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { ChevronLeft, ChevronRight, RotateCcw, Search } from "lucide-react"
-
 import useApprovalListManagement from "@/features/approval/hooks/useApprovalListManagement"
+import ApprovalSummaryCards from "@/features/approval/components/ApprovalSummaryCards"
 
 import {
   formatWon,
@@ -66,16 +66,19 @@ function TableMessage({ children, isError = false }) {
 export default function ApprovalListManagement() {
   const {
     draftFilters,
+    appliedFilters,
     approvals,
     pagination,
     pageSize,
     loading,
     error,
+    summary,
     updateFilter,
     searchApprovals,
     resetFilters,
     movePage,
     changePageSize,
+    selectSummaryFilter,
   } = useApprovalListManagement()
 
   const router = useRouter()
@@ -112,12 +115,16 @@ export default function ApprovalListManagement() {
   }
   return (
     <div className="w-full">
-      <header className="mb-3">
-        <h1 className="text-[22px] font-bold text-slate-900">승인 관리 목록</h1>
+      <header className="bf-page-header">
+        <div>
+          <p className="bf-page-eyebrow">APPROVAL</p>
 
-        <p className="mt-1 text-[13px] text-slate-400">
-          결재가 필요한 구매 요청과 승인 처리 결과를 조회할 수 있습니다.
-        </p>
+          <h1 className="bf-page-title">승인 관리</h1>
+
+          <p className="bf-page-description">
+            구매요청 승인 대상과 승인 처리 이력을 조회합니다.
+          </p>
+        </div>
       </header>
 
       <section className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
@@ -201,6 +208,12 @@ export default function ApprovalListManagement() {
           </button>
         </div>
       </section>
+
+      <ApprovalSummaryCards
+        summary={summary}
+        activeFilters={appliedFilters}
+        onSelect={selectSummaryFilter}
+      />
 
       <section className="mt-3">
         <div className="mb-3 flex items-center justify-between gap-3">

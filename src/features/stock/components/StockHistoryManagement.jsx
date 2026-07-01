@@ -4,30 +4,18 @@ import { Download, RefreshCcw, Search } from "lucide-react"
 import StockPagination from "@/features/stock/components/StockPagination"
 import useStockHistoryManagement from "@/features/stock/hooks/useStockHistoryManagement"
 import {
-  downloadStockHistoryCsv,
   formatNumber,
   formatSignedQuantity,
   STOCK_HISTORY_TABLE_HEADERS,
 } from "@/features/stock/utils/stockManagementUtils"
 
-import { useRouter } from "next/navigation"
-
-const INPUT_CLASS_NAME =
-  "h-10 w-full rounded-md border border-slate-200 px-3 text-[14px] outline-none transition placeholder:text-slate-300 focus:border-blue-400 focus:ring-2 focus:ring-blue-100"
+const INPUT_CLASS_NAME = "bf-input"
 
 function FieldLabel({ children }) {
-  return (
-    <span className="mb-1 block text-[13px] font-semibold text-slate-600">
-      {children}
-    </span>
-  )
+  return <span className="bf-field-label">{children}</span>
 }
 
-function SelectField({
-  value,
-  options = [],
-  onChange,
-}) {
+function SelectField({ value, options = [], onChange }) {
   return (
     <select
       value={value}
@@ -36,20 +24,13 @@ function SelectField({
     >
       {(options ?? []).map((option) => {
         const optionValue =
-          typeof option === "string"
-            ? option
-            : option?.value ?? ""
+          typeof option === "string" ? option : (option?.value ?? "")
 
         const label =
-          typeof option === "string"
-            ? option
-            : option?.label ?? optionValue
+          typeof option === "string" ? option : (option?.label ?? optionValue)
 
         return (
-          <option
-            key={optionValue}
-            value={optionValue}
-          >
+          <option key={optionValue} value={optionValue}>
             {label}
           </option>
         )
@@ -70,8 +51,7 @@ function MovementBadge({ type }) {
 
   const styles = {
     INBOUND: "border-blue-200 bg-blue-50 text-blue-600",
-    INSPECTION_ADJUST:
-      "border-emerald-200 bg-emerald-50 text-emerald-600",
+    INSPECTION_ADJUST: "border-emerald-200 bg-emerald-50 text-emerald-600",
     UPDATE: "border-amber-200 bg-amber-50 text-amber-600",
     DELETE: "border-rose-200 bg-rose-50 text-rose-500",
     CANCEL: "border-slate-200 bg-slate-50 text-slate-500",
@@ -97,8 +77,7 @@ function getStockHistoryRowKey(history, index) {
   )
 }
 
-export default function StockHistoryManagement({ initialFilters }) {
-  const router = useRouter()
+export default function StockHistoryManagement({ initialFilters = {} }) {
   const {
     draftFilters,
     filterOptions,
@@ -116,20 +95,19 @@ export default function StockHistoryManagement({ initialFilters }) {
 
   return (
     <div className="w-full">
-      <header className="mb-3">
-        <h1 className="text-[22px] font-bold tracking-tight text-slate-900">
-          재고 이력
-        </h1>
+      <header className="bf-page-header">
+        <div>
+          <p className="bf-page-eyebrow">STOCK HISTORY</p>
 
-        <p className="mt-1 text-[13px] text-slate-400">
-          입고와 재고 조정으로 변경된 수량을 조회합니다.
-        </p>
+          <h1 className="bf-page-title">재고 이력</h1>
+
+          <p className="bf-page-description">
+            입고, 출고, 조정 등 재고 변동 이력을 조회합니다.
+          </p>
+        </div>
       </header>
 
-      <form
-        onSubmit={searchHistories}
-        className="rounded-lg border border-slate-200 bg-white p-3 shadow-sm"
-      >
+      <form onSubmit={searchHistories} className="bf-search-panel">
         <div className="grid gap-x-3 gap-y-2.5 md:grid-cols-2 xl:grid-cols-5">
           <label>
             <FieldLabel>시작일</FieldLabel>
@@ -193,30 +171,26 @@ export default function StockHistoryManagement({ initialFilters }) {
 
         <div className="mt-3 flex justify-end gap-2">
           <button
-  type="button"
-  onClick={() => router.push("/stock")}
-  className="flex h-10 items-center gap-1.5 rounded-md border border-slate-200 bg-white px-4 text-[13px] font-semibold text-slate-600 transition hover:bg-slate-50"
->
-  재고 현황
-</button>
-          
+            type="button"
+            onClick={() => router.push("/stock")}
+            className="flex h-10 items-center gap-1.5 rounded-md border border-slate-200 bg-white px-4 text-[13px] font-semibold text-slate-600 transition hover:bg-slate-50"
+          >
+            재고 현황
+          </button>
+
           <button
             type="button"
             onClick={resetFilters}
-            className="flex h-10 items-center gap-1.5 rounded-md border border-slate-200 bg-white px-4 text-[13px] font-semibold text-slate-600 transition hover:bg-slate-50"
+            className="bf-btn bf-btn-secondary"
           >
             <RefreshCcw size={14} />
             초기화
           </button>
 
-          <button
-            type="submit"
-            className="flex h-10 items-center gap-1.5 rounded-md bg-blue-600 px-4 text-[13px] font-semibold text-white transition hover:bg-blue-700"
-          >
+          <button type="submit" className="bf-btn bf-btn-primary">
             <Search size={14} />
             검색
           </button>
-          
         </div>
       </form>
 
@@ -231,20 +205,6 @@ export default function StockHistoryManagement({ initialFilters }) {
               총 {pagination.totalElements}건
             </span>
           </div>
-
-          <button
-  type="button"
-  onClick={() => {
-    window.open(
-      `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/stock-history/excel`,
-      "_blank",
-    )
-  }}
-  className="flex h-9 items-center gap-1.5 rounded-md border border-slate-200 bg-white px-3 text-[13px] font-semibold text-slate-600 transition hover:bg-slate-50"
->
-  <Download size={14} />
-  엑셀 다운로드
-</button>
         </div>
 
         <div className="overflow-x-auto">
@@ -296,66 +256,64 @@ export default function StockHistoryManagement({ initialFilters }) {
                 </tr>
               )}
 
-{!loading &&
-  !error &&
-  histories.map((history, index) => (
-    <tr
-      key={getStockHistoryRowKey(history, index)}
-      className="border-t border-slate-100 text-slate-600"
-    >
-      <td className="whitespace-nowrap px-3 py-3">
-        {history.occurredAt}
-      </td>
+              {!loading &&
+                !error &&
+                histories.map((history, index) => (
+                  <tr
+                    key={getStockHistoryRowKey(history, index)}
+                    className="border-t border-slate-100 text-slate-600"
+                  >
+                    <td className="whitespace-nowrap px-3 py-3">
+                      {history.occurredAt}
+                    </td>
 
-      <td className="whitespace-nowrap px-3 py-3">
-        <MovementBadge type={history.movementType} />
-      </td>
+                    <td className="whitespace-nowrap px-3 py-3">
+                      <MovementBadge type={history.movementType} />
+                    </td>
 
-      <td className="px-3 py-3">
-        <p className="font-semibold text-slate-800">
-          {history.itemName}
-        </p>
+                    <td className="px-3 py-3">
+                      <p className="font-semibold text-slate-800">
+                        {history.itemName}
+                      </p>
 
-        <p className="mt-0.5 text-[12px] text-slate-400">
-          {history.itemCode}
-        </p>
-      </td>
+                      <p className="mt-0.5 text-[12px] text-slate-400">
+                        {history.itemCode}
+                      </p>
+                    </td>
 
-      <td className="whitespace-nowrap px-3 py-3">
-        {history.warehouseName}
-      </td>
+                    <td className="whitespace-nowrap px-3 py-3">
+                      {history.warehouseName}
+                    </td>
 
-      <td
-        className={`px-3 py-3 font-bold ${
-          history.quantity > 0
-            ? "text-emerald-600"
-            : "text-rose-500"
-        }`}
-      >
-        {formatSignedQuantity(history.quantity)}
-      </td>
+                    <td
+                      className={`px-3 py-3 font-bold ${
+                        history.quantity > 0
+                          ? "text-emerald-600"
+                          : "text-rose-500"
+                      }`}
+                    >
+                      {formatSignedQuantity(history.quantity)}
+                    </td>
 
-      <td className="px-3 py-3">
-        {formatNumber(history.beforeStock)}
-      </td>
+                    <td className="px-3 py-3">
+                      {formatNumber(history.beforeStock)}
+                    </td>
 
-      <td className="px-3 py-3 font-semibold text-slate-800">
-        {formatNumber(history.afterStock)}
-      </td>
+                    <td className="px-3 py-3 font-semibold text-slate-800">
+                      {formatNumber(history.afterStock)}
+                    </td>
 
-      <td className="whitespace-nowrap px-3 py-3 text-slate-400">
-        {history.referenceNumber}
-      </td>
+                    <td className="whitespace-nowrap px-3 py-3 text-slate-400">
+                      {history.referenceNumber}
+                    </td>
 
-      <td className="min-w-56 px-3 py-3">
-        {history.reason}
-      </td>
+                    <td className="min-w-56 px-3 py-3">{history.reason}</td>
 
-      <td className="whitespace-nowrap px-3 py-3">
-        {history.processedBy}
-      </td>
-    </tr>
-  ))}
+                    <td className="whitespace-nowrap px-3 py-3">
+                      {history.processedBy}
+                    </td>
+                  </tr>
+                ))}
             </tbody>
           </table>
         </div>

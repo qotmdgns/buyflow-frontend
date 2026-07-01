@@ -7,7 +7,8 @@ import PurchaseRequestSearchForm from "@/features/purchase-request/components/Pu
 import PurchaseRequestSummaryCards from "@/features/purchase-request/components/PurchaseRequestSummaryCards"
 import PurchaseRequestTable from "@/features/purchase-request/components/PurchaseRequestTable"
 import usePurchaseRequestManagement from "@/features/purchase-request/hooks/usePurchaseRequestManagement"
-import { downloadPurchaseRequestCsv } from "@/features/purchase-request/utils/purchaseRequestManagementUtils"
+import { downloadPurchaseRequestExcel } from "@/features/purchase-request/api/purchaseRequestApi"
+import { hasPermission } from "@/utils/permissions"
 
 export default function PurchaseRequestManagement() {
   const {
@@ -22,7 +23,7 @@ export default function PurchaseRequestManagement() {
     updateFilter,
     searchRequests,
     resetFilters,
-    selectSummaryStatus,
+    selectSummaryFilter,
     movePage,
     exportRequests,
     deleteRequest,
@@ -30,37 +31,22 @@ export default function PurchaseRequestManagement() {
 
   async function handleDownload() {
     try {
-      const excelApiUrl = "http://localhost:8080/api/purchase-requests/excel"
+      const { blob, fileName } = await downloadPurchaseRequestExcel()
 
-      const response = await fetch(excelApiUrl, {
-        method: "GET",
-      })
-
-      if (!response.ok) {
-        throw new Error("엑셀 파일을 생성하지 못했습니다.")
-      }
-
-      // 1. 서버에서 넘어온 바이너리 데이터(Excel)를 Blob 객체로 변환
-      const blob = await response.blob()
-
-      // 2. 브라우저 메모리에 가상의 다운로드 URL 생성
       const url = window.URL.createObjectURL(blob)
       const link = document.createElement("a")
 
       link.href = url
-      // 3. 다운로드될 파일명 강제 지정 (서버 헤더를 읽어와도 되지만 프론트에서 고정하는 것이 편합니다)
-      link.download = `구매요청목록_${new Date().toISOString().slice(0, 10).replace(/-/g, "")}.xlsx`
+      link.download = fileName
 
-      // 4. 링크를 클릭한 것처럼 이벤트를 발생시켜 다운로드 실행
       document.body.appendChild(link)
       link.click()
       link.remove()
 
-      // 5. 메모리 누수 방지를 위해 가상 URL 해제
       window.URL.revokeObjectURL(url)
     } catch (error) {
       console.error("엑셀 다운로드 중 오류가 발생했습니다.", error)
-      window.alert("엑셀 파일을 다운로드하지 못했습니다.")
+      window.alert(error.message || "엑셀 파일을 다운로드하지 못했습니다.")
     }
   }
 
@@ -85,12 +71,16 @@ export default function PurchaseRequestManagement() {
 
   return (
     <div className="w-full">
-      <header className="mb-3">
-        <h1 className="text-[22px] font-bold text-slate-900">구매 요청 목록</h1>
+      <header className="bf-page-header">
+        <div>
+          <p className="bf-page-eyebrow">PURCHASE REQUEST</p>
 
-        <p className="mt-1 text-[13px] text-slate-400">
-          등록된 구매 요청을 조회하고 진행 상태를 확인할 수 있습니다.
-        </p>
+          <h1 className="bf-page-title">구매요청 관리</h1>
+
+          <p className="bf-page-description">
+            구매요청 내역을 조회하고 진행 상태를 관리합니다.
+          </p>
+        </div>
       </header>
 
       <PurchaseRequestSearchForm
@@ -103,8 +93,8 @@ export default function PurchaseRequestManagement() {
 
       <PurchaseRequestSummaryCards
         summary={summary}
-        activeStatus={appliedFilters.status}
-        onSelect={selectSummaryStatus}
+        activeFilters={appliedFilters}
+        onSelect={selectSummaryFilter}
       />
 
       <section className="mt-3">
@@ -126,13 +116,15 @@ export default function PurchaseRequestManagement() {
               엑셀 다운로드
             </button>
 
-            <Link
-              href="/purchase-requests/new"
-              className="flex h-10 items-center gap-1.5 rounded-md bg-blue-600 px-3 text-[13px] font-semibold text-white transition hover:bg-blue-700"
-            >
-              <Plus size={14} />
-              신규 구매 요청
-            </Link>
+            {hasPermission("purchase-requests.write") && (
+              <Link
+                href="/purchase-requests/new"
+                className="flex h-10 items-center gap-1.5 rounded-md bg-blue-600 px-3 text-[13px] font-semibold text-white transition hover:bg-blue-700"
+              >
+                <Plus size={14} />
+                신규 구매 요청
+              </Link>
+            )}
           </div>
         </div>
 

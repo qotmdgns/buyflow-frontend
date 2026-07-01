@@ -1,7 +1,10 @@
 "use client"
 
-import { useEffect, useState } from "react"
-import { fetchApprovals } from "@/features/approval/api/approvalApi"
+import { useEffect, useMemo, useState } from "react"
+import {
+  fetchApprovals,
+  fetchApprovalSummary,
+} from "@/features/approval/api/approvalApi"
 
 const DEFAULT_FILTERS = {
   requestNumber: "",
@@ -19,6 +22,28 @@ const DEFAULT_PAGINATION = {
   totalPages: 1,
 }
 
+const DEFAULT_SUMMARY = {
+  total: 0,
+  pending: 0,
+  rejected: 0,
+  approved: 0,
+}
+
+function createDisplayedSummary(baseSummary, activeFilters, totalElements) {
+  const status = activeFilters?.status ?? "전체"
+
+  if (status === "전체") {
+    return baseSummary
+  }
+
+  return {
+    total: totalElements,
+    pending: status === "PENDING_APPROVAL" ? totalElements : 0,
+    rejected: status === "REJECTED" ? totalElements : 0,
+    approved: status === "APPROVED" ? totalElements : 0,
+  }
+}
+
 export default function useApprovalListManagement() {
   const [draftFilters, setDraftFilters] = useState(DEFAULT_FILTERS)
   const [appliedFilters, setAppliedFilters] = useState(DEFAULT_FILTERS)
@@ -29,6 +54,7 @@ export default function useApprovalListManagement() {
 
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState("")
+  const [summary, setSummary] = useState(DEFAULT_SUMMARY)
 
   useEffect(() => {
     let ignore = false
@@ -67,6 +93,32 @@ export default function useApprovalListManagement() {
       ignore = true
     }
   }, [appliedFilters, pagination.page, pageSize])
+
+  useEffect(() => {
+    let ignore = false
+
+    async function loadSummary() {
+      try {
+        const data = await fetchApprovalSummary()
+
+        if (!ignore) {
+          setSummary(data)
+        }
+      } catch (error) {
+        console.error("승인 요약 조회 중 오류가 발생했습니다.", error)
+
+        if (!ignore) {
+          setSummary(DEFAULT_SUMMARY)
+        }
+      }
+    }
+
+    loadSummary()
+
+    return () => {
+      ignore = true
+    }
+  }, [])
 
   function updateFilter(name, value) {
     setDraftFilters((previousFilters) => ({
@@ -110,17 +162,41 @@ export default function useApprovalListManagement() {
     }))
   }
 
+  const displayedSummary = useMemo(
+    () =>
+      createDisplayedSummary(summary, appliedFilters, pagination.totalElements),
+    [summary, appliedFilters, pagination.totalElements],
+  )
+
+  function selectSummaryFilter(filter) {
+    const nextFilters = {
+      ...appliedFilters,
+      status: filter.status ?? "전체",
+    }
+
+    setDraftFilters(nextFilters)
+    setAppliedFilters(nextFilters)
+
+    setPagination((previousPagination) => ({
+      ...previousPagination,
+      page: 1,
+    }))
+  }
+
   return {
     draftFilters,
+    appliedFilters,
     approvals,
     pagination,
     pageSize,
     loading,
     error,
+    summary: displayedSummary,
     updateFilter,
     searchApprovals,
     resetFilters,
     movePage,
     changePageSize,
+    selectSummaryFilter,
   }
 }

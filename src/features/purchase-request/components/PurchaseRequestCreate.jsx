@@ -84,7 +84,7 @@ export default function PurchaseRequestCreate() {
 
       <div className="mt-3 flex items-center gap-2 rounded-md border border-slate-200 bg-white px-4 py-3 text-[12px] text-slate-500">
         <CircleAlert size={13} className="shrink-0 text-slate-400" />
-        승인 요청 후에는 승인 완료 또는 반려 전까지 내용을 수정할 수 없습니다.
+        구매 요청 후에는 승인 완료 또는 반려 전까지 내용을 수정할 수 없습니다.
       </div>
 
       <footer className="mt-3 flex justify-end gap-2">
@@ -102,7 +102,7 @@ export default function PurchaseRequestCreate() {
           disabled={isSubmitting}
           className="h-10 rounded-md bg-blue-600 px-4 text-[13px] font-semibold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-blue-300"
         >
-          {isSubmitting ? "처리 중..." : "승인 요청"}
+          {isSubmitting ? "처리 중..." : "구매 요청"}
         </button>
       </footer>
 
