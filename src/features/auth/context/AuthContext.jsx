@@ -6,8 +6,10 @@ import {
   getCurrentUser,
   login as loginRequest,
   logout as logoutRequest,
+  refreshCurrentUser as refreshCurrentUserRequest,
   resetPassword as resetPasswordRequest,
   signup as signupRequest,
+  updateCurrentUserProfile as updateCurrentUserProfileRequest,
 } from "@/features/auth/api/authApi"
 
 const AuthContext = createContext(null)
@@ -57,6 +59,35 @@ export function AuthProvider({ children }) {
           user: null,
           isAuthReady: true,
         })
+      },
+
+      async refreshUser() {
+        const nextUser = await refreshCurrentUserRequest()
+
+        setAuthState({
+          user: nextUser,
+          isAuthReady: true,
+        })
+
+        return nextUser
+      },
+
+      async updateProfile(values) {
+        if (!authState.user?.userId) {
+          throw new Error("현재 로그인한 사용자 정보를 찾을 수 없습니다.")
+        }
+
+        const nextUser = await updateCurrentUserProfileRequest(
+          authState.user.userId,
+          values,
+        )
+
+        setAuthState({
+          user: nextUser,
+          isAuthReady: true,
+        })
+
+        return nextUser
       },
 
       signup: signupRequest,

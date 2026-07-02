@@ -2,6 +2,7 @@ import {
   mockReceipts,
   mockReceiptWarehouses,
 } from "@/features/receipt/data/mockReceiptData"
+import { apiFetch } from "@/lib/api/fetchClient"
 
 const USE_MOCK = process.env.NEXT_PUBLIC_USE_RECEIPT_MOCK !== "false"
 
@@ -20,6 +21,54 @@ function createApiUrl(path) {
   )
 
   return `${baseUrl}${path}`
+}
+
+function isAllFilterValue(value) {
+  const text = String(value ?? "").trim()
+
+  if (!text || text.includes("전체")) {
+    return true
+  }
+
+  return text.includes("?꾩껜")
+}
+
+function createReceiptQuery(params = {}) {
+  const query = new URLSearchParams()
+
+  Object.entries(params).forEach(([key, value]) => {
+    if (value === undefined || value === null || value === "") {
+      return
+    }
+
+    if (
+      (key === "status" || key === "warehouseName") &&
+      isAllFilterValue(value)
+    ) {
+      return
+    }
+
+    query.set(key, value)
+  })
+
+  return query
+}
+
+function createReceiptFormData(payload, attachment) {
+  const formData = new FormData()
+
+  formData.append(
+    "data",
+    new Blob([JSON.stringify(payload)], {
+      type: "application/json",
+    }),
+  )
+
+  if (attachment) {
+    formData.append("file", attachment)
+  }
+
+  return formData
 }
 
 function includesKeyword(value, keyword) {
@@ -206,7 +255,12 @@ function createEligibleOrder(receipt) {
 
 export async function fetchReceipts(params = {}) {
   if (!USE_MOCK) {
-    const query = new URLSearchParams(params)
+    const query = createReceiptQuery(params)
+    const path = query.toString()
+      ? `/api/receipts?${query.toString()}`
+      : "/api/receipts"
+
+    return apiFetch(path, { cache: "no-store" })
 
     const response = await fetch(
       createApiUrl(`/api/receipts?${query.toString()}`),
@@ -244,6 +298,10 @@ return result
 
 export async function fetchReceiptFilterOptions() {
   if (!USE_MOCK) {
+    return apiFetch("/api/receipts/filter-options", {
+      cache: "no-store",
+    })
+
     const response = await fetch(createApiUrl("/api/receipts/filter-options"), {
       cache: "no-store",
     })
@@ -263,6 +321,10 @@ export async function fetchReceiptFilterOptions() {
 
 export async function fetchReceiptSummary() {
   if (!USE_MOCK) {
+    return apiFetch("/api/receipts/summary", {
+      cache: "no-store",
+    })
+
     const response = await fetch(createApiUrl("/api/receipts/summary"), {
       cache: "no-store",
     })
@@ -313,6 +375,10 @@ export async function fetchReceiptSummary() {
 
 export async function fetchReceiptFormOptions() {
   if (!USE_MOCK) {
+    return apiFetch("/api/receipts/form-options", {
+      cache: "no-store",
+    })
+
     const response = await fetch(createApiUrl("/api/receipts/form-options"), {
       cache: "no-store",
     })
@@ -343,6 +409,10 @@ export async function fetchReceiptFormOptions() {
 
 export async function fetchReceiptById(receiptId) {
   if (!USE_MOCK) {
+    return apiFetch(`/api/receipts/${receiptId}`, {
+      cache: "no-store",
+    })
+
     const response = await fetch(
   createApiUrl(`/api/receipts/${receiptId}`),
   {
@@ -370,6 +440,10 @@ export async function fetchReceiptById(receiptId) {
 
 export async function fetchReceiptByOrderId(orderId) {
   if (!USE_MOCK) {
+    return apiFetch(`/api/receipts/order/${orderId}`, {
+      cache: "no-store",
+    })
+
     const response = await fetch(
       createApiUrl(`/api/receipts/order/${orderId}`),
       {
@@ -399,6 +473,13 @@ export async function fetchReceiptByOrderId(orderId) {
 
 export async function createReceiptReceipt(payload, attachment = null) {
   if (!USE_MOCK) {
+    const result = await apiFetch("/api/receipts", {
+      method: "POST",
+      body: createReceiptFormData(payload, attachment),
+    })
+
+    return result ?? { success: true }
+
     const response = await fetch(createApiUrl("/api/receipts"), {
       method: "POST",
 

@@ -6,6 +6,10 @@ import { ChevronRight } from "lucide-react"
 
 const breadcrumbRules = [
   { path: "/dashboard", crumbs: [{ label: "대시보드" }] },
+  {
+    path: "/mypage",
+    crumbs: [{ label: "설정", href: "/mypage" }, { label: "마이페이지" }],
+  },
 
   {
     path: "/products/new",
