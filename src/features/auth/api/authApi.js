@@ -29,6 +29,38 @@ function readJson(storage, key, fallbackValue) {
   }
 }
 
+function getStoredSessionEntry() {
+  if (!canUseBrowserStorage()) {
+    return null
+  }
+
+  const sessionSession = readJson(
+    window.sessionStorage,
+    SESSION_SESSION_KEY,
+    null,
+  )
+
+  if (sessionSession?.accessToken) {
+    return {
+      key: SESSION_SESSION_KEY,
+      session: sessionSession,
+      storage: window.sessionStorage,
+    }
+  }
+
+  const localSession = readJson(window.localStorage, LOCAL_SESSION_KEY, null)
+
+  if (localSession?.accessToken) {
+    return {
+      key: LOCAL_SESSION_KEY,
+      session: localSession,
+      storage: window.localStorage,
+    }
+  }
+
+  return null
+}
+
 function saveSession(session, remember) {
   if (!canUseBrowserStorage()) return
 
@@ -40,7 +72,28 @@ function saveSession(session, remember) {
     writeJson(window.localStorage, LOCAL_SESSION_KEY, session)
     return
   }
+
   writeJson(window.sessionStorage, SESSION_SESSION_KEY, session)
+}
+
+function updateStoredSession(nextSession) {
+  const entry = getStoredSessionEntry()
+
+  if (!entry) {
+    return nextSession
+  }
+
+  const mergedSession = {
+    ...entry.session,
+    ...nextSession,
+    accessToken: entry.session.accessToken,
+    roles: nextSession.roles ?? entry.session.roles ?? [],
+    permissions: nextSession.permissions ?? entry.session.permissions ?? [],
+  }
+
+  writeJson(entry.storage, entry.key, mergedSession)
+
+  return mergedSession
 }
 
 function normalizeRank(user) {
@@ -60,7 +113,9 @@ function normalizeStatus(user) {
     return "사용 중지"
   }
 
-  return user?.status ? "정상" : ""
+  if (user?.status === "ACTIVE") return "정상"
+
+  return user?.status ?? ""
 }
 
 function formatRoles(roles) {
@@ -94,18 +149,14 @@ function normalizeAuthUser(session) {
 }
 
 export function getCurrentUser() {
-  if (!canUseBrowserStorage()) return null
+  const entry = getStoredSessionEntry()
 
-  const session =
-    readJson(window.sessionStorage, SESSION_SESSION_KEY, null) ??
-    readJson(window.localStorage, LOCAL_SESSION_KEY, null)
-
-  if (!session?.accessToken) {
+  if (!entry?.session?.accessToken) {
     logout()
     return null
   }
 
-  return normalizeAuthUser(session)
+  return normalizeAuthUser(entry.session)
 }
 
 export async function login({ loginId, password, remember }) {
@@ -114,10 +165,37 @@ export async function login({ loginId, password, remember }) {
     body: JSON.stringify({ loginId: loginId.trim(), password }),
   })
 
-  // 백엔드 응답에 token, user 등이 담겨 옴
   saveSession(data, remember)
 
   return normalizeAuthUser(data)
+}
+
+export async function refreshCurrentUser() {
+  const data = await apiFetch("/api/auth/me")
+  const nextSession = updateStoredSession(data)
+
+  return normalizeAuthUser(nextSession)
+}
+
+export async function updateCurrentUserProfile(userId, values) {
+  const updatedUser = await apiFetch(`/api/users/${userId}`, {
+    method: "PUT",
+    body: JSON.stringify({
+      userName: values.userName?.trim(),
+      email: values.email?.trim().toLowerCase(),
+      phone: values.phone?.trim(),
+    }),
+  })
+
+  const entry = getStoredSessionEntry()
+  const nextSession = updateStoredSession({
+    user: {
+      ...(entry?.session?.user ?? {}),
+      ...updatedUser,
+    },
+  })
+
+  return normalizeAuthUser(nextSession)
 }
 
 export function logout() {
@@ -136,8 +214,8 @@ export function signup({ loginId, password, name, email, department, rank }) {
       password,
       userName: name?.trim(),
       email: email?.trim().toLowerCase(),
-      departmentName: department?.trim(), // department → departmentName
-      jobRank: rank?.trim(),              // rank → jobRank (직급)
+      departmentName: department?.trim(),
+      jobRank: rank?.trim(),
     }),
   })
 }

@@ -165,7 +165,7 @@ export default function PurchaseOrderForm({
               className="flex h-10 items-center gap-1.5 rounded-md bg-blue-600 px-4 text-[13px] font-semibold text-white hover:bg-blue-700 disabled:opacity-50"
             >
               <Send size={14} />
-              {isEditMode? "발주 완료" : "발주 확정"}
+              {isEditMode? "발주 완료" : "발주 등록"}
             </button>
           )}
         </div>
