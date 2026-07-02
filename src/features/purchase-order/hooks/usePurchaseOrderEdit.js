@@ -7,6 +7,7 @@ import {
   fetchPurchaseOrderFormOptions,
   updatePurchaseOrder,
 } from "@/features/purchase-order/api/purchaseOrderApi"
+import { useAuth } from "@/features/auth/context/AuthContext"
 
 import {
   calculatePurchaseOrderSummary,
@@ -37,6 +38,7 @@ function customValidatePurchaseOrderForm(form, items) {
 }
 
 export default function usePurchaseOrderEdit(orderId) {
+  const { user } = useAuth()
   const [detailState, setDetailState] = useState({
     detail: null,
     loading: true,
@@ -287,7 +289,7 @@ function removeItem(requestItemId) {
     try {
       const bffRequestPayload = {
         supplierId: Number(form.supplierId || detailState.detail?.supplierId || 21),
-        createdBy: Number(form.createdBy || 5),
+        createdBy: Number(user?.userId || form.createdBy) || null,
         dueDate: form.expectedReceiptTo ? `${form.expectedReceiptTo}T23:59:59` : null,
         orderStatus: status || form.status || "CONFIRMED",
         orderNo: form.orderNo || form.orderNumber || null,
