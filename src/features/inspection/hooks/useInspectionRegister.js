@@ -205,9 +205,6 @@ export default function useInspectionRegister(inspectionId) {
 
         inspectorName: form.inspectorName.trim(),
 
-        // inspectedAt은 보내지 않습니다.
-        // 백엔드에서 저장 시점의 서버 시간으로 기록합니다.
-
         note: form.note.trim(),
 
         items: form.items.map((item) => ({
