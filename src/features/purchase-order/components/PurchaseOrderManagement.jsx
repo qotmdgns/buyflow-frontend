@@ -18,6 +18,8 @@ import {
   getPurchaseOrderStatusLabel,
   getPurchaseOrderStatusMeta,
 } from "@/features/purchase-order/utils/purchaseOrderUtils"
+import { getApiUrl } from "@/lib/api/fetchClient"
+import { getAccessToken } from "@/utils/authStorage"
 import { hasPermission } from "@/utils/permissions"
 
 const INPUT_CLASS_NAME =
@@ -132,10 +134,15 @@ export default function PurchaseOrderManagement() {
 
   async function handleDownload() {
     try {
-      const excelApiUrl = "http://localhost:8080/api/orders/excel"
+      const token = getAccessToken()
 
-      const response = await fetch(excelApiUrl, {
+      const response = await fetch(getApiUrl("/api/orders/excel"), {
         method: "GET",
+        headers: {
+          Accept:
+            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
         // 만약 JWT 토큰 등 인증 헤더가 필요하다면 아래 주석을 풀고 넣어주세요.
         // headers: {
         //   "Authorization": `Bearer ${localStorage.getItem('token')}`

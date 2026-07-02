@@ -5,6 +5,7 @@ import {
   createPurchaseOrder,
   fetchPurchaseOrderFormOptions,
 } from "@/features/purchase-order/api/purchaseOrderApi"
+import { useAuth } from "@/features/auth/context/AuthContext"
 import {
   calculatePurchaseOrderSummary,
   createOrderItemFromRequestItem,
@@ -120,6 +121,7 @@ function getSupplierCode(supplier) {
 }
 
 export default function usePurchaseOrderCreate() {
+  const { user } = useAuth()
   const [options, setOptions] = useState({
     nextOrderNumber: "",
     suppliers: [],
@@ -446,7 +448,7 @@ export default function usePurchaseOrderCreate() {
       supplierContact: form.supplierContact || "",
       manager: form.manager || "-",
 
-      createdBy: Number(form.createdBy || form.userId || 5),
+      createdBy: Number(user?.userId || form.createdBy || form.userId) || null,
 
       orderStatus: status,
       status,
@@ -485,7 +487,7 @@ export default function usePurchaseOrderCreate() {
 
       const bffRequestPayload = {
         supplierId: (!form.supplierId || isNaN(Number(form.supplierId))) ? 2 : Number(form.supplierId), 
-        createdBy: Number(form.createdBy || 5),  
+        createdBy: Number(user?.userId || form.createdBy) || null,
         dueDate: form.expectedReceiptTo ? `${form.expectedReceiptTo}T23:59:59` : null, 
         orderStatus: status,                       
         orderNo: form.orderNo || null,           
