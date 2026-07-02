@@ -1,13 +1,9 @@
 "use client"
 
 import Link from "next/link"
-
-import { useRouter } from "next/navigation"
-
+import { useRouter, useSearchParams } from "next/navigation"
 import { ClipboardCheck } from "lucide-react"
-
 import useInspectionRegister from "@/features/inspection/hooks/useInspectionRegister"
-
 import {
   formatNumber,
   getInspectionStatusMeta,
@@ -20,7 +16,6 @@ function SectionTitle({ children }) {
   return (
     <div className="flex items-center gap-2">
       <span className="h-4 w-1 rounded-full bg-blue-600" />
-
       <h2 className="text-[15px] font-bold text-slate-800">{children}</h2>
     </div>
   )
@@ -30,7 +25,6 @@ function InformationItem({ label, children }) {
   return (
     <div>
       <p className="text-[12px] font-semibold text-slate-500">{label}</p>
-
       <div className="mt-1 text-[14px] font-medium text-slate-700">
         {children || "-"}
       </div>
@@ -40,11 +34,8 @@ function InformationItem({ label, children }) {
 
 function StatusBadge({ status }) {
   const meta = getInspectionStatusMeta(status)
-
   return (
-    <span
-      className={`inline-flex rounded-full border px-2.5 py-1 text-[12px] font-semibold ${meta.badgeClassName}`}
-    >
+    <span className={`inline-flex rounded-full border px-2.5 py-1 text-[12px] font-semibold ${meta.badgeClassName}`}>
       {meta.label}
     </span>
   )
@@ -62,11 +53,7 @@ function ErrorState({ error }) {
   return (
     <div className="rounded-lg border border-rose-100 bg-white px-4 py-16 text-center shadow-sm">
       <p className="text-[14px] text-rose-500">{error}</p>
-
-      <Link
-        href="/inspections"
-        className="mt-4 inline-flex h-9 items-center rounded-md border border-slate-200 px-3 text-[13px] font-semibold text-slate-600 transition hover:bg-slate-50"
-      >
+      <Link href="/inspections" className="mt-4 inline-flex h-9 items-center rounded-md border border-slate-200 px-3 text-[13px] font-semibold text-slate-600 transition hover:bg-slate-50">
         목록으로 돌아가기
       </Link>
     </div>
@@ -77,39 +64,15 @@ function InspectionTargetSummary({ inspection }) {
   return (
     <section className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
       <SectionTitle>검수 대상 기본정보</SectionTitle>
-
       <div className="mt-4 grid gap-x-12 gap-y-4 md:grid-cols-2 xl:grid-cols-4">
-        <InformationItem label="검수 대기 번호">
-          {inspection.inspectionNumber}
-        </InformationItem>
-
-        <InformationItem label="입고 번호">
-          {inspection.receiptNumber}
-        </InformationItem>
-
-        <InformationItem label="발주 번호">
-          {inspection.orderNumber}
-        </InformationItem>
-
-        <InformationItem label="공급업체">
-          {inspection.supplierName}
-        </InformationItem>
-
-        <InformationItem label="입고 창고">
-          {inspection.warehouseName}
-        </InformationItem>
-
-        <InformationItem label="입고일">
-          {inspection.receivedAt}
-        </InformationItem>
-
-        <InformationItem label="검수 기한">
-          {inspection.inspectionDueAt}
-        </InformationItem>
-
-        <InformationItem label="검수 대상 총수량">
-          {formatNumber(inspection.totalReceivedQuantity)}
-        </InformationItem>
+        <InformationItem label="검수 대기 번호">{inspection.inspectionNumber}</InformationItem>
+        <InformationItem label="입고 번호">{inspection.receiptNumber}</InformationItem>
+        <InformationItem label="발주 번호">{inspection.orderNumber}</InformationItem>
+        <InformationItem label="공급업체">{inspection.supplierName}</InformationItem>
+        <InformationItem label="입고 창고">{inspection.warehouseName}</InformationItem>
+        <InformationItem label="입고일">{inspection.receivedAt}</InformationItem>
+        <InformationItem label="검수 기한">{inspection.inspectionDueAt}</InformationItem>
+        <InformationItem label="검수 대상 총수량">{formatNumber(inspection.totalReceivedQuantity)}</InformationItem>
       </div>
     </section>
   )
@@ -123,50 +86,21 @@ function InspectionResultForm({ form, onChange }) {
   return (
     <section className="mt-3 rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
       <SectionTitle>검수 결과 기본정보</SectionTitle>
-
       <div className="mt-4 grid gap-3 md:grid-cols-2">
         <label>
           <span className="mb-1 block text-[12px] font-semibold text-slate-500">
             검수 담당자 <strong className="text-rose-500">*</strong>
           </span>
-
-          <input
-            value={form.inspectorName || "로그인 정보 없음"}
-            readOnly
-            disabled
-            className={`${INPUT_CLASS_NAME} cursor-not-allowed bg-slate-50 text-slate-500`}
-          />
+          <input value={form.inspectorName || "로그인 정보 없음"} readOnly disabled className={`${INPUT_CLASS_NAME} cursor-not-allowed bg-slate-50 text-slate-500`} />
         </label>
-
         <label>
-          <span className="mb-1 block text-[12px] font-semibold text-slate-500">
-            검수 일시
-          </span>
-
-          <input
-            type="text"
-            value={
-              form.inspectedAt
-                ? formatDateTime(form.inspectedAt)
-                : "검수 결과 저장 시 서버 시간으로 자동 기록됩니다."
-            }
-            readOnly
-            className={`${INPUT_CLASS_NAME} cursor-not-allowed bg-slate-50 text-slate-500`}
-          />
+          <span className="mb-1 block text-[12px] font-semibold text-slate-500">검수 일시</span>
+          <input type="text" value={form.inspectedAt ? formatDateTime(form.inspectedAt) : "검수 결과 저장 시 서버 시간으로 자동 기록됩니다."} readOnly className={`${INPUT_CLASS_NAME} cursor-not-allowed bg-slate-50 text-slate-500`} />
         </label>
       </div>
-
       <label className="mt-4 block">
-        <span className="mb-1 block text-[12px] font-semibold text-slate-500">
-          검수 메모
-        </span>
-
-        <textarea
-          value={form.note}
-          onChange={(event) => onChange("note", event.target.value)}
-          placeholder="검수 과정에서 확인한 참고 사항을 입력해 주세요."
-          className="min-h-20 w-full resize-y rounded-md border border-slate-200 px-3 py-2.5 text-[13px] text-slate-600 outline-none transition placeholder:text-slate-300 focus:border-blue-400 focus:ring-2 focus:ring-blue-100"
-        />
+        <span className="mb-1 block text-[12px] font-semibold text-slate-500">검수 메모</span>
+        <textarea value={form.note} onChange={(e) => onChange("note", e.target.value)} placeholder="검수 과정에서 확인한 참고 사항을 입력해 주세요." className="min-h-20 w-full resize-y rounded-md border border-slate-200 px-3 py-2.5 text-[13px] text-slate-600 outline-none transition placeholder:text-slate-300 focus:border-blue-400 focus:ring-2 focus:ring-blue-100" />
       </label>
     </section>
   )
@@ -177,135 +111,43 @@ function InspectionItemTable({ items, totals, onChange }) {
     <section className="mt-3 overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm">
       <div className="border-b border-slate-100 px-4 py-3">
         <SectionTitle>품목별 검수 결과</SectionTitle>
-
-        <p className="mt-1 text-[12px] text-slate-400">
-          각 품목의 합격 수량과 불량 수량 합계는 입고 수량과 같아야 합니다.
-        </p>
+        <p className="mt-1 text-[12px] text-slate-400">각 품목의 합격 수량과 불량 수량 합계는 입고 수량과 같아야 합니다.</p>
       </div>
-
       <div className="overflow-x-auto">
         <table className="w-full min-w-[1530px] text-left text-[13px]">
           <thead className="bg-slate-50 text-slate-500">
             <tr>
-              {[
-                "번호",
-                "품목 코드",
-                "품목명",
-                "규격",
-                "LOT 번호",
-                "입고 수량",
-                "최종 합격 수량",
-                "최종 불량 수량",
-                "불량 사유",
-                "처리 방식",
-              ].map((heading) => (
-                <th
-                  key={heading}
-                  className="whitespace-nowrap px-3 py-2.5 font-medium"
-                >
-                  {heading}
-                </th>
+              {["번호", "품목 코드", "품목명", "규격", "LOT 번호", "입고 수량", "최종 합격 수량", "최종 불량 수량", "불량 사유", "처리 방식"].map((h) => (
+                <th key={h} className="whitespace-nowrap px-3 py-2.5 font-medium">{h}</th>
               ))}
             </tr>
           </thead>
-
           <tbody>
             {items.map((item, index) => {
               const hasDefect = Number(item.defectiveQuantity || 0) > 0
-
               return (
-                <tr
-                  key={item.id}
-                  className="border-t border-slate-100 text-slate-600"
-                >
-                  <td className="whitespace-nowrap px-3 py-2.5 text-center">
-                    {index + 1}
-                  </td>
-
-                  <td className="whitespace-nowrap px-3 py-2.5 font-medium text-blue-600">
-                    {item.itemCode}
-                  </td>
-
-                  <td className="min-w-44 px-3 py-2.5 font-semibold text-slate-700">
-                    {item.itemName}
-                  </td>
-
-                  <td className="whitespace-nowrap px-3 py-2.5">
-                    {item.specification || "-"}
-                  </td>
-
-                  <td className="whitespace-nowrap px-3 py-2.5">
-                    {item.lotNumber || "-"}
-                  </td>
-
-                  <td className="whitespace-nowrap px-3 py-2.5 text-right font-semibold text-slate-700">
-                    {formatNumber(item.receivedQuantity)}
-                  </td>
-
+                <tr key={item.id} className="border-t border-slate-100 text-slate-600">
+                  <td className="whitespace-nowrap px-3 py-2.5 text-center">{index + 1}</td>
+                  <td className="whitespace-nowrap px-3 py-2.5 font-medium text-blue-600">{item.itemCode}</td>
+                  <td className="min-w-44 px-3 py-2.5 font-semibold text-slate-700">{item.itemName}</td>
+                  <td className="whitespace-nowrap px-3 py-2.5">{item.specification || "-"}</td>
+                  <td className="whitespace-nowrap px-3 py-2.5">{item.lotNumber || "-"}</td>
+                  <td className="whitespace-nowrap px-3 py-2.5 text-right font-semibold text-slate-700">{formatNumber(item.receivedQuantity)}</td>
                   <td className="px-3 py-2.5">
-                    <input
-                      type="number"
-                      min="0"
-                      max={item.receivedQuantity}
-                      value={item.acceptedQuantity}
-                      onChange={(event) =>
-                        onChange(
-                          item.id,
-                          "acceptedQuantity",
-                          event.target.value,
-                        )
-                      }
-                      className={`${INPUT_CLASS_NAME} w-24 text-right`}
-                    />
+                    <input type="number" min="0" max={item.receivedQuantity} value={item.acceptedQuantity} onChange={(e) => onChange(item.id, "acceptedQuantity", e.target.value)} className={`${INPUT_CLASS_NAME} w-24 text-right`} />
                   </td>
-
                   <td className="px-3 py-2.5">
-                    <input
-                      type="number"
-                      min="0"
-                      max={item.receivedQuantity}
-                      value={item.defectiveQuantity}
-                      onChange={(event) =>
-                        onChange(
-                          item.id,
-                          "defectiveQuantity",
-                          event.target.value,
-                        )
-                      }
-                      className={`${INPUT_CLASS_NAME} w-24 text-right`}
-                    />
+                    <input type="number" min="0" max={item.receivedQuantity} value={item.defectiveQuantity} onChange={(e) => onChange(item.id, "defectiveQuantity", e.target.value)} className={`${INPUT_CLASS_NAME} w-24 text-right`} />
                   </td>
-
                   <td className="px-3 py-2.5">
-                    <input
-                      value={item.defectReason}
-                      disabled={!hasDefect}
-                      onChange={(event) =>
-                        onChange(item.id, "defectReason", event.target.value)
-                      }
-                      placeholder={hasDefect ? "불량 사유 입력" : "불량 없음"}
-                      className={`${INPUT_CLASS_NAME} min-w-56`}
-                    />
+                    <input value={item.defectReason} disabled={!hasDefect} onChange={(e) => onChange(item.id, "defectReason", e.target.value)} placeholder={hasDefect ? "불량 사유 입력" : "불량 없음"} className={`${INPUT_CLASS_NAME} min-w-56`} />
                   </td>
-
                   <td className="px-3 py-2.5">
-                    <select
-                      value={item.disposition}
-                      disabled={!hasDefect}
-                      onChange={(event) =>
-                        onChange(item.id, "disposition", event.target.value)
-                      }
-                      className={`${INPUT_CLASS_NAME} min-w-36`}
-                    >
+                    <select value={item.disposition} disabled={!hasDefect} onChange={(e) => onChange(item.id, "disposition", e.target.value)} className={`${INPUT_CLASS_NAME} min-w-36`}>
                       <option value="NONE">선택</option>
-
                       <option value="RETURN">반품</option>
-
                       <option value="EXCHANGE">교환 요청</option>
-
-                      <option value="CONDITIONAL_ACCEPTANCE">
-                        조건부 입고
-                      </option>
+                      <option value="CONDITIONAL_ACCEPTANCE">조건부 입고</option>
                     </select>
                   </td>
                 </tr>
@@ -314,28 +156,10 @@ function InspectionItemTable({ items, totals, onChange }) {
           </tbody>
         </table>
       </div>
-
       <div className="flex flex-wrap justify-end gap-x-6 gap-y-2 border-t border-slate-100 px-4 py-3 text-[13px] text-slate-500">
-        <p>
-          입고 수량{" "}
-          <strong className="ml-1 text-slate-700">
-            {formatNumber(totals.received)}
-          </strong>
-        </p>
-
-        <p>
-          합격 수량{" "}
-          <strong className="ml-1 text-blue-600">
-            {formatNumber(totals.accepted)}
-          </strong>
-        </p>
-
-        <p>
-          불량 수량{" "}
-          <strong className="ml-1 text-rose-500">
-            {formatNumber(totals.defective)}
-          </strong>
-        </p>
+        <p>입고 수량 <strong className="ml-1 text-slate-700">{formatNumber(totals.received)}</strong></p>
+        <p>합격 수량 <strong className="ml-1 text-blue-600">{formatNumber(totals.accepted)}</strong></p>
+        <p>불량 수량 <strong className="ml-1 text-rose-500">{formatNumber(totals.defective)}</strong></p>
       </div>
     </section>
   )
@@ -343,6 +167,8 @@ function InspectionItemTable({ items, totals, onChange }) {
 
 export default function InspectionRegister({ inspectionId }) {
   const router = useRouter()
+  const searchParams  = useSearchParams()
+  const isEditModelFromUrl = searchParams.get('mode') === 'edit'
 
   const {
     inspection,
@@ -361,68 +187,64 @@ export default function InspectionRegister({ inspectionId }) {
     event.preventDefault()
 
     const savedInspection = await submit()
+    if (!savedInspection) return
 
-    if (!savedInspection) {
-      return
-    }
+    const isEditMode = searchParams.get('mode') === 'edit' || !!inspection.inspectionResult
 
-    window.alert("검수 결과가 등록되었습니다.")
+    window.alert(
+      isEditMode
+      ? "검수 결과가 수정되었습니다."
+      : "검수 결과가 등록되었습니다."
+    )
 
     router.push(`/inspections/${inspectionId}`)
   }
 
-  if (loading) {
-    return <LoadingState />
-  }
+  if (loading) return <LoadingState />
+  if (error || !inspection || !form) return <ErrorState error={error} />
 
-  if (error || !inspection || !form) {
-    return <ErrorState error={error} />
-  }
-
+  // 이미 검수 완료된 경우
   if (inspection.status !== "PENDING") {
     return (
       <div className="rounded-lg border border-amber-200 bg-white p-6 shadow-sm">
         <div className="flex items-center gap-2">
-          <h1 className="text-[22px] font-bold text-slate-900">검수 등록</h1>
-
+          <h1 className="text-[22px] font-bold text-slate-900">검수 수정</h1>
           <StatusBadge status={inspection.status} />
         </div>
-
-        <p className="mt-3 text-[14px] text-slate-600">
-          이미 검수 결과가 등록된 건입니다. 상세 화면에서 결과를 확인해 주세요.
-        </p>
-
-        <Link
-          href="/inspections"
-          className="mt-5 inline-flex h-10 items-center rounded-md bg-blue-600 px-4 text-[13px] font-semibold text-white transition hover:bg-blue-700"
-        >
+        <p className="mt-3 text-[14px] text-slate-600">이미 검수 결과가 등록된 건입니다. 상세 화면에서 결과를 확인해 주세요.</p>
+        <Link href={`/inspections/${inspectionId}`} className="mt-5 inline-flex h-10 items-center rounded-md bg-blue-600 px-4 text-[13px] font-semibold text-white transition hover:bg-blue-700">
           검수 상세로 이동
         </Link>
       </div>
     )
   }
 
+  // 정상 등록/수정 모드 (PENDING)
+  const isEditMode =  isEditModelFromUrl || !!inspection.inspectionResult
+
   return (
     <form onSubmit={handleSubmit} className="w-full">
       <header className="mb-3">
-        <h1 className="text-[22px] font-bold tracking-tight text-slate-900">
-          검수 등록
-        </h1>
-
+        <div className="flex items-center gap-2">
+          <h1 className="text-[22px] font-bold tracking-tight text-slate-900">
+            {isEditMode ? "검수 수정" : "검수 등록"}
+          </h1>
+          {isEditMode && (
+            <span className="rounded-full bg-amber-100 px-2.5 py-0.5 text-[12px] font-semibold text-amber-700">
+              수정 모드
+            </span>
+          )}
+        </div>
         <p className="mt-1 text-[13px] text-slate-400">
-          입고 품목별 합격 수량과 불량 수량을 입력하고 검수 결과를 저장합니다.
+          {isEditMode
+            ? "기존 검수 결과를 수정합니다."
+            : "입고 품목별 합격 수량과 불량 수량을 입력하고 검수 결과를 저장합니다."}
         </p>
       </header>
 
       <InspectionTargetSummary inspection={inspection} />
-
       <InspectionResultForm form={form} onChange={updateField} />
-
-      <InspectionItemTable
-        items={form.items}
-        totals={totals}
-        onChange={updateItem}
-      />
+      <InspectionItemTable items={form.items} totals={totals} onChange={updateItem} />
 
       {actionError && (
         <p className="mt-3 rounded-md border border-rose-100 bg-rose-50 px-3 py-2.5 text-[13px] text-rose-500">
@@ -432,7 +254,7 @@ export default function InspectionRegister({ inspectionId }) {
 
       <div className="mt-4 flex justify-end gap-2">
         <Link
-          href={`/inspections/${inspectionId}`}
+          href="/inspections"
           className="inline-flex h-10 items-center rounded-md border border-slate-200 bg-white px-4 text-[13px] font-semibold text-slate-600 transition hover:bg-slate-50"
         >
           취소
@@ -440,12 +262,15 @@ export default function InspectionRegister({ inspectionId }) {
 
         <button
           type="submit"
-          disabled={submitting}
+          disabled={!!submitting}
           className="inline-flex h-10 items-center gap-1.5 rounded-md bg-blue-600 px-4 text-[13px] font-semibold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
         >
           <ClipboardCheck size={14} />
-
-          {submitting ? "저장 중..." : "검수 결과 저장"}
+          {submitting 
+            ? "저장 중..." 
+            : isEditMode 
+              ? "검수 결과 수정" 
+              : "검수 결과 저장"}
         </button>
       </div>
     </form>
