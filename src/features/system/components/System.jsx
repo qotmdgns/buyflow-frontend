@@ -24,7 +24,7 @@ export default function System() {
     roles: canManageRoles,
     ready,
   }
-  const delegateOnly = access.teamManager && !access.admin && !access.roles
+  const delegateOnly = access.teamManager && !access.admin
   const management = useSystem({ delegateOnly })
 
   // 마운트 전에는 깜빡임 방지로 렌더하지 않는다
