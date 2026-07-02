@@ -368,7 +368,7 @@ export default function InspectionRegister({ inspectionId }) {
 
     window.alert("검수 결과가 등록되었습니다.")
 
-    router.push("/inspections/completed")
+    router.push(`/inspections/${inspectionId}`)
   }
 
   if (loading) {
@@ -393,7 +393,7 @@ export default function InspectionRegister({ inspectionId }) {
         </p>
 
         <Link
-          href={`/inspections/${inspectionId}`}
+          href="/inspections"
           className="mt-5 inline-flex h-10 items-center rounded-md bg-blue-600 px-4 text-[13px] font-semibold text-white transition hover:bg-blue-700"
         >
           검수 상세로 이동
