@@ -1,6 +1,7 @@
 "use client"
 
-import { CircleAlert } from "lucide-react"
+import Link from "next/link"
+import { CircleAlert, List } from "lucide-react"
 import { useRouter } from "next/navigation"
 import PurchaseItemSelectModal from "@/features/purchase-request/components/PurchaseItemSelectModal"
 import PurchaseRequestBasicForm from "@/features/purchase-request/components/PurchaseRequestBasicForm"
@@ -88,9 +89,19 @@ export default function PurchaseRequestEdit({ requestId }) {
           </p>
         </div>
 
-        <span className="rounded-full bg-blue-50 px-2.5 py-1 text-[12px] font-semibold text-blue-600">
-          {originalRequest?.status ?? "수정중"}
-        </span>
+        <div className="flex flex-wrap items-center gap-2">
+          <Link
+            href="/purchase-requests"
+            className="inline-flex h-9 items-center gap-1.5 rounded-md border border-slate-200 bg-white px-3 text-[13px] font-semibold text-slate-600 transition hover:bg-slate-50"
+          >
+            <List size={13} />
+            목록
+          </Link>
+
+          <span className="rounded-full bg-blue-50 px-2.5 py-1 text-[12px] font-semibold text-blue-600">
+            {originalRequest?.status ?? "수정중"}
+          </span>
+        </div>
       </header>
 
       <PurchaseRequestBasicForm
@@ -115,6 +126,12 @@ export default function PurchaseRequestEdit({ requestId }) {
       </div>
 
       <footer className="mt-3 flex justify-end gap-2">
+        <Link
+          href="/purchase-requests"
+          className="inline-flex h-10 items-center rounded-md border border-slate-200 bg-white px-4 text-[13px] font-semibold text-slate-600 transition hover:bg-slate-50"
+        >
+          목록
+        </Link>
         <button
           type="button"
           onClick={handleCancel}
