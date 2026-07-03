@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation"
 import { Download, FileText, Pencil, Trash2, XCircle } from "lucide-react"
 import usePurchaseRequestDetail from "@/features/purchase-request/hooks/usePurchaseRequestDetail"
 import { formatWon } from "@/features/purchase-request/utils/purchaseRequestUtils"
+import { downloadFileWithAuth } from "@/lib/api/downloadClient"
 
 const STATUS_CLASS_NAMES = {
   "승인 대기": "border-amber-200 bg-amber-50 text-amber-600",
@@ -306,7 +307,7 @@ export default function PurchaseRequestDetail({ requestId }) {
   const { request, loading, error, reload, cancelRequest, deleteRequest } =
     usePurchaseRequestDetail(requestId)
 
-  function handleDownload(attachment) {
+  async function handleDownload(attachment) {
     if (!attachment.downloadUrl) {
       window.alert(
         `${attachment.fileName} 다운로드 API는 Spring Boot 연동 시 연결하면 됩니다.`,
@@ -315,7 +316,12 @@ export default function PurchaseRequestDetail({ requestId }) {
       return
     }
 
-    window.open(attachment.downloadUrl, "_blank", "noopener,noreferrer")
+    try {
+      await downloadFileWithAuth(attachment.downloadUrl, attachment.fileName)
+    } catch (error) {
+      console.error("첨부파일 다운로드 중 오류가 발생했습니다.", error)
+      window.alert("첨부파일을 다운로드하지 못했습니다.")
+    }
   }
 
   async function handleCancelRequest() {
