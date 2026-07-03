@@ -319,9 +319,7 @@ export default function PurchaseRequestDetail({ requestId }) {
   }
 
   async function handleCancelRequest() {
-    const confirmed = window.confirm(
-      `${request.requestNumber} 구매 요청을 취소하시겠습니까?`,
-    )
+    const confirmed = window.confirm("구매 요청을 취소하시겠습니까?")
 
     if (!confirmed) {
       return
