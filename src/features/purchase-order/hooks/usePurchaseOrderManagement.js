@@ -4,6 +4,7 @@ import { useEffect, useState } from "react"
 
 import {
   cancelPurchaseOrder,
+  fetchPurchaseOrderFormOptions,
   fetchPurchaseOrders,
 } from "@/features/purchase-order/api/purchaseOrderApi"
 
@@ -50,20 +51,7 @@ export default function usePurchaseOrderManagement() {
     async function loadFormOptions() {
       try {
         // 성공하는 URL로 바꿔보세요
-        const res = await fetch("http://localhost:8080/api/orders/form-options", {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          credentials: "include",
-        });
-
-        if (!res.ok) {
-          console.error("Status:", res.status);
-          throw new Error(`HTTP ${res.status}`);
-        }
-        
-        const response = await res.json();
+        const response = await fetchPurchaseOrderFormOptions()
 
         if (ignore) {
           return

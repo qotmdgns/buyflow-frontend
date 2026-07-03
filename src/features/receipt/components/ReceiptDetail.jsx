@@ -38,6 +38,23 @@ function StatusBadge({ status }) {
   )
 }
 
+function resolveDownloadUrl(downloadUrl) {
+  if (!downloadUrl) {
+    return ""
+  }
+
+  if (/^https?:\/\//i.test(downloadUrl)) {
+    return downloadUrl
+  }
+
+  const baseUrl = (process.env.NEXT_PUBLIC_API_BASE_URL ?? "").replace(
+    /\/$/,
+    "",
+  )
+
+  return `${baseUrl}${downloadUrl.startsWith("/") ? "" : "/"}${downloadUrl}`
+}
+
 function LoadingState() {
   return (
     <div className="rounded-lg border border-slate-200 bg-white px-4 py-16 text-center text-[14px] text-slate-400 shadow-sm">
@@ -273,17 +290,27 @@ export default function ReceiptDetail({ receiptId, mode = "receipt" }) {
                     {!history.attachments?.length ? (
                       <span className="text-slate-400">-</span>
                     ) : (
-                      history.attachments.map((attachment) => (
-                        <span
-                          key={attachment.id}
-                          className="flex items-center gap-1 text-blue-600"
-                        >
-                          <FileText size={13} />
-                          {attachment.fileName}
-
-                          {attachment.downloadUrl && <Download size={12} />}
-                        </span>
-                      ))
+                      history.attachments.map((attachment) =>
+                        attachment.downloadUrl ? (
+                          <a
+                            key={attachment.id}
+                            href={resolveDownloadUrl(attachment.downloadUrl)}
+                            className="flex items-center gap-1 text-blue-600 hover:underline"
+                          >
+                            <FileText size={13} />
+                            {attachment.fileName}
+                            <Download size={12} />
+                          </a>
+                        ) : (
+                          <span
+                            key={attachment.id}
+                            className="flex items-center gap-1 text-blue-600"
+                          >
+                            <FileText size={13} />
+                            {attachment.fileName}
+                          </span>
+                        ),
+                      )
                     )}
                   </td>
                 </tr>

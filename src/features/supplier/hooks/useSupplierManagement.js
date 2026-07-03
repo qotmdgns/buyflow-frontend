@@ -93,9 +93,7 @@ export default function useSupplierManagement() {
     }))
   }
 
-  function searchSuppliers(event) {
-    event.preventDefault()
-
+  function searchSuppliers() {
     setPagination((currentPagination) => ({
       ...currentPagination,
       page: 1,

@@ -31,7 +31,7 @@ export default function useReceiptManagement() {
 
   const [appliedFilters, setAppliedFilters] = useState(DEFAULT_RECEIPT_FILTERS)
 
-  const [activeTab, setActiveTab] = useState("EXPECTED")
+  const [activeTab, setActiveTab] = useState("ALL")
   const [cardFilter, setCardFilter] = useState("ALL")
 
   const [filterOptions, setFilterOptions] = useState({

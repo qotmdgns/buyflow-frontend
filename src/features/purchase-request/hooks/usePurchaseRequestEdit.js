@@ -335,14 +335,10 @@ export default function usePurchaseRequestEdit(requestId) {
         })),
       }
 
-      const updatedRequest = await updatePurchaseRequest(
-        requestId,
-        payload,
-        attachment,
-      )
+      await updatePurchaseRequest(requestId, payload, attachment)
 
       window.alert("구매 요청을 수정했습니다.")
-      router.push(`/purchase-requests/${updatedRequest.id}`)
+      router.replace("/purchase-requests")
     } catch (submitError) {
       console.error("구매 요청 수정 실패:", submitError)
       window.alert(

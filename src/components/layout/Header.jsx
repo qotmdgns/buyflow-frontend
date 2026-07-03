@@ -6,6 +6,10 @@ import { ChevronRight } from "lucide-react"
 
 const breadcrumbRules = [
   { path: "/dashboard", crumbs: [{ label: "대시보드" }] },
+  {
+    path: "/mypage",
+    crumbs: [{ label: "설정", href: "/mypage" }, { label: "마이페이지" }],
+  },
 
   {
     path: "/products/new",
@@ -37,6 +41,14 @@ const breadcrumbRules = [
       { label: "구매 및 입고", href: "/purchase-requests" },
       { label: "구매 요청", href: "/purchase-requests" },
       { label: "구매 요청 등록" },
+    ],
+  },
+  {
+    matches: (pathname) => /^\/purchase-requests\/[^/]+\/edit$/.test(pathname),
+    crumbs: [
+      { label: "구매 및 입고", href: "/purchase-requests" },
+      { label: "구매 요청", href: "/purchase-requests" },
+      { label: "구매 요청 수정" },
     ],
   },
   {
