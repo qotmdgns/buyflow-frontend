@@ -138,7 +138,7 @@ useEffect(() => {
           supplierManager: sManager,              
           supplierManagerName: sManager,
           supplierContactName: sManager,          
-          orderManager: detail.orderManager || "관리자", 
+          orderManager: detail.orderManager || "", 
           
           supplierContact: sContact,
           supplierContactNo: sContact,

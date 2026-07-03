@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useMemo, useState } from "react"
+import { useEffect, useMemo, useState, useRef } from "react"
 import {
   createPurchaseOrder,
   fetchPurchaseOrderFormOptions,
@@ -421,6 +421,8 @@ export default function usePurchaseOrderCreate() {
       return acc + quantity * unitPrice * 1.1
     }, 0)
 
+    const userName = form.orderManager || user?.userName || user?.name || user?.displayName || ""
+
     const expectedReceiptFrom =
       form.expectedReceiptFrom || form.expectedReceiptFrom || ""
 
@@ -449,6 +451,9 @@ export default function usePurchaseOrderCreate() {
       manager: form.manager || "-",
 
       createdBy: Number(user?.userId || form.createdBy || form.userId) || null,
+
+      orderManager: userName,
+      userName: userName,
 
       orderStatus: status,
       status,
@@ -518,6 +523,28 @@ export default function usePurchaseOrderCreate() {
       setSubmitting(false)
     }
   }
+
+  // ★ 로그인한 사용자의 이름을 발주 담당자로 자동 세팅 (안전한 버전)
+  const hasSetOrderManager = useRef(false)
+
+  useEffect(() => {
+    if (!user || hasSetOrderManager.current) return
+
+    const loggedInUserName =
+      user.userName ||
+      user.name ||
+      user.displayName ||
+      user.username ||
+      ""
+
+    if (loggedInUserName) {
+      setForm((prevForm) => ({
+        ...prevForm,
+        orderManager: loggedInUserName,
+      }))
+      hasSetOrderManager.current = true
+    }
+  }, [user])
 
   return {
     options,

@@ -271,7 +271,7 @@ export default function PurchaseOrderForm({
                     value={selectedSupplierValue} 
                     onChange={(event) => {
                       const val = event.target.value;
-                      handleChangeSupplier(val);   // 기존에 정의된 함수 사용
+                      handleChangeSupplier(val);  
                     }} 
                     disabled={!editableCoreFields} 
                     className={INPUT_CLASS_NAME}
@@ -330,7 +330,7 @@ export default function PurchaseOrderForm({
               <FieldLabel required={!isEditMode}>발주 담당자</FieldLabel>
               {isEditMode ? (
                 <input
-                  value={form.orderManager || "-"}
+                  value={form.orderManager || form.userName || "-"}
                   disabled
                   className={INPUT_CLASS_NAME}
                 />
@@ -341,7 +341,7 @@ export default function PurchaseOrderForm({
                     onChange={(event) =>
                       onChange("orderManager", event.target.value)
                     }
-                    disabled={!editableCoreFields}
+                    disabled={true}
                     className={INPUT_CLASS_NAME}
                   />
                   <FieldError message={errors.orderManager} />
