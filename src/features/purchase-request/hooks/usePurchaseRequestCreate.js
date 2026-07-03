@@ -12,19 +12,25 @@ import {
   getTodayString,
 } from "@/features/purchase-request/utils/purchaseRequestUtils"
 
-const INITIAL_FORM = {
-  requestNumber: "",
-  requester: "",
-  department: "",
-  requestDate: getTodayString(),
-  expectedDate: "",
-  title: "",
-  urgency: "일반",
-  reason: "",
+function createInitialForm() {
+  return {
+    requestNumber: "",
+    requester: "",
+    department: "",
+    requestDate: getTodayString(),
+    expectedDate: "",
+    title: "",
+    urgency: "일반",
+    reason: "",
+  }
 }
 
-const LOCKED_FORM_FIELDS = new Set(["requestNumber", "requester", "department"])
-
+const LOCKED_FORM_FIELDS = new Set([
+  "requestNumber",
+  "requester",
+  "department",
+  "requestDate",
+])
 const FIXED_ITEM_REMARK = "해당 사항 없음"
 
 function getCurrentRequestorId(user) {
@@ -43,7 +49,7 @@ export default function usePurchaseRequestCreate() {
   const { user, isAuthReady } = useAuth()
 
   const [products, setProducts] = useState([])
-  const [form, setForm] = useState(INITIAL_FORM)
+  const [form, setForm] = useState(() => createInitialForm())
   const [requestItems, setRequestItems] = useState([])
   const [attachment, setAttachment] = useState(null)
 
@@ -270,7 +276,10 @@ export default function usePurchaseRequestCreate() {
       return
     }
 
-    const currentForm = formWithLoginUser
+    const currentForm = {
+      ...formWithLoginUser,
+      requestDate: getTodayString(),
+    }
 
     const requiredFields = [
       { label: "요청자", value: currentForm.requester },
@@ -287,6 +296,16 @@ export default function usePurchaseRequestCreate() {
 
     if (emptyField) {
       window.alert(`${emptyField.label} 항목을 입력해 주세요.`)
+      return
+    }
+
+    if (currentForm.expectedDate < currentForm.requestDate) {
+      window.alert("희망 입고일은 요청일보다 이전일 수 없습니다.")
+      return
+    }
+
+    if (requestItems.length === 0) {
+      window.alert("구매 요청 품목을 1개 이상 추가해 주세요.")
       return
     }
 
