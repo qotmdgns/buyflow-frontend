@@ -2,7 +2,7 @@
 
 import Link from "next/link"
 import { useRouter } from "next/navigation"
-import { Download, FileText, Pencil, Trash2, XCircle } from "lucide-react"
+import { Download, FileText, List, Pencil, Trash2, XCircle } from "lucide-react"
 import usePurchaseRequestDetail from "@/features/purchase-request/hooks/usePurchaseRequestDetail"
 import { formatWon } from "@/features/purchase-request/utils/purchaseRequestUtils"
 import { downloadFileWithAuth } from "@/lib/api/downloadClient"
@@ -392,6 +392,13 @@ export default function PurchaseRequestDetail({ requestId }) {
         </div>
 
         <div className="flex flex-wrap items-center gap-2">
+          <Link
+            href="/purchase-requests"
+            className="inline-flex h-9 items-center gap-1.5 rounded-md border border-slate-200 bg-white px-3 text-[13px] font-semibold text-slate-600 transition hover:bg-slate-50"
+          >
+            <List size={13} />
+            목록
+          </Link>
           {canEdit && (
             <Link
               href={`/purchase-requests/${request.id}/edit`}

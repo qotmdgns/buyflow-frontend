@@ -8,6 +8,7 @@ import {
   formatSignedQuantity,
   STOCK_HISTORY_TABLE_HEADERS,
 } from "@/features/stock/utils/stockManagementUtils"
+import { useRouter } from "next/navigation"
 
 const INPUT_CLASS_NAME = "bf-input"
 
@@ -78,6 +79,9 @@ function getStockHistoryRowKey(history, index) {
 }
 
 export default function StockHistoryManagement({ initialFilters = {} }) {
+
+  const router = useRouter();
+
   const {
     draftFilters,
     filterOptions,
