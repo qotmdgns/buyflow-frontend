@@ -99,13 +99,17 @@ export default function PurchaseRequestBasicForm({
             label="요청일"
             required
             value={safeForm.requestDate}
-            onChange={(event) => onChange("requestDate", event.target.value)}
+            disabled
+            readOnly
+            min={safeForm.requestDate}
+            max={safeForm.requestDate}
           />
 
           <DateField
             label="희망 입고일"
             required
             value={safeForm.expectedDate}
+            min={safeForm.requestDate}
             onChange={(event) => onChange("expectedDate", event.target.value)}
           />
         </div>

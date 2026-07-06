@@ -673,13 +673,13 @@ kubectl rollout status deployment/buyflow-backend -n buyflow
 ### 김호현
 
 - 역할: 팀장
-- 담당 영역: DevOps, 대시보드, 품목관리, 구매 요청, 승인 관리
+- 담당 영역: 대시보드, 품목관리, 구매 요청, 승인 관리, DevOps
 - 구현 내용:
-  - Docker, Kubernetes, OKE, OCIR, GitHub Actions CI/CD 구성
   - 대시보드 화면 및 데이터 연동
   - 품목관리 기능 구현
   - 구매 요청 등록, 구매 요청 목록, 구매 요청 상세, 구매 요청 수정/삭제 구현
   - 승인/반려 처리 및 요청 상태 관리 구현
+  - Docker, Kubernetes, OKE, OCIR, GitHub Actions CI/CD 구성
 
 ### 하지수
 
