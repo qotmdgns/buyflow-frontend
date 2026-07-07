@@ -225,6 +225,8 @@ export function validatePurchaseOrderForm(form, items) {
     errors.expectedReceipt = "입고 예정일 범위를 입력하세요."
   } else if (form.expectedReceiptFrom > form.expectedReceiptTo) {
     errors.expectedReceipt = "입고 예정일 범위를 확인하세요."
+  } else if (form.expectedReceiptFrom < getTodayString()) {
+    errors.expectedReceipt = "입고 예정일은 오늘 이후로 설정해야 합니다."
   }
 
   if (!form.warehouseCode) {

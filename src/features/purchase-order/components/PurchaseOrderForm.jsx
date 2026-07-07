@@ -6,6 +6,7 @@ import {
   calculatePurchaseOrderLine,
   formatWon,
   getPurchaseOrderStatusMeta,
+  getTodayString,
 } from "@/features/purchase-order/utils/purchaseOrderUtils"
 
 const INPUT_CLASS_NAME =
@@ -368,6 +369,7 @@ export default function PurchaseOrderForm({
                   onChange={(event) =>
                     onChange("expectedReceiptFrom", event.target.value)
                   }
+                  min={getTodayString()}
                   disabled={!editable}
                   className={INPUT_CLASS_NAME}
                 />
@@ -378,6 +380,7 @@ export default function PurchaseOrderForm({
                   onChange={(event) =>
                     onChange("expectedReceiptTo", event.target.value)
                   }
+                  min={form.expectedReceiptFrom || getTodayString()}
                   disabled={!editable}
                   className={INPUT_CLASS_NAME}
                 />

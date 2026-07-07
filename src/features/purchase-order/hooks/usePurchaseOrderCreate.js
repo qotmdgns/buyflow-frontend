@@ -524,11 +524,10 @@ export default function usePurchaseOrderCreate() {
     }
   }
 
-  // ★ 로그인한 사용자의 이름을 발주 담당자로 자동 세팅 (안전한 버전)
   const hasSetOrderManager = useRef(false)
 
   useEffect(() => {
-    if (!user || hasSetOrderManager.current) return
+    if (!user) return
 
     const loggedInUserName =
       user.userName ||
@@ -537,11 +536,16 @@ export default function usePurchaseOrderCreate() {
       user.username ||
       ""
 
-    if (loggedInUserName) {
-      setForm((prevForm) => ({
-        ...prevForm,
-        orderManager: loggedInUserName,
-      }))
+    if (loggedInUserName && !hasSetOrderManager.current) {
+      setForm((prevForm) => {
+        if (prevForm.orderManager && prevForm.orderManager.trim() !=="") {
+          return prevForm
+        }
+        return {
+          ...prevForm,
+          orderManager: loggedInUserName,
+        }
+      })
       hasSetOrderManager.current = true
     }
   }, [user])
