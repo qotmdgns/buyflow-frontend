@@ -142,7 +142,6 @@ export default function PurchaseOrderDetailModal({
             </div>
           </dl>
 
-          {/* 기존 비고 영역 */}
           <div className="rounded-md border border-slate-200 bg-slate-50 px-4 py-3 mt-3">
             <h3 className="text-[12px] font-bold text-slate-600 mb-1.5">
               {currentStatus === "CANCELED" ? "취소 사유" : "비고"}
@@ -154,8 +153,6 @@ export default function PurchaseOrderDetailModal({
                 </span>}
             </p>
           </div>
-
-          {/* 🚀 2. 새롭게 추가된 첨부파일 영역 */}
           <div className="rounded-md border border-slate-200 bg-slate-50 px-4 py-3 mt-3">
             <h3 className="text-[12px] font-bold text-slate-600 mb-2 flex items-center gap-1.5">
               <Paperclip size={14} className="text-slate-500" /> 첨부파일
@@ -163,7 +160,6 @@ export default function PurchaseOrderDetailModal({
             <div>
               {order.attachmentId ? (
                 <a
-                  // TODO: 환경에 맞게 다운로드 API 엔드포인트 URL을 맞춰주세요!
                   href={`http://localhost:8080/api/orders/attachments/download/${order.attachmentId}`}
                   target="_blank"
                   rel="noopener noreferrer"

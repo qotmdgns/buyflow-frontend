@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useMemo, useState } from "react"
+import { useEffect, useMemo, useState, useRef } from "react"
 import {
   createPurchaseOrder,
   fetchPurchaseOrderFormOptions,
@@ -12,6 +12,7 @@ import {
   createPurchaseOrderForm,
   validatePurchaseOrderForm,
 } from "@/features/purchase-order/utils/purchaseOrderUtils"
+import { setRequestMeta } from "next/dist/server/request-meta"
 
 function getNumberOrNull(value) {
   const numberValue = Number(value)
@@ -135,6 +136,8 @@ export default function usePurchaseOrderCreate() {
   const [errors, setErrors] = useState({})
   const [submitError, setSubmitError] = useState("")
   const [submitting, setSubmitting] = useState(false)
+  const [isSuccess, setIsSuccess] = useState(false)
+  const [successMessage, setSuccessMessage] = useState("")
   const [isItemModalOpen, setIsItemModalOpen] = useState(false)
   const [draftSelectedItemIds, setDraftSelectedItemIds] = useState(new Set())
 
@@ -220,15 +223,14 @@ export default function usePurchaseOrderCreate() {
       return nextForm
     })
 
-    setErrors((currentErrors) => {
-      if (!currentErrors[name]) {
-        return currentErrors
-      }
-
-      const nextErrors = { ...currentErrors }
-      delete nextErrors[name]
-      return nextErrors
-    })
+    setTimeout(() => {
+      const nextErrors = validatePurchaseOrderForm(
+        {...form, [name]: value},
+        items,
+        false
+      )
+      setErrors(nextErrors);
+    }, 50);
   }
 
   function changeSupplier(selectedSupplierValue) {
@@ -281,6 +283,15 @@ export default function usePurchaseOrderCreate() {
       delete nextErrors.supplierCode
       return nextErrors
     })
+
+    setTimeout(() => {
+      const nextErrors = validatePurchaseOrderForm(
+        {...form, supplierId: supplierValue},
+        items,
+        false
+      )
+      setErrors(nextErrors)
+    }, 50)
   }
 
   function applyPurchaseRequest(requestId) {
@@ -332,6 +343,10 @@ export default function usePurchaseOrderCreate() {
         }
       }),
     )
+    setTimeout(() => {
+      const nextErrors = validatePurchaseOrderForm(form, items, false);
+      setErrors(nextErrors);
+    }, 50);
   }
 
   function removeItem(requestItemId) {
@@ -341,6 +356,10 @@ export default function usePurchaseOrderCreate() {
           Number(item.requestItemId || item.id) !== Number(requestItemId),
       ),
     )
+    setTimeout(() => {
+      const nextErrors = validatePurchaseOrderForm(form, items, false);
+      setErrors(nextErrors);
+    }, 50);
   }
 
   function openItemModal() {
@@ -404,12 +423,15 @@ export default function usePurchaseOrderCreate() {
       ...form,
       supplierId:
         normalizedSupplierId || form.supplierId || form.supplierName || "",
-      status,
+        status,
+      // status: finalStatus,
     }
 
-    const nextErrors = validatePurchaseOrderForm(nextForm, items)
+    // const finalStatus = status || "PENDING"
 
-    if (Object.keys(nextErrors).length) {
+    const nextErrors = validatePurchaseOrderForm(nextForm, items, false)
+
+    if (Object.keys(nextErrors).length > 0) {
       setErrors(nextErrors)
       return null
     }
@@ -420,6 +442,8 @@ export default function usePurchaseOrderCreate() {
 
       return acc + quantity * unitPrice * 1.1
     }, 0)
+
+    const userName = form.orderManager || user?.userName || user?.name || user?.displayName || ""
 
     const expectedReceiptFrom =
       form.expectedReceiptFrom || form.expectedReceiptFrom || ""
@@ -450,6 +474,9 @@ export default function usePurchaseOrderCreate() {
 
       createdBy: Number(user?.userId || form.createdBy || form.userId) || null,
 
+      orderManager: userName,
+      userName: userName,
+
       orderStatus: status,
       status,
       orderNo: form.orderNo || null,
@@ -477,6 +504,7 @@ export default function usePurchaseOrderCreate() {
 
     setSubmitting(true)
     setSubmitError("")
+    setIsSuccess(false)
 
     try {
       const totalAmountCalculated = items.reduce((acc, item) => {
@@ -509,8 +537,16 @@ export default function usePurchaseOrderCreate() {
         }))
       };
 
-      return await createPurchaseOrder(bffRequestPayload, attachment)
+      const result = await createPurchaseOrder(bffRequestPayload, attachment)
       
+      setIsSuccess(true)
+      setSuccessMessage("발주가 성공적으로 등록되었습니다.")
+
+      setTimeout(() => {
+        window.location.href = "/purchase-orders";
+      }, 1500)
+
+      return result;
     } catch (requestError) {
       setSubmitError(requestError.message || "발주를 등록하지 못했습니다.")
       return null
@@ -518,6 +554,32 @@ export default function usePurchaseOrderCreate() {
       setSubmitting(false)
     }
   }
+
+  const hasSetOrderManager = useRef(false)
+
+  useEffect(() => {
+    if (!user) return
+
+    const loggedInUserName =
+      user.userName ||
+      user.name ||
+      user.displayName ||
+      user.username ||
+      ""
+
+    if (loggedInUserName && !hasSetOrderManager.current) {
+      setForm((prevForm) => {
+        if (prevForm.orderManager && prevForm.orderManager.trim() !=="") {
+          return prevForm
+        }
+        return {
+          ...prevForm,
+          orderManager: loggedInUserName,
+        }
+      })
+      hasSetOrderManager.current = true
+    }
+  }, [user])
 
   return {
     options,
@@ -527,6 +589,8 @@ export default function usePurchaseOrderCreate() {
     errors,
     submitError,
     submitting,
+    isSuccess,
+    successMessage,
     selectedRequest,
     summary,
     isItemModalOpen,

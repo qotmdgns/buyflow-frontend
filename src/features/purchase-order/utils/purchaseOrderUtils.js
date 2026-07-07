@@ -67,7 +67,7 @@ export const EMPTY_PURCHASE_ORDER_FORM = {
   supplierName: "",
   supplierManagerName: "",
   supplierContact: "",
-  orderManager: "김철수",
+  orderManager: "",
   orderedAt: "",
   expectedReceiptFrom: "",
   expectedReceiptTo: "",
@@ -196,7 +196,7 @@ export function createPurchaseOrderForm(detail = null) {
     supplierName: detail.supplierName ?? "",
     supplierManagerName: detail.supplierManagerName ?? "",
     supplierContact: detail.supplierContact ?? "",
-    orderManager: detail.orderManager ?? "",
+    orderManager: detail.orderManager ?? detail.userName ?? detail.manager ?? "",
     orderedAt: detail.orderedAt ?? "",
     expectedReceiptFrom: detail.expectedReceiptFrom ?? "",
     expectedReceiptTo: detail.expectedReceiptTo ?? "",
@@ -206,10 +206,11 @@ export function createPurchaseOrderForm(detail = null) {
   }
 }
 
-export function validatePurchaseOrderForm(form, items) {
+export function validatePurchaseOrderForm(form, items, isEditMode = false) {
   const errors = {}
+  const today = getTodayString();
 
-  if (!form.requestId) {
+  if (!form.requestId && !isEditMode) {
     errors.requestId = "승인 완료된 구매 요청을 선택하세요."
   }
 
@@ -225,6 +226,10 @@ export function validatePurchaseOrderForm(form, items) {
     errors.expectedReceipt = "입고 예정일 범위를 입력하세요."
   } else if (form.expectedReceiptFrom > form.expectedReceiptTo) {
     errors.expectedReceipt = "입고 예정일 범위를 확인하세요."
+  } else if (form.expectedReceiptFrom < today) {
+    errors.expectedReceipt = "입고 예정일은 오늘 이후로 설정해야 합니다."
+  } else if (form.expectedReceiptTo < today) {
+    errors.expectedReceipt= "입고 예정일은 오늘 이후로 설정해야 합니다."
   }
 
   if (!form.warehouseCode) {

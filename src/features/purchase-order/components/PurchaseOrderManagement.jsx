@@ -143,10 +143,6 @@ export default function PurchaseOrderManagement() {
             "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
           ...(token ? { Authorization: `Bearer ${token}` } : {}),
         },
-        // 만약 JWT 토큰 등 인증 헤더가 필요하다면 아래 주석을 풀고 넣어주세요.
-        // headers: {
-        //   "Authorization": `Bearer ${localStorage.getItem('token')}`
-        // }
       })
 
       if (!response.ok) {
