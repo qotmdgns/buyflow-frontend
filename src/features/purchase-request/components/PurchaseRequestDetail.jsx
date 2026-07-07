@@ -1,10 +1,12 @@
 "use client"
 
+import { useEffect, useRef, useState } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { Download, FileText, List, Pencil, Trash2, XCircle } from "lucide-react"
 import usePurchaseRequestDetail from "@/features/purchase-request/hooks/usePurchaseRequestDetail"
 import { formatWon } from "@/features/purchase-request/utils/purchaseRequestUtils"
+import LoadingOverlay from "@/components/common/LoadingOverlay"
 
 const STATUS_CLASS_NAMES = {
   "승인 대기": "border-amber-200 bg-amber-50 text-amber-600",
@@ -305,6 +307,30 @@ export default function PurchaseRequestDetail({ requestId }) {
   const router = useRouter()
   const { request, loading, error, reload, cancelRequest, deleteRequest } =
     usePurchaseRequestDetail(requestId)
+  const [actionLoading, setActionLoading] = useState("")
+  const [detailLoadingVisible, setDetailLoadingVisible] = useState(loading)
+  const detailLoadingTimerRef = useRef(null)
+
+  useEffect(() => {
+    function clearDetailLoadingTimer() {
+      if (detailLoadingTimerRef.current) {
+        clearTimeout(detailLoadingTimerRef.current)
+        detailLoadingTimerRef.current = null
+      }
+    }
+
+    clearDetailLoadingTimer()
+
+    detailLoadingTimerRef.current = setTimeout(
+      () => {
+        setDetailLoadingVisible(Boolean(loading))
+        detailLoadingTimerRef.current = null
+      },
+      loading ? 0 : 1000,
+    )
+
+    return clearDetailLoadingTimer
+  }, [loading])
 
   function handleDownload(attachment) {
     if (!attachment.downloadUrl) {
@@ -319,11 +345,15 @@ export default function PurchaseRequestDetail({ requestId }) {
   }
 
   async function handleCancelRequest() {
-    const confirmed = window.confirm("구매 요청을 취소하시겠습니까?")
+    const confirmed = window.confirm(
+      `${request.requestNumber} 구매 요청을 취소하시겠습니까?`,
+    )
 
     if (!confirmed) {
       return
     }
+
+    setActionLoading("cancel")
 
     try {
       await cancelRequest()
@@ -331,6 +361,8 @@ export default function PurchaseRequestDetail({ requestId }) {
     } catch (error) {
       console.error("구매 요청 취소 중 오류가 발생했습니다.", error)
       window.alert(error.message || "구매 요청 취소에 실패했습니다.")
+    } finally {
+      setActionLoading("")
     }
   }
 
@@ -343,6 +375,8 @@ export default function PurchaseRequestDetail({ requestId }) {
       return
     }
 
+    setActionLoading("delete")
+
     try {
       await deleteRequest()
       window.alert("구매 요청을 삭제했습니다.")
@@ -351,11 +385,20 @@ export default function PurchaseRequestDetail({ requestId }) {
     } catch (error) {
       console.error("구매 요청 삭제 중 오류가 발생했습니다.", error)
       window.alert(error.message || "구매 요청 삭제에 실패했습니다.")
+    } finally {
+      setActionLoading("")
     }
   }
 
-  if (loading) {
-    return <LoadingState />
+  if (loading || detailLoadingVisible) {
+    return (
+      <LoadingOverlay
+        show
+        minDuration={1000}
+        message="구매요청 상세 정보를 불러오는 중입니다."
+        description="요청 기본정보, 품목, 첨부파일, 승인 상태를 확인하고 있습니다."
+      />
+    )
   }
 
   if (error || !request) {
@@ -368,6 +411,16 @@ export default function PurchaseRequestDetail({ requestId }) {
 
   return (
     <div className="w-full">
+      <LoadingOverlay
+        show={Boolean(actionLoading)}
+        minDuration={1000}
+        message={
+          actionLoading === "delete"
+            ? "구매요청을 삭제하는 중입니다."
+            : "구매요청을 취소하는 중입니다."
+        }
+        description="구매요청 상태 변경을 처리하고 있습니다."
+      />
       <header className="mb-3 flex flex-wrap items-start justify-between gap-3">
         <div>
           <div className="flex flex-wrap items-center gap-2">
