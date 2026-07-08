@@ -54,6 +54,7 @@ export default function usePurchaseRequestCreate() {
   const [attachment, setAttachment] = useState(null)
 
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [isProductLoading, setIsProductLoading] = useState(true)
   const submittingRef = useRef(false)
 
   const [isItemModalOpen, setIsItemModalOpen] = useState(false)
@@ -92,14 +93,35 @@ export default function usePurchaseRequestCreate() {
   )
 
   useEffect(() => {
-    fetchPurchaseRequestProducts()
-      .then((data) => {
-        setProducts(Array.isArray(data) ? data : (data.items ?? []))
-      })
-      .catch((error) => {
+    let ignore = false
+
+    async function loadProducts() {
+      setIsProductLoading(true)
+
+      try {
+        const data = await fetchPurchaseRequestProducts()
+
+        if (!ignore) {
+          setProducts(Array.isArray(data) ? data : (data.items ?? []))
+        }
+      } catch (error) {
         console.error("품목 목록 조회 실패:", error)
-        window.alert("품목 목록을 불러오지 못했습니다.")
-      })
+
+        if (!ignore) {
+          window.alert("품목 목록을 불러오지 못했습니다.")
+        }
+      } finally {
+        if (!ignore) {
+          setIsProductLoading(false)
+        }
+      }
+    }
+
+    loadProducts()
+
+    return () => {
+      ignore = true
+    }
   }, [])
 
   const totalAmount = useMemo(
@@ -358,6 +380,7 @@ export default function usePurchaseRequestCreate() {
     requestItems,
     totalAmount,
     isSubmitting,
+    isProductLoading,
     isItemModalOpen,
     draftSelectedIds,
     keyword,

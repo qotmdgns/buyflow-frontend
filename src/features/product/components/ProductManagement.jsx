@@ -8,6 +8,7 @@ import ProductDetailModal from "@/features/product/components/ProductDetailModal
 import ProductPagination from "@/features/product/components/ProductPagination"
 import ProductSearchForm from "@/features/product/components/ProductSearchForm"
 import ProductTable from "@/features/product/components/ProductTable"
+import LoadingOverlay from "@/components/common/LoadingOverlay"
 import useProductManagement from "@/features/product/hooks/useProductManagement"
 import {
   deleteProduct,
@@ -37,10 +38,22 @@ export default function ProductManagement() {
 
   const router = useRouter()
   const [isDeletingProduct, setIsDeletingProduct] = useState(false)
+  const [isExcelDownloading, setIsExcelDownloading] = useState(false)
+  const [isDetailLoading, setIsDetailLoading] = useState(false)
 
   function openProductEdit(product) {
     closeProductDetail()
     router.push(`/products/${product.id}/edit`)
+  }
+
+  async function handleOpenProductDetail(product) {
+    setIsDetailLoading(true)
+
+    try {
+      await openProductDetail(product)
+    } finally {
+      setIsDetailLoading(false)
+    }
   }
 
   async function handleDeleteProduct(product) {
@@ -80,6 +93,8 @@ export default function ProductManagement() {
   }
 
   async function handleProductExcelDownload() {
+    setIsExcelDownloading(true)
+
     try {
       const { blob, fileName } = await downloadProductExcel(appliedFilters)
 
@@ -97,11 +112,29 @@ export default function ProductManagement() {
     } catch (error) {
       console.error("품목 엑셀 다운로드 중 오류가 발생했습니다.", error)
       window.alert(error.message || "품목 엑셀 파일을 다운로드하지 못했습니다.")
+    } finally {
+      setIsExcelDownloading(false)
     }
   }
 
   return (
     <div className="w-full">
+      <LoadingOverlay
+        show={
+          loading || isDeletingProduct || isExcelDownloading || isDetailLoading
+        }
+        minDuration={1000}
+        message={
+          isDeletingProduct
+            ? "품목을 삭제하는 중입니다."
+            : isExcelDownloading
+              ? "품목 엑셀 파일을 생성하는 중입니다."
+              : isDetailLoading
+                ? "품목 상세 정보를 불러오는 중입니다."
+                : "품목 목록을 불러오는 중입니다."
+        }
+        description="품목 기준정보와 공급/재고 연계 데이터를 확인하고 있습니다."
+      />
       <header className="bf-page-header">
         <div>
           <p className="bf-page-eyebrow">MASTER DATA</p>
@@ -154,7 +187,7 @@ export default function ProductManagement() {
             products={products}
             loading={loading}
             error={error}
-            onDetail={openProductDetail}
+            onDetail={handleOpenProductDetail}
             onEdit={openProductEdit}
           />
 

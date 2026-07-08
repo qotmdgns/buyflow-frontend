@@ -7,6 +7,7 @@ import PurchaseItemSelectModal from "@/features/purchase-request/components/Purc
 import PurchaseRequestBasicForm from "@/features/purchase-request/components/PurchaseRequestBasicForm"
 import PurchaseRequestItemSection from "@/features/purchase-request/components/PurchaseRequestItemSection"
 import usePurchaseRequestEdit from "@/features/purchase-request/hooks/usePurchaseRequestEdit"
+import LoadingOverlay from "@/components/common/LoadingOverlay"
 
 export default function PurchaseRequestEdit({ requestId }) {
   const router = useRouter()
@@ -54,9 +55,11 @@ export default function PurchaseRequestEdit({ requestId }) {
 
   if (loading) {
     return (
-      <div className="rounded-lg border border-slate-200 bg-white px-4 py-16 text-center text-[14px] text-slate-400 shadow-sm">
-        구매 요청 수정 정보를 불러오는 중입니다.
-      </div>
+      <LoadingOverlay
+        minDuration={1000}
+        message="구매요청 수정 정보를 불러오는 중입니다."
+        description="기존 요청 정보와 선택 가능한 품목 데이터를 확인하고 있습니다."
+      />
     )
   }
 
@@ -78,6 +81,12 @@ export default function PurchaseRequestEdit({ requestId }) {
 
   return (
     <div className="w-full">
+      <LoadingOverlay
+        show={isSubmitting}
+        minDuration={1000}
+        message="구매요청 수정 내용을 저장하는 중입니다."
+        description="수정된 품목, 수량, 요청 사유를 반영하고 있습니다."
+      />
       <header className="mb-3 flex flex-wrap items-start justify-between gap-3">
         <div>
           <h1 className="text-[22px] font-bold tracking-tight text-slate-900">

@@ -20,11 +20,18 @@ function normalizeReceiptMonths(value) {
   return 6
 }
 
+function delay(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms))
+}
+
 export default async function DashboardPage({ searchParams }) {
   const params = await searchParams
   const receiptMonths = normalizeReceiptMonths(params?.receiptMonths)
 
-  const data = await getDashboardData({ receiptMonths })
+  const [data] = await Promise.all([
+    getDashboardData({ receiptMonths }),
+    delay(1000),
+  ])
 
   return (
     <>

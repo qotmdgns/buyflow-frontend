@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation"
 import { ChevronLeft, ChevronRight, RotateCcw, Search } from "lucide-react"
 import useApprovalListManagement from "@/features/approval/hooks/useApprovalListManagement"
 import ApprovalSummaryCards from "@/features/approval/components/ApprovalSummaryCards"
+import LoadingOverlay from "@/components/common/LoadingOverlay"
 
 import {
   formatWon,
@@ -115,6 +116,12 @@ export default function ApprovalListManagement() {
   }
   return (
     <div className="w-full">
+      <LoadingOverlay
+        show={loading}
+        minDuration={1000}
+        message="승인 관리 목록을 불러오는 중입니다."
+        description="승인 대기, 승인 완료, 반려 요청 데이터를 확인하고 있습니다."
+      />
       <header className="bf-page-header">
         <div>
           <p className="bf-page-eyebrow">APPROVAL</p>

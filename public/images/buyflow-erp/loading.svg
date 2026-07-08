@@ -1,0 +1,170 @@
+<svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bfBlue" x1="120" y1="120" x2="392" y2="392" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#38BDF8"/>
+      <stop offset="0.45" stop-color="#2563EB"/>
+      <stop offset="1" stop-color="#0F3A9E"/>
+    </linearGradient>
+
+    <linearGradient id="bfDarkBlue" x1="160" y1="130" x2="360" y2="340" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#1D4ED8"/>
+      <stop offset="1" stop-color="#082F7A"/>
+    </linearGradient>
+
+    <linearGradient id="bfLight" x1="180" y1="150" x2="330" y2="350" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#FFFFFF"/>
+      <stop offset="1" stop-color="#EAF3FF"/>
+    </linearGradient>
+
+    <linearGradient id="scanGradient" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#60A5FA" stop-opacity="0"/>
+      <stop offset="0.5" stop-color="#60A5FA" stop-opacity="0.4"/>
+      <stop offset="1" stop-color="#60A5FA" stop-opacity="0"/>
+    </linearGradient>
+
+    <filter id="shadowSoft" x="70" y="70" width="380" height="380" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+      <feDropShadow dx="0" dy="12" stdDeviation="12" flood-color="#0F172A" flood-opacity="0.16"/>
+    </filter>
+
+    <filter id="shadowStrong" x="90" y="100" width="340" height="340" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+      <feDropShadow dx="0" dy="18" stdDeviation="14" flood-color="#0F172A" flood-opacity="0.22"/>
+    </filter>
+  </defs>
+
+  <!-- Wordmark -->
+  <text x="256" y="84" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="48" font-weight="900" letter-spacing="-1.4">
+    <tspan fill="#052A6E">BuyFlow </tspan>
+    <tspan fill="#1E88FF">ERP</tspan>
+  </text>
+
+  <!-- Background glow -->
+  <ellipse cx="256" cy="292" rx="142" ry="128" fill="#DBEAFE" opacity="0.55">
+    <animate
+      attributeName="opacity"
+      values="0.42;0.72;0.42"
+      dur="1.8s"
+      repeatCount="indefinite"
+    />
+  </ellipse>
+
+  <!-- Fixed base orbit guide -->
+  <circle
+    cx="256"
+    cy="292"
+    r="123"
+    fill="none"
+    stroke="#DCEBFF"
+    stroke-width="12"
+    opacity="0.8"
+  />
+
+  <!-- Center-aligned rotating progress orbit -->
+  <g filter="url(#shadowSoft)">
+    <animateTransform
+      attributeName="transform"
+      type="rotate"
+      from="0 256 292"
+      to="360 256 292"
+      dur="2.1s"
+      repeatCount="indefinite"
+    />
+
+    <circle
+      cx="256"
+      cy="292"
+      r="123"
+      fill="none"
+      stroke="url(#bfBlue)"
+      stroke-width="14"
+      stroke-linecap="round"
+      stroke-dasharray="150 625"
+    />
+
+    <circle cx="256" cy="169" r="8" fill="#2563EB"/>
+  </g>
+
+  <!-- Main ERP card -->
+  <g filter="url(#shadowStrong)">
+    <animateTransform
+      attributeName="transform"
+      type="translate"
+      values="0 0; 0 -5; 0 0"
+      dur="1.8s"
+      repeatCount="indefinite"
+    />
+
+    <rect x="159" y="145" width="194" height="196" rx="24" fill="url(#bfLight)" stroke="url(#bfBlue)" stroke-width="4"/>
+
+    <!-- Folded corner -->
+    <path d="M304 145H328L353 170V194H328C315 194 304 183 304 170V145Z" fill="url(#bfDarkBlue)"/>
+
+    <!-- Shopping tile -->
+    <rect x="190" y="178" width="63" height="63" rx="15" fill="url(#bfDarkBlue)"/>
+    <path d="M209 199H218L222 219H238L244 206H225" stroke="white" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round"/>
+    <circle cx="224" cy="229" r="4.3" fill="white"/>
+    <circle cx="239" cy="229" r="4.3" fill="white"/>
+
+    <!-- Text lines -->
+    <rect x="276" y="188" width="70" height="10" rx="5" fill="#B6C4D8"/>
+    <rect x="276" y="211" width="80" height="10" rx="5" fill="#B6C4D8"/>
+    <rect x="276" y="234" width="58" height="10" rx="5" fill="#CED9EA"/>
+
+    <!-- Grid -->
+    <rect x="188" y="264" width="34" height="27" rx="5" fill="#CFE4FF"/>
+    <rect x="230" y="264" width="34" height="27" rx="5" fill="#CFE4FF"/>
+    <rect x="272" y="264" width="34" height="27" rx="5" fill="#CFE4FF"/>
+    <rect x="314" y="264" width="34" height="27" rx="5" fill="#CFE4FF"/>
+
+    <rect x="188" y="300" width="34" height="27" rx="5" fill="#DCEBFF"/>
+    <rect x="230" y="300" width="34" height="27" rx="5" fill="#DCEBFF"/>
+    <rect x="272" y="300" width="34" height="27" rx="5" fill="#DCEBFF"/>
+    <rect x="314" y="300" width="34" height="27" rx="5" fill="#DCEBFF"/>
+
+    <!-- Scan line -->
+    <rect x="186" y="255" width="88" height="86" rx="12" fill="url(#scanGradient)">
+      <animateTransform
+        attributeName="transform"
+        type="translate"
+        values="-90 0; 118 0; -90 0"
+        dur="1.8s"
+        repeatCount="indefinite"
+      />
+      <animate
+        attributeName="opacity"
+        values="0;1;0"
+        dur="1.8s"
+        repeatCount="indefinite"
+      />
+    </rect>
+
+    <!-- Approval check -->
+    <circle cx="211" cy="358" r="18" fill="url(#bfDarkBlue)"/>
+    <path d="M202 358L209 365L222 350" stroke="white" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+
+    <rect x="241" y="350" width="82" height="8" rx="4" fill="#90A3BC"/>
+    <rect x="241" y="367" width="56" height="8" rx="4" fill="#90A3BC"/>
+  </g>
+
+  <!-- Bottom module dock -->
+  <g filter="url(#shadowSoft)">
+    <rect x="157" y="374" width="198" height="76" rx="27" fill="white" stroke="url(#bfBlue)" stroke-width="4"/>
+    <line x1="223" y1="397" x2="223" y2="429" stroke="#B7D3FF" stroke-width="4" stroke-linecap="round"/>
+    <line x1="290" y1="397" x2="290" y2="429" stroke="#B7D3FF" stroke-width="4" stroke-linecap="round"/>
+
+    <!-- Inventory box -->
+    <path d="M184 403L202 393L220 403V424L202 434L184 424V403Z" stroke="#0A47B8" stroke-width="4" stroke-linejoin="round"/>
+    <path d="M184 403L202 413L220 403" stroke="#0A47B8" stroke-width="4" stroke-linejoin="round"/>
+    <path d="M202 413V434" stroke="#0A47B8" stroke-width="4" stroke-linejoin="round"/>
+
+    <!-- Approval clipboard -->
+    <rect x="246" y="402" width="24" height="30" rx="4" stroke="#0A47B8" stroke-width="4"/>
+    <rect x="252" y="394" width="12" height="9" rx="3" fill="#0A47B8"/>
+    <path d="M251 416L257 422L267 409" stroke="#0A47B8" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+
+    <!-- Dashboard chart -->
+    <path d="M315 432V413" stroke="#0A47B8" stroke-width="6" stroke-linecap="round"/>
+    <path d="M329 432V402" stroke="#0A47B8" stroke-width="6" stroke-linecap="round"/>
+    <path d="M343 432V392" stroke="#0A47B8" stroke-width="6" stroke-linecap="round"/>
+    <path d="M309 432H349" stroke="#0A47B8" stroke-width="4" stroke-linecap="round"/>
+  </g>
+</svg>

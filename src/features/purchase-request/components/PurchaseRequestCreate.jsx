@@ -6,6 +6,7 @@ import PurchaseItemSelectModal from "@/features/purchase-request/components/Purc
 import PurchaseRequestBasicForm from "@/features/purchase-request/components/PurchaseRequestBasicForm"
 import PurchaseRequestItemSection from "@/features/purchase-request/components/PurchaseRequestItemSection"
 import usePurchaseRequestCreate from "@/features/purchase-request/hooks/usePurchaseRequestCreate"
+import LoadingOverlay from "@/components/common/LoadingOverlay"
 
 export default function PurchaseRequestCreate() {
   const router = useRouter()
@@ -16,6 +17,7 @@ export default function PurchaseRequestCreate() {
     requestItems,
     totalAmount,
     isSubmitting,
+    isProductLoading,
     isItemModalOpen,
     draftSelectedIds,
     keyword,
@@ -50,6 +52,16 @@ export default function PurchaseRequestCreate() {
 
   return (
     <div className="w-full">
+      <LoadingOverlay
+        show={isProductLoading || isSubmitting}
+        minDuration={1000}
+        message={
+          isSubmitting
+            ? "구매요청을 전송하는 중입니다."
+            : "구매요청 품목 정보를 불러오는 중입니다."
+        }
+        description="요청 품목, 예상 단가, 승인 요청 데이터를 처리하고 있습니다."
+      />
       <header className="mb-3 flex flex-wrap items-start justify-between gap-3">
         <div>
           <h1 className="text-[22px] font-bold tracking-tight text-slate-900">
