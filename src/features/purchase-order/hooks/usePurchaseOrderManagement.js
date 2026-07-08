@@ -64,7 +64,7 @@ export default function usePurchaseOrderManagement() {
 
       setPagination(prev => ({
           ...prev,
-          size: data.size ??  prev.size,
+          size: data.size ?? prev.size,
           totalElements:
               data.totalElements ??
               data.pagination?.totalElements ??
@@ -111,7 +111,10 @@ export default function usePurchaseOrderManagement() {
   }, [])
 
   useEffect(() => {
-    void reloadOrders()
+    const load = async () => {
+      await reloadOrders()
+    }
+      load()
   }, [reloadOrders])
 
   function updateFilter(name, value) {
