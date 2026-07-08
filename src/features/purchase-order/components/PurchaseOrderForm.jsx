@@ -116,6 +116,8 @@ export default function PurchaseOrderForm({
 }) {
 
   const isEditMode = mode === "edit"
+  const isRegisterMode = mode === "register"
+  const isCreateMode = mode === "create"
 
   const approvedPurchaseRequests = options?.approvedPurchaseRequests ?? []
   const suppliers = options?.suppliers ?? []
@@ -145,6 +147,7 @@ export default function PurchaseOrderForm({
     }
   }
 
+  const nextStatus = mode === "create" ? "CONFIRMED" : "ORDERED"
   return (
     <div className="w-full">
       <header className="mb-3 flex flex-wrap items-center justify-between gap-3">
@@ -163,7 +166,7 @@ export default function PurchaseOrderForm({
           {editableCoreFields && (
             <button
               type="button"
-              onClick={() => onSave(isEditMode ? "ORDERED" : "CONFIRMED")}
+              onClick={() => onSave(nextStatus)}
               disabled={submitting || isSuccess}
               className="flex h-10 items-center gap-1.5 rounded-md bg-blue-600 px-4 text-[13px] font-semibold text-white hover:bg-blue-700 disabled:opacity-50"
             >
@@ -172,7 +175,7 @@ export default function PurchaseOrderForm({
               ) : (
                 <>
                 <Send size={14} />
-                {isEditMode? "발주 완료" : "발주 등록"}
+                {mode === "create" ? "발주 등록" : mode === "register" ? "발주 등록" : "발주 완료"}
                 </>
               )}
             </button>
@@ -377,7 +380,7 @@ export default function PurchaseOrderForm({
                   onChange={(event) =>
                     onChange("expectedReceiptFrom", event.target.value)
                   }
-                  min={isEditMode ? undefined : getTodayString()}
+                  min={getTodayString()}
                   disabled={!editable}
                   className={INPUT_CLASS_NAME}
                 />
@@ -388,7 +391,7 @@ export default function PurchaseOrderForm({
                   onChange={(event) =>
                     onChange("expectedReceiptTo", event.target.value)
                   }
-                  min={isEditMode ? undefined : (form.expectedReceiptFrom || getTodayString())}
+                  min={form.expectedReceiptFrom || getTodayString()}
                   disabled={!editable}
                   className={INPUT_CLASS_NAME}
                 />
