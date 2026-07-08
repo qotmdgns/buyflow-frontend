@@ -175,7 +175,9 @@ export default function PurchaseOrderManagement() {
 
   function moveToEdit(order) {
     closeDetail()
-    router.push(`/purchase-orders/${order.orderId}/edit`)
+    
+    const mode = order.orderStatus === "PENDING" ? "register" : "edit"
+    router.push(`/purchase-orders/${order.orderId}/edit?mode=${mode}`)
   }
 
   return (
