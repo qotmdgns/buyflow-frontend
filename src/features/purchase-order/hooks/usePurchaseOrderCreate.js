@@ -424,10 +424,7 @@ export default function usePurchaseOrderCreate() {
       supplierId:
         normalizedSupplierId || form.supplierId || form.supplierName || "",
         status,
-      // status: finalStatus,
     }
-
-    // const finalStatus = status || "PENDING"
 
     const nextErrors = validatePurchaseOrderForm(nextForm, items, false)
 
@@ -520,14 +517,14 @@ export default function usePurchaseOrderCreate() {
         orderStatus: status,                       
         orderNo: form.orderNo || null,           
         requestId: form.requestId ? Number(form.requestId) : null,
-        requestNumber: form.requestNumber || "", // 찐 구매요청 번호 강제 주입
+        requestNumber: form.requestNumber || "", 
         requestTitle: form.requestTitle || "",
         
         expectedReceiptFrom: form.expectedReceiptFrom || "",
         expectedReceiptTo: form.expectedReceiptTo || "",
         warehouseCode: form.warehouseCode || "",
         memo: form.memo || "",
-        manager: form.manager || "-", // 공급업체 담당자명 토스
+        manager: form.manager || "-", 
         totalAmount: totalAmountCalculated, 
 
         items: items.map((item) => ({
@@ -541,10 +538,6 @@ export default function usePurchaseOrderCreate() {
       
       setIsSuccess(true)
       setSuccessMessage("발주가 성공적으로 등록되었습니다.")
-
-      setTimeout(() => {
-        window.location.href = "/purchase-orders";
-      }, 1500)
 
       return result;
     } catch (requestError) {

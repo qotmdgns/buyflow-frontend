@@ -325,10 +325,6 @@ export default function usePurchaseOrderEdit(orderId) {
       
       setIsSuccess(true);
       setSuccessMessage("발주 정보가 성공적으로 수정되었습니다.");
-
-      setTimeout(() => {
-        window.location.href = "/purchase-orders";
-      }, 1500);
       return result;
     
     } catch (requestError) {
