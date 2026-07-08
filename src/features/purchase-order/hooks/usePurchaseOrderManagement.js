@@ -30,6 +30,7 @@ export default function usePurchaseOrderManagement() {
   })
 
   const [orders, setOrders] = useState([])
+
   const [pagination, setPagination] = useState(
     DEFAULT_PURCHASE_ORDER_PAGINATION,
   )
@@ -44,7 +45,7 @@ export default function usePurchaseOrderManagement() {
 
   const detailState = usePurchaseOrderDetail(selectedOrderId)
 
-  const loadOrders = useCallback(async () => {
+  const reloadOrders = useCallback(async () => {
     setLoading(true)
     setError("")
 
@@ -61,31 +62,28 @@ export default function usePurchaseOrderManagement() {
 
       setOrders(list)
 
-      setPagination((prev) => {
-        const next = {
-          page: data.number !== undefined ? data.number + 1 : prev.page,
-          size: data.size ?? prev.size,
-          totalElements: data.totalElements ?? list.length,
-          totalPages: data.totalPages ?? 1,
-        }
-
-        if (
-          prev.page === next.page &&
-          prev.size === next.size &&
-          prev.totalElements === next.totalElements &&
-          prev.totalPages === next.totalPages
-        ) {
-          return prev
-        }
-
-        return next
-      })
+      setPagination(prev => ({
+          ...prev,
+          size: data.size ??  prev.size,
+          totalElements:
+              data.totalElements ??
+              data.pagination?.totalElements ??
+              list.length,
+          totalPages:
+              data.totalPages ??
+              data.pagination?.totalPages ??
+              1,
+      }))
     } catch (e) {
       setError(e.message || "발주 목록을 불러오지 못했습니다.")
     } finally {
       setLoading(false)
     }
-  }, [appliedFilters, pagination.page, pagination.size])
+  }, [
+    appliedFilters,
+    pagination.page,
+    pagination.size,
+  ])
 
   useEffect(() => {
     let ignore = false
@@ -113,8 +111,8 @@ export default function usePurchaseOrderManagement() {
   }, [])
 
   useEffect(() => {
-    loadOrders()
-  }, [loadOrders]);
+    void reloadOrders()
+  }, [reloadOrders])
 
   function updateFilter(name, value) {
     setDraftFilters((currentFilters) => ({
@@ -126,7 +124,7 @@ export default function usePurchaseOrderManagement() {
   function searchOrders(event) {
     event.preventDefault()
 
-    setPagination((prev) => ({
+    setPagination(prev => ({
       ...prev,
       page: 1,
     }))
@@ -138,7 +136,7 @@ export default function usePurchaseOrderManagement() {
     setDraftFilters({ ...DEFAULT_PURCHASE_ORDER_FILTERS })
     setAppliedFilters({ ...DEFAULT_PURCHASE_ORDER_FILTERS })
 
-    setPagination((prev) => ({
+    setPagination(prev => ({
       ...prev,
       page: 1,
     }))
@@ -161,7 +159,7 @@ export default function usePurchaseOrderManagement() {
       ...prev,
       page: 1,
       size: Number(size),
-    }));
+    }))
   }
 
   function openDetail(order) {
@@ -183,9 +181,7 @@ export default function usePurchaseOrderManagement() {
   }
 
   async function confirmCancel(cancelReason) {
-    if (!cancelTarget) {
-      return
-    }
+    if (!cancelTarget) return
 
     setCanceling(true)
 
@@ -198,10 +194,10 @@ export default function usePurchaseOrderManagement() {
       setCancelTarget(null)
       setSelectedOrderId(null)
 
-      await loadOrders()
-    } catch (requestError) {
+      await reloadOrders()
+    } catch (e) {
       setCancelError(
-        requestError.message || "발주 취소 처리에 실패했습니다."
+        e.message || "발주 취소 처리에 실패했습니다."
       )
     } finally {
       setCanceling(false)
