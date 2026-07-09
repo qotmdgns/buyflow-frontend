@@ -53,14 +53,8 @@ export default function PurchaseRequestCreate() {
   return (
     <div className="w-full">
       <LoadingOverlay
-        show={isProductLoading || isSubmitting}
+        show={loading || isDownloading || Boolean(deletingRequestId)}
         minDuration={1000}
-        message={
-          isSubmitting
-            ? "구매요청을 전송하는 중입니다."
-            : "구매요청 품목 정보를 불러오는 중입니다."
-        }
-        description="요청 품목, 예상 단가, 승인 요청 데이터를 처리하고 있습니다."
       />
       <header className="mb-3 flex flex-wrap items-start justify-between gap-3">
         <div>

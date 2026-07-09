@@ -391,14 +391,7 @@ export default function PurchaseRequestDetail({ requestId }) {
   }
 
   if (loading || detailLoadingVisible) {
-    return (
-      <LoadingOverlay
-        show
-        minDuration={1000}
-        message="구매요청 상세 정보를 불러오는 중입니다."
-        description="요청 기본정보, 품목, 첨부파일, 승인 상태를 확인하고 있습니다."
-      />
-    )
+    return <LoadingOverlay show minDuration={1000} />
   }
 
   if (error || !request) {
@@ -411,16 +404,7 @@ export default function PurchaseRequestDetail({ requestId }) {
 
   return (
     <div className="w-full">
-      <LoadingOverlay
-        show={Boolean(actionLoading)}
-        minDuration={1000}
-        message={
-          actionLoading === "delete"
-            ? "구매요청을 삭제하는 중입니다."
-            : "구매요청을 취소하는 중입니다."
-        }
-        description="구매요청 상태 변경을 처리하고 있습니다."
-      />
+      <LoadingOverlay show={Boolean(actionLoading)} minDuration={1000} />
       <header className="mb-3 flex flex-wrap items-start justify-between gap-3">
         <div>
           <div className="flex flex-wrap items-center gap-2">

@@ -27,17 +27,7 @@ export default function ProductCreate({ mode = "create", productId = null }) {
 
   return (
     <div className="w-full">
-      <LoadingOverlay
-        show={isLoading || isSaving}
-        message={
-          isSaving
-            ? isEditMode
-              ? "품목 정보를 수정하는 중입니다."
-              : "신규 품목을 등록하는 중입니다."
-            : "품목 정보를 불러오는 중입니다."
-        }
-        description="품목 코드, 카테고리, 단위, 기준 단가 정보를 처리하고 있습니다."
-      />
+      <LoadingOverlay show={isLoading || isSaving} minDuration={1000} />
       <header className="mb-3">
         <h1 className="text-[22px] font-bold text-slate-900">
           {isEditMode ? "품목 수정" : "품목 등록"}

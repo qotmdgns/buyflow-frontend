@@ -4,8 +4,6 @@ import { useEffect, useRef, useState } from "react"
 
 export default function LoadingOverlay({
   show = true,
-  message = "BuyFlow ERP 데이터를 처리하는 중입니다.",
-  description = "기업 구매 프로세스 정보를 불러오고 있습니다.",
   imageSrc = "/images/buyflow-erp/loading.svg",
   minDuration = 900,
 }) {
@@ -14,10 +12,14 @@ export default function LoadingOverlay({
   const timerRef = useRef(null)
 
   useEffect(() => {
-    if (timerRef.current) {
-      clearTimeout(timerRef.current)
-      timerRef.current = null
+    function clearTimer() {
+      if (timerRef.current) {
+        clearTimeout(timerRef.current)
+        timerRef.current = null
+      }
     }
+
+    clearTimer()
 
     if (show) {
       startedAtRef.current = Date.now()
@@ -27,12 +29,7 @@ export default function LoadingOverlay({
         timerRef.current = null
       }, 0)
 
-      return () => {
-        if (timerRef.current) {
-          clearTimeout(timerRef.current)
-          timerRef.current = null
-        }
-      }
+      return clearTimer
     }
 
     const startedAt = startedAtRef.current
@@ -43,12 +40,7 @@ export default function LoadingOverlay({
         timerRef.current = null
       }, 0)
 
-      return () => {
-        if (timerRef.current) {
-          clearTimeout(timerRef.current)
-          timerRef.current = null
-        }
-      }
+      return clearTimer
     }
 
     const elapsed = Date.now() - startedAt
@@ -60,12 +52,7 @@ export default function LoadingOverlay({
       timerRef.current = null
     }, remaining)
 
-    return () => {
-      if (timerRef.current) {
-        clearTimeout(timerRef.current)
-        timerRef.current = null
-      }
-    }
+    return clearTimer
   }, [show, minDuration])
 
   if (!show && !visible) {
@@ -78,25 +65,75 @@ export default function LoadingOverlay({
       role="status"
       aria-live="polite"
     >
-      <div className="flex min-w-[280px] max-w-[380px] flex-col items-center rounded-2xl border border-white/20 bg-white/95 px-8 py-7 text-center shadow-2xl">
+      <div className="bf-loading-scene">
+        <div className="bf-loading-shadow" />
+
         <img
           src={imageSrc}
           alt="BuyFlow ERP 로딩"
-          className="h-48 w-48 object-contain"
+          className="bf-loading-image"
         />
-
-        <p className="mt-2 text-[16px] font-bold text-slate-900">{message}</p>
-
-        <p className="mt-1 text-[13px] leading-5 text-slate-500">
-          {description}
-        </p>
-
-        <div className="mt-4 flex gap-2">
-          <span className="h-2 w-2 animate-bounce rounded-full bg-blue-600 [animation-delay:-0.3s]" />
-          <span className="h-2 w-2 animate-bounce rounded-full bg-blue-600 [animation-delay:-0.15s]" />
-          <span className="h-2 w-2 animate-bounce rounded-full bg-blue-600" />
-        </div>
       </div>
+
+      <style jsx>{`
+        .bf-loading-scene {
+          position: relative;
+          width: 280px;
+          height: 280px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          overflow: visible;
+        }
+
+        .bf-loading-image {
+          width: 220px;
+          height: 220px;
+          display: block;
+          object-fit: contain;
+          transform-origin: center center;
+          filter: drop-shadow(0 18px 26px rgba(15, 23, 42, 0.24));
+          animation: bfLoadingFloat 1.8s ease-in-out infinite;
+          will-change: transform;
+        }
+
+        .bf-loading-shadow {
+          position: absolute;
+          left: 50%;
+          bottom: 36px;
+          width: 150px;
+          height: 28px;
+          border-radius: 9999px;
+          background: rgba(15, 23, 42, 0.24);
+          filter: blur(18px);
+          transform: translateX(-50%);
+          animation: bfLoadingShadow 1.8s ease-in-out infinite;
+        }
+
+        @keyframes bfLoadingFloat {
+          0%,
+          100% {
+            transform: translateY(0) scale(1);
+          }
+
+          50% {
+            transform: translateY(-8px) scale(1.03);
+          }
+        }
+
+        @keyframes bfLoadingShadow {
+          0%,
+          100% {
+            transform: translateX(-50%) scaleX(0.92);
+            opacity: 0.2;
+          }
+
+          50% {
+            transform: translateX(-50%) scaleX(1.08);
+            opacity: 0.34;
+          }
+        }
+      `}</style>
     </div>
   )
 }

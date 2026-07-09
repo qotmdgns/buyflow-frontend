@@ -460,14 +460,7 @@ export default function ApprovalManagement({ approvalId }) {
   }, [loading])
 
   if (loading || approvalLoadingVisible) {
-    return (
-      <LoadingOverlay
-        show
-        minDuration={1000}
-        message="승인 요청 정보를 불러오는 중입니다."
-        description="구매요청 기본정보, 품목, 승인 이력을 확인하고 있습니다."
-      />
-    )
+    return <LoadingOverlay show minDuration={1000} />
   }
 
   if (error || !approval) {
@@ -487,18 +480,7 @@ export default function ApprovalManagement({ approvalId }) {
 
   return (
     <div className="w-full">
-      <LoadingOverlay
-        show={Boolean(submittingAction)}
-        minDuration={1000}
-        message={
-          submittingAction === "APPROVE"
-            ? "승인 처리 중입니다."
-            : submittingAction === "REJECT"
-              ? "반려 처리 중입니다."
-              : "요청 취소 처리 중입니다."
-        }
-        description="승인 상태와 결재 이력을 갱신하고 있습니다."
-      />
+      <LoadingOverlay show={Boolean(submittingAction)} minDuration={1000} />
       <header className="mb-3 flex flex-wrap items-start justify-between gap-3">
         <div>
           <div className="flex items-center gap-2">

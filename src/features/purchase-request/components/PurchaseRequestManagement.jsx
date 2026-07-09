@@ -87,14 +87,6 @@ export default function PurchaseRequestManagement() {
       <LoadingOverlay
         show={loading || isDownloading || Boolean(deletingRequestId)}
         minDuration={1000}
-        message={
-          deletingRequestId
-            ? "구매요청을 삭제하는 중입니다."
-            : isDownloading
-              ? "구매요청 엑셀 파일을 생성하는 중입니다."
-              : "구매요청 목록을 불러오는 중입니다."
-        }
-        description="요청 상태, 우선순위, 승인 진행 데이터를 확인하고 있습니다."
       />
       <header className="bf-page-header">
         <div>

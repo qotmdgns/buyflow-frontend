@@ -124,16 +124,6 @@ export default function ProductManagement() {
           loading || isDeletingProduct || isExcelDownloading || isDetailLoading
         }
         minDuration={1000}
-        message={
-          isDeletingProduct
-            ? "품목을 삭제하는 중입니다."
-            : isExcelDownloading
-              ? "품목 엑셀 파일을 생성하는 중입니다."
-              : isDetailLoading
-                ? "품목 상세 정보를 불러오는 중입니다."
-                : "품목 목록을 불러오는 중입니다."
-        }
-        description="품목 기준정보와 공급/재고 연계 데이터를 확인하고 있습니다."
       />
       <header className="bf-page-header">
         <div>

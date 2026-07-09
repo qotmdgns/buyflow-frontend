@@ -54,13 +54,7 @@ export default function PurchaseRequestEdit({ requestId }) {
   }
 
   if (loading) {
-    return (
-      <LoadingOverlay
-        minDuration={1000}
-        message="구매요청 수정 정보를 불러오는 중입니다."
-        description="기존 요청 정보와 선택 가능한 품목 데이터를 확인하고 있습니다."
-      />
-    )
+    return <LoadingOverlay minDuration={1000} />
   }
 
   if (error) {
@@ -81,12 +75,7 @@ export default function PurchaseRequestEdit({ requestId }) {
 
   return (
     <div className="w-full">
-      <LoadingOverlay
-        show={isSubmitting}
-        minDuration={1000}
-        message="구매요청 수정 내용을 저장하는 중입니다."
-        description="수정된 품목, 수량, 요청 사유를 반영하고 있습니다."
-      />
+      <LoadingOverlay show={isSubmitting} minDuration={1000} />
       <header className="mb-3 flex flex-wrap items-start justify-between gap-3">
         <div>
           <h1 className="text-[22px] font-bold tracking-tight text-slate-900">
