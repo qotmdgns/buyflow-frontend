@@ -108,15 +108,13 @@ export function getPurchaseOrderStatusLabel(status) {
 }
 
 export function canEditPurchaseOrder(status) {
-  return status === "CONFIRMED"
+  return canEditPurchaseOrderCoreFields(status)
 }
 
 export const canEditPurchaseOrderCoreFields = (status) => {
-  if (!status) return true; // status가 없으면 편집 허용
+  if (!status) return false;
 
-  const editableStatuses = ["DRAFT", "PENDING", "CONFIRMED"]; // 필요에 따라 추가
-
-  return editableStatuses.includes(status);
+  return ["PENDING", "CONFIRMED"].includes(status.toUpperCase());
 };
 
 export function canCancelPurchaseOrder(status) {
@@ -124,12 +122,11 @@ export function canCancelPurchaseOrder(status) {
 }
 
 export function calculatePurchaseOrderLine(item = {}) {
-  // orderQuantity 또는 quantity 둘 다 지원
   const quantity = Number(item.orderQuantity ?? item.quantity ?? 0)
   const unitPrice = Number(item.unitPrice ?? 0)
 
   const supplyAmount = quantity * unitPrice
-  const vatAmount = Math.round(supplyAmount * 0.1)   // 또는 Math.floor
+  const vatAmount = Math.round(supplyAmount * 0.1)
 
   return {
     supplyAmount,
@@ -197,7 +194,7 @@ export function createPurchaseOrderForm(detail = null) {
     supplierManagerName: detail.supplierManagerName ?? "",
     supplierContact: detail.supplierContact ?? "",
     orderManager: detail.orderManager ?? detail.userName ?? detail.manager ?? "",
-    orderedAt: detail.orderedAt ?? "",
+    orderedAt: getTodayString(),
     expectedReceiptFrom: detail.expectedReceiptFrom ?? "",
     expectedReceiptTo: detail.expectedReceiptTo ?? "",
     warehouseCode: String(detail.warehouseCode ?? ""),
@@ -208,7 +205,7 @@ export function createPurchaseOrderForm(detail = null) {
 
 export function validatePurchaseOrderForm(form, items, isEditMode = false) {
   const errors = {}
-  const today = getTodayString();
+  const baseDate = form.orderedAt || getTodayString();
 
   if (!form.requestId && !isEditMode) {
     errors.requestId = "승인 완료된 구매 요청을 선택하세요."
@@ -226,10 +223,10 @@ export function validatePurchaseOrderForm(form, items, isEditMode = false) {
     errors.expectedReceipt = "입고 예정일 범위를 입력하세요."
   } else if (form.expectedReceiptFrom > form.expectedReceiptTo) {
     errors.expectedReceipt = "입고 예정일 범위를 확인하세요."
-  } else if (form.expectedReceiptFrom < today) {
-    errors.expectedReceipt = "입고 예정일은 오늘 이후로 설정해야 합니다."
-  } else if (form.expectedReceiptTo < today) {
-    errors.expectedReceipt= "입고 예정일은 오늘 이후로 설정해야 합니다."
+  } else if (form.expectedReceiptFrom < baseDate) {
+    errors.expectedReceipt = "입고 예정일은 발주일 이후여야 합니다."
+  } else if (form.expectedReceiptTo < baseDate) {
+    errors.expectedReceipt= "입고 예정일은 발주일 이후여야 합니다."
   }
 
   if (!form.warehouseCode) {

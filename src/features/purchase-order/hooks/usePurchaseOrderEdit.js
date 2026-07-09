@@ -201,9 +201,9 @@ export default function usePurchaseOrderEdit(orderId) {
     };
   }, [items])
 
-  const editable = canEditPurchaseOrder(form.status)
+  const editable = canEditPurchaseOrderCoreFields(form.status)
 
-  const editableCoreFields = form.status === "CONFIRMED";
+  const editableCoreFields = canEditPurchaseOrderCoreFields(form.status)
 
   function updateForm(name, value) {
     setForm((currentForm) => ({
@@ -272,11 +272,14 @@ export default function usePurchaseOrderEdit(orderId) {
   }
 
   async function saveOrder(status) {
-    const currentStatus = form.status || detailState.detail?.status || detailState.detail?.orderStatus;
+    const currentStatus = form.status || 
+                          detailState.detail?.status || 
+                          detailState.detail?.orderStatus;
 
-    if (!canEditPurchaseOrder(currentStatus)) {
+    if (!canEditPurchaseOrderCoreFields(currentStatus)) {
       setSubmitError("현재 상태에서는 발주 정보를 수정할 수 없습니다.");
-      return null;
+
+      return ["PENDING", "CONFIRMED"].includes(status);
     }
 
     const nextForm = {
@@ -322,10 +325,6 @@ export default function usePurchaseOrderEdit(orderId) {
       
       setIsSuccess(true);
       setSuccessMessage("발주 정보가 성공적으로 수정되었습니다.");
-
-      setTimeout(() => {
-        window.location.href = "/purchase-orders";
-      }, 1500);
       return result;
     
     } catch (requestError) {

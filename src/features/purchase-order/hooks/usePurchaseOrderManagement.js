@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useCallback, useEffect, useState } from "react"
 
 import {
   cancelPurchaseOrder,
@@ -30,13 +30,13 @@ export default function usePurchaseOrderManagement() {
   })
 
   const [orders, setOrders] = useState([])
+
   const [pagination, setPagination] = useState(
     DEFAULT_PURCHASE_ORDER_PAGINATION,
   )
 
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState("")
-  const [refreshKey, setRefreshKey] = useState(0)
 
   const [selectedOrderId, setSelectedOrderId] = useState(null)
   const [cancelTarget, setCancelTarget] = useState(null)
@@ -45,12 +45,51 @@ export default function usePurchaseOrderManagement() {
 
   const detailState = usePurchaseOrderDetail(selectedOrderId)
 
+  const reloadOrders = useCallback(async () => {
+    setLoading(true)
+    setError("")
+
+    try {
+      const params = {
+        ...appliedFilters,
+        page: pagination.page - 1,
+        size: pagination.size,
+      }
+
+      const data = await fetchPurchaseOrders(params)
+
+      const list = data.content || data.items || data || []
+
+      setOrders(list)
+
+      setPagination(prev => ({
+          ...prev,
+          size: data.size ?? prev.size,
+          totalElements:
+              data.totalElements ??
+              data.pagination?.totalElements ??
+              list.length,
+          totalPages:
+              data.totalPages ??
+              data.pagination?.totalPages ??
+              1,
+      }))
+    } catch (e) {
+      setError(e.message || "발주 목록을 불러오지 못했습니다.")
+    } finally {
+      setLoading(false)
+    }
+  }, [
+    appliedFilters,
+    pagination.page,
+    pagination.size,
+  ])
+
   useEffect(() => {
     let ignore = false
 
     async function loadFormOptions() {
       try {
-        // 성공하는 URL로 바꿔보세요
         const response = await fetchPurchaseOrderFormOptions()
 
         if (ignore) {
@@ -72,48 +111,11 @@ export default function usePurchaseOrderManagement() {
   }, [])
 
   useEffect(() => {
-    let ignore = false
-
-    async function loadOrders() {
-      setLoading(true)
-      setError("")
-
-      try {
-        const params = {
-          ...appliedFilters,
-          page: pagination.page - 1,
-          size: pagination.size,
-        };
-
-        const data = await fetchPurchaseOrders(params);
-
-        if (!ignore) {
-          const realContentList = data.content || data.items || data || [];
-          setOrders(realContentList);
-
-          const newPagination = {
-            page: data.number !== undefined ? data.number + 1 : pagination.page,
-            size: data.size ?? data.pagination?.size ?? pagination.size,
-            totalElements: data.totalElements ?? data.pagination?.totalElements ?? realContentList.length,
-            totalPages: data.totalPages ?? data.pagination?.totalPages ?? 1,
-          };
-
-          setPagination(newPagination);
-        }
-      } catch (requestError) {
-        console.error("목록 로드 실패:", requestError);
-        if (!ignore) {
-          setError(requestError.message || "발주 목록을 불러오지 못했습니다.");
-        }
-      } finally {
-        if (!ignore) setLoading(false);
-      }
+    const load = async () => {
+      await reloadOrders()
     }
-
-    loadOrders();
-
-    return () => { ignore = true; };
-  }, [appliedFilters, refreshKey, pagination.page, pagination.size]);
+      load()
+  }, [reloadOrders])
 
   function updateFilter(name, value) {
     setDraftFilters((currentFilters) => ({
@@ -125,8 +127,8 @@ export default function usePurchaseOrderManagement() {
   function searchOrders(event) {
     event.preventDefault()
 
-    setPagination((currentPagination) => ({
-      ...currentPagination,
+    setPagination(prev => ({
+      ...prev,
       page: 1,
     }))
 
@@ -136,13 +138,23 @@ export default function usePurchaseOrderManagement() {
   function resetFilters() {
     setDraftFilters({ ...DEFAULT_PURCHASE_ORDER_FILTERS })
     setAppliedFilters({ ...DEFAULT_PURCHASE_ORDER_FILTERS })
+
+    setPagination(prev => ({
+      ...prev,
+      page: 1,
+    }))
   }
 
   function movePage(page) {
-    const newPage = Math.max(1, Math.min(page, pagination.totalPages || 1));
+    const newPage = Math.max(
+      1, 
+      Math.min(page, pagination.totalPages || 1),
+    )
 
-    setPagination(prev => ({ ...prev, page: newPage }));
-    setRefreshKey(k => k + 1);   // 강제 트리거
+    setPagination(prev => ({ 
+      ...prev, 
+      page: newPage 
+    }))
   }
 
   function changePageSize(size) {
@@ -150,8 +162,7 @@ export default function usePurchaseOrderManagement() {
       ...prev,
       page: 1,
       size: Number(size),
-    }));
-    setRefreshKey(k => k + 1);
+    }))
   }
 
   function openDetail(order) {
@@ -173,20 +184,24 @@ export default function usePurchaseOrderManagement() {
   }
 
   async function confirmCancel(cancelReason) {
-    if (!cancelTarget) {
-      return
-    }
+    if (!cancelTarget) return
 
     setCanceling(true)
 
     try {
-      await cancelPurchaseOrder(cancelTarget.id || cancelTarget.orderId, cancelReason)
+      await cancelPurchaseOrder(
+        cancelTarget.id || cancelTarget.orderId, 
+        cancelReason,
+      )
 
       setCancelTarget(null)
       setSelectedOrderId(null)
-      setRefreshKey((currentKey) => currentKey + 1)
-    } catch (requestError) {
-      setCancelError(requestError.message || "발주 취소 처리에 실패했습니다.")
+
+      await reloadOrders()
+    } catch (e) {
+      setCancelError(
+        e.message || "발주 취소 처리에 실패했습니다."
+      )
     } finally {
       setCanceling(false)
     }
