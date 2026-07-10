@@ -26,11 +26,7 @@ function createApiUrl(path) {
 function isAllFilterValue(value) {
   const text = String(value ?? "").trim()
 
-  if (!text || text.includes("전체")) {
-    return true
-  }
-
-  return text.includes("?꾩껜")
+  return !text || text.includes("전체")
 }
 
 function createReceiptQuery(params = {}) {
@@ -117,7 +113,7 @@ function createDetailedReceipt(receipt) {
       itemName:
         index === 0
           ? primaryItemName
-          : `${primaryItemName} 연계 품목 ${index + 1}`,
+          : `${primaryItemName} 관련 품목 ${index + 1}`,
 
       specification: index === 0 ? "표준 규격" : `규격-${index + 1}`,
       unit: "EA",
@@ -384,7 +380,7 @@ export async function fetchReceiptFormOptions() {
     })
 
     if (!response.ok) {
-      throw new Error("입고 등록 기준정보를 불러오지 못했습니다.")
+      throw new Error("입고 등록 기준 정보를 불러오지 못했습니다.")
     }
 
     return response.json()
@@ -491,7 +487,7 @@ export async function createReceiptReceipt(payload, attachment = null) {
     })
 
     if (!response.ok) {
-      throw new Error("입고 내역을 등록하지 못했습니다.")
+      throw new Error("입고 이력을 등록하지 못했습니다.")
     }
 
     return response.json()

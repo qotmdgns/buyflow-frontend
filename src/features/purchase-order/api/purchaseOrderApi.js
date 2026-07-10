@@ -1,5 +1,4 @@
 import { apiFetch } from "@/lib/api/fetchClient"
-import { getAccessToken } from "@/utils/authStorage" 
 import {
   mockApprovedPurchaseRequests,
   mockPurchaseOrders,
@@ -27,14 +26,6 @@ function clone(value) {
   return structuredClone(value)
 }
 
-function createApiUrl(path) {
-  const baseUrl = (
-    process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:8080"
-  ).replace(/\/$/, "")
-  const refinedPath = path.startsWith("/") ? path : `/${path}`
-
-  return `${baseUrl}${refinedPath}`
-}
 
 function toFrontendPurchaseOrder(data) {
   if (!data) return null
@@ -183,18 +174,11 @@ function createRecord(payload, id, attachment, previousOrder = null) {
 export async function fetchPurchaseOrders(params = {}) {
   if (!USE_MOCK) {
     const query = new URLSearchParams(params)
-    const response = await fetch(
-      createApiUrl(
-        `/api/orders` + (query.toString() ? `?${query.toString()}` : ""),
-      ),
-      { cache: "no-store" },
+    const path = "/api/orders" + (query.toString() ? "?" + query.toString() : "")
+
+    return normalizePurchaseOrderResponse(
+      await apiFetch(path, { cache: "no-store" }),
     )
-
-    if (!response.ok) {
-      throw new Error("발주 목록을 불러오지 못했습니다.")
-    }
-
-    return normalizePurchaseOrderResponse(await response.json())
   }
 
   await wait(120)
@@ -241,15 +225,9 @@ export async function fetchPurchaseOrders(params = {}) {
 
 export async function fetchPurchaseOrderFilterOptions() {
   if (!USE_MOCK) {
-    const response = await fetch(createApiUrl("/api/orders/filter-options"), {
+    return apiFetch("/api/orders/filter-options", {
       cache: "no-store",
     })
-
-    if (!response.ok) {
-      throw new Error("발주 검색 조건을 불러오지 못했습니다.")
-    }
-
-    return response.json()
   }
 
   return {
@@ -269,15 +247,9 @@ export async function fetchPurchaseOrderFilterOptions() {
 
 export async function fetchPurchaseOrderFormOptions() {
   if (!USE_MOCK) {
-    const response = await fetch(createApiUrl("/api/orders/form-options"), {
+    return apiFetch("/api/orders/form-options", {
       cache: "no-store",
     })
-
-    if (!response.ok) {
-      throw new Error("발주 등록 기준정보를 불러오지 못했습니다.")
-    }
-
-    return response.json()
   }
 
   return {
@@ -290,24 +262,16 @@ export async function fetchPurchaseOrderFormOptions() {
 
 export async function fetchPurchaseOrderById(orderId) {
   if (!USE_MOCK) {
-    const response = await fetch(createApiUrl(`/api/orders/${orderId}`), {
+    const rawData = await apiFetch("/api/orders/" + orderId, {
       cache: "no-store",
     })
-
-    if (!response.ok) {
-      throw new Error("발주 상세 정보를 불러오지 못했습니다.")
-    }
-
-    const rawData = await response.json()
 
     return toFrontendPurchaseOrder(rawData)
   }
 
   await wait(100)
 
-  const order = purchaseOrderDatabase.find(
-    (item) => item.id === Number(orderId),
-  )
+  const order = purchaseOrderDatabase.find((item) => item.id === Number(orderId))
 
   if (!order) {
     throw new Error("발주 정보를 찾을 수 없습니다.")
@@ -320,30 +284,19 @@ export async function createPurchaseOrder(payload, attachment = null) {
   if (!USE_MOCK) {
     const formData = new FormData()
 
-    // 1-1. JSON 데이터를 Blob으로 감싸서 'data'라는 이름으로 포장
     formData.append(
       "data",
-      new Blob([JSON.stringify(payload)], { type: "application/json; charset=utf-8" })
+      new Blob([JSON.stringify(payload)], { type: "application/json; charset=utf-8" }),
     )
 
-    // 1-2. 첨부파일이 있으면 'file'이라는 이름으로 포장
     if (attachment) {
       formData.append("file", attachment)
     }
 
-    // 1-3. POST 메서드로 FormData 전송 (Content-Type 헤더는 비워둬야 합니다!)
-    const response = await fetch(createApiUrl("/api/orders"), {
-  method: "POST",
-  headers: { Authorization: `Bearer ${getAccessToken()}` },   // ← 추가 (Content-Type은 넣지 말 것)
-  body: formData,
-})
-
-    if (!response.ok) {
-      const errorText = await response.text().catch(() => "발주를 등록하지 못했습니다.")
-      throw new Error(errorText || "발주를 등록하지 못했습니다.")
-    }
-
-    return response.json()
+    return apiFetch("/api/orders", {
+      method: "POST",
+      body: formData,
+    })
   }
 
   await wait(200)
@@ -366,92 +319,61 @@ export async function createPurchaseOrder(payload, attachment = null) {
 
 export async function updatePurchaseOrder(orderId, payload, attachment = null) {
   if (!USE_MOCK) {
-    const formData = new FormData();
+    const formData = new FormData()
 
-    // 1-1. JSON 데이터를 Blob으로 감싸서 'data'라는 이름으로 포장 (백엔드의 @RequestPart("data")와 매핑)
     formData.append(
       "data",
-      new Blob([JSON.stringify(payload)], { type: "application/json; charset=utf-8" })
+      new Blob([JSON.stringify(payload)], { type: "application/json; charset=utf-8" }),
     )
 
-    // 1-2. 첨부파일이 있으면 'file'이라는 이름으로 포장 (백엔드의 @RequestPart("file")과 매핑)
     if (attachment) {
-      formData.append("file", attachment);
+      formData.append("file", attachment)
     }
 
-    // 1-3. Fetch 요청 발송 (Content-Type 헤더 제거 필수!)
-    const response = await fetch(createApiUrl(`/api/orders/${orderId}`), {
-  method: "PUT",
-  headers: { Authorization: `Bearer ${getAccessToken()}` },   // ← 추가
-  body: formData,
-});
-
-    if (!response.ok) {
-      // 서버에서 보내주는 에러 메시지가 있다면 그걸 보여주도록 개선
-      const errorText = await response.text().catch(() => "발주 정보를 수정하지 못했습니다.");
-      throw new Error(errorText || "발주 정보를 수정하지 못했습니다.");
-    }
-
-    return response.json();
+    return apiFetch("/api/orders/" + orderId, {
+      method: "PUT",
+      body: formData,
+    })
   }
 
-  await wait(200);
+  await wait(200)
 
   const previousOrder = purchaseOrderDatabase.find(
-    (item) => item.id === Number(orderId)
-  );
+    (item) => item.id === Number(orderId),
+  )
 
   if (!previousOrder) {
-    throw new Error("수정할 발주 정보를 찾을 수 없습니다.");
+    throw new Error("수정할 발주 정보를 찾을 수 없습니다.")
   }
 
-  if (!canEditPurchaseOrder(previousOrder.status)) {
-    throw new Error("현재 상태에서는 발주 정보를 수정할 수 없습니다.");
+  if (!canEditPurchaseOrder(previousOrder)) {
+    throw new Error("현재 상태에서는 발주 정보를 수정할 수 없습니다.")
   }
-
-  const safePayload = canEditPurchaseOrderCoreFields(previousOrder.status)
-    ? payload
-    : {
-        ...previousOrder,
-        expectedReceiptFrom: payload.expectedReceiptFrom,
-        expectedReceiptTo: payload.expectedReceiptTo,
-        warehouseCode: payload.warehouseCode,
-        memo: payload.memo,
-        status: previousOrder.status,
-        items: previousOrder.items,
-      };
 
   const updatedOrder = createRecord(
-    safePayload,
-    Number(orderId),
+    {
+      ...previousOrder,
+      ...payload,
+      orderNumber: previousOrder.orderNumber,
+    },
+    previousOrder.id,
     attachment,
-    previousOrder
-  );
+    previousOrder,
+  )
 
-  purchaseOrderDatabase = purchaseOrderDatabase.map((order) =>
-    order.orderId === Number(orderId) ? updatedOrder : order
-  );
+  purchaseOrderDatabase = purchaseOrderDatabase.map((item) =>
+    item.id === Number(orderId) ? updatedOrder : item,
+  )
 
-  return clone(updatedOrder);
+  return clone(updatedOrder)
 }
 
 export async function cancelPurchaseOrder(orderId, cancelReason) {
   if (!USE_MOCK) {
-    const response = await fetch(
-      createApiUrl(`/api/orders/${orderId}/cancel`),
-      {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        Authorization: `Bearer ${getAccessToken()}`,
-        body: JSON.stringify({ cancelReason }),
-      },
-    )
-
-    if (!response.ok) {
-      throw new Error("발주 취소 처리에 실패했습니다.")
-    }
-
-    return response.json()
+    return apiFetch("/api/orders/" + orderId + "/cancel", {
+      method: "PATCH",
+      body: JSON.stringify({ cancelReason }),
+    })
   }
 
   await wait(180)
@@ -464,19 +386,21 @@ export async function cancelPurchaseOrder(orderId, cancelReason) {
     throw new Error("취소할 발주 정보를 찾을 수 없습니다.")
   }
 
-  if (!canCancelPurchaseOrder(previousOrder.status)) {
+  if (!canCancelPurchaseOrder(previousOrder)) {
     throw new Error("현재 상태에서는 발주를 취소할 수 없습니다.")
   }
 
   const canceledOrder = {
     ...previousOrder,
     status: "CANCELED",
-    cancelReason: cancelReason.trim(),
-    canceledAt: `${getTodayString()} ${new Date().toTimeString().slice(0, 5)}`,
+    cancelReason,
+    updatedAt: getTodayString(),
+    canEdit: false,
+    canCancel: false,
   }
 
-  purchaseOrderDatabase = purchaseOrderDatabase.map((order) =>
-    order.orderId === Number(orderId) ? canceledOrder : order,
+  purchaseOrderDatabase = purchaseOrderDatabase.map((item) =>
+    item.id === Number(orderId) ? canceledOrder : item,
   )
 
   return clone(canceledOrder)

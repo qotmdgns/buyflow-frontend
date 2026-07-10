@@ -38,6 +38,7 @@ export default function ProductDetailModal({
   onEdit,
   onDelete,
   isDeleting = false,
+  canManage = false,
 }) {
   useEffect(() => {
     if (!open) {
@@ -182,6 +183,7 @@ export default function ProductDetailModal({
         </div>
 
         <footer className="flex items-center justify-between border-t border-slate-200 px-5 py-3">
+          {canManage ? (
           <button
             type="button"
             onClick={handleDeleteClick}
@@ -191,6 +193,9 @@ export default function ProductDetailModal({
             <Trash2 size={13} />
             {isDeleting ? "삭제 중..." : "삭제"}
           </button>
+          ) : (
+            <div />
+          )}
 
           <div className="flex items-center gap-2">
             <button
@@ -202,6 +207,7 @@ export default function ProductDetailModal({
               닫기
             </button>
 
+            {canManage && (
             <button
               type="button"
               onClick={() => onEdit(product)}
@@ -211,6 +217,7 @@ export default function ProductDetailModal({
               <Pencil size={13} />
               수정하기
             </button>
+            )}
           </div>
         </footer>
       </section>

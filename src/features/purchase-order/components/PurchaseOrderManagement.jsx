@@ -18,8 +18,7 @@ import {
   getPurchaseOrderStatusLabel,
   getPurchaseOrderStatusMeta,
 } from "@/features/purchase-order/utils/purchaseOrderUtils"
-import { getApiUrl } from "@/lib/api/fetchClient"
-import { getAccessToken } from "@/utils/authStorage"
+import { downloadFileWithAuth } from "@/lib/api/downloadClient"
 import { hasPermission } from "@/utils/permissions"
 
 const INPUT_CLASS_NAME =
@@ -134,43 +133,7 @@ export default function PurchaseOrderManagement() {
 
   async function handleDownload() {
     try {
-      const token = getAccessToken()
-
-      const response = await fetch(getApiUrl("/api/orders/excel"), {
-        method: "GET",
-        headers: {
-          Accept:
-            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-          ...(token ? { Authorization: `Bearer ${token}` } : {}),
-        },
-        // 만약 JWT 토큰 등 인증 헤더가 필요하다면 아래 주석을 풀고 넣어주세요.
-        // headers: {
-        //   "Authorization": `Bearer ${localStorage.getItem('token')}`
-        // }
-      })
-
-      if (!response.ok) {
-        throw new Error("엑셀 파일을 생성하지 못했습니다.")
-      }
-
-      // 1. 서버에서 넘어온 바이너리 데이터(Excel)를 Blob 객체로 변환
-      const blob = await response.blob()
-
-      // 2. 브라우저 메모리에 가상의 다운로드 URL 생성
-      const url = window.URL.createObjectURL(blob)
-      const link = document.createElement("a")
-
-      link.href = url
-      // 3. 다운로드될 파일명 강제 지정 (서버 헤더를 읽어와도 되지만 프론트에서 고정하는 것이 편합니다)
-      link.download = `발주 목록_${new Date().toISOString().slice(0, 10).replace(/-/g, "")}.xlsx`
-
-      // 4. 링크를 클릭한 것처럼 이벤트를 발생시켜 다운로드 실행
-      document.body.appendChild(link)
-      link.click()
-      link.remove()
-
-      // 5. 메모리 누수 방지를 위해 가상 URL 해제
-      window.URL.revokeObjectURL(url)
+      await downloadFileWithAuth("/api/orders/excel", "purchase-orders.xlsx")
     } catch (error) {
       console.error("엑셀 다운로드 중 오류가 발생했습니다.", error)
       window.alert("엑셀 파일을 다운로드하지 못했습니다.")

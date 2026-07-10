@@ -197,18 +197,9 @@ export async function fetchStockFilterOptions() {
     return stockFilterOptions
   }
 
-  const response = await fetch(
-    `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/inventories/filter-options`,
-    {
-      cache: "no-store",
-    },
-  )
-
-  if (!response.ok) {
-    throw new Error("재고 이력 필터 옵션을 불러오지 못했습니다.")
-  }
-
-  return response.json()
+  return apiFetch("/api/inventories/filter-options", {
+    cache: "no-store",
+  })
 }
 export async function fetchInventories(params = {}) {
   if (USE_MOCK) {
@@ -221,16 +212,11 @@ export async function fetchInventories(params = {}) {
 
   console.log("stock-query", query.toString())
 
-  const response = await fetch(
-    `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/inventories?${query.toString()}`,
-    { cache: "no-store" },
+  return normalizeListResponse(
+    await apiFetch("/api/inventories?" + query.toString(), {
+      cache: "no-store",
+    }),
   )
-
-  if (!response.ok) {
-    throw new Error("재고 현황을 불러오지 못했습니다.")
-  }
-
-  return normalizeListResponse(await response.json())
 }
 
 export async function fetchStockHistories(params = {}) {
@@ -243,16 +229,11 @@ export async function fetchStockHistories(params = {}) {
   const query = buildQuery(params)
   console.log("query =", query.toString())
 
-  const response = await fetch(
-    `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/stock-history?${query.toString()}`,
-    { cache: "no-store" },
+  return normalizeListResponse(
+    await apiFetch("/api/stock-history?" + query.toString(), {
+      cache: "no-store",
+    }),
   )
-
-  if (!response.ok) {
-    throw new Error("재고 이력을 불러오지 못했습니다.")
-  }
-
-  return normalizeListResponse(await response.json())
 }
 
 export async function createStockAdjustment(payload) {

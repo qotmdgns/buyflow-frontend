@@ -21,6 +21,8 @@ import {
 } from "lucide-react"
 
 import useReceiptManagement from "@/features/receipt/hooks/useReceiptManagement"
+import { downloadFileWithAuth } from "@/lib/api/downloadClient"
+import { useAuth } from "@/features/auth/context/AuthContext"
 
 import {
   createPageNumbers,
@@ -141,6 +143,11 @@ function PageIconButton({ children, label, disabled, onClick }) {
 
 export default function ReceiptManagement() {
   const router = useRouter()
+  const { user, isAuthReady } = useAuth()
+  const canWriteReceipts =
+    isAuthReady &&
+    (user?.roles?.includes("ADMIN") ||
+      user?.permissions?.includes("receipts.write"))
 
   const {
     draftFilters,
@@ -179,11 +186,13 @@ export default function ReceiptManagement() {
     pagination.totalElements,
   )
 
-  function handleDownload() {
-    window.open(
-      `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/receipts/excel`,
-      "_blank",
-    )
+  async function handleDownload() {
+    try {
+      await downloadFileWithAuth("/api/receipts/excel", "receipts.xlsx")
+    } catch (error) {
+      console.error("receipt excel download failed", error)
+      window.alert("엑셀 파일을 다운로드하지 못했습니다.")
+    }
   }
 
   function handlePrintReport() {
@@ -201,6 +210,7 @@ export default function ReceiptManagement() {
           </p>
         </div>
 
+        {canWriteReceipts && (
         <div className="flex items-center gap-2">
           <Link
             href="/receipts/new"
@@ -210,6 +220,7 @@ export default function ReceiptManagement() {
             신규 입고 등록
           </Link>
         </div>
+        )}
       </header>
 
       <form

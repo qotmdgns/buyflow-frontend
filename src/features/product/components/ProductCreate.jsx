@@ -2,10 +2,33 @@
 
 import { Save } from "lucide-react"
 import { useRouter } from "next/navigation"
+import { useEffect } from "react"
+import { useAuth } from "@/features/auth/context/AuthContext"
 import ProductBasicForm from "@/features/product/components/ProductBasicForm"
 import useProductCreate from "@/features/product/hooks/useProductCreate"
 
 export default function ProductCreate({ mode = "create", productId = null }) {
+  const router = useRouter()
+  const { user, isAuthReady } = useAuth()
+  const canManageProducts =
+    isAuthReady &&
+    (user?.roles?.includes("ADMIN") ||
+      user?.permissions?.includes("products.write"))
+
+  useEffect(() => {
+    if (isAuthReady && !canManageProducts) {
+      router.replace("/products")
+    }
+  }, [canManageProducts, isAuthReady, router])
+
+  if (!isAuthReady || !canManageProducts) {
+    return null
+  }
+
+  return <ProductCreateForm mode={mode} productId={productId} />
+}
+
+function ProductCreateForm({ mode = "create", productId = null }) {
   const router = useRouter()
 
   const { form, isSaving, filterOptions, updateForm, saveProduct } =

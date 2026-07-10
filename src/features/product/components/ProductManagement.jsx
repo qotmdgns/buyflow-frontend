@@ -9,12 +9,19 @@ import ProductPagination from "@/features/product/components/ProductPagination"
 import ProductSearchForm from "@/features/product/components/ProductSearchForm"
 import ProductTable from "@/features/product/components/ProductTable"
 import useProductManagement from "@/features/product/hooks/useProductManagement"
+import { useAuth } from "@/features/auth/context/AuthContext"
 import {
   deleteProduct,
   downloadProductExcel,
 } from "@/features/product/api/productApi"
 
 export default function ProductManagement() {
+  const { user, isAuthReady } = useAuth()
+  const canManageProducts =
+    isAuthReady &&
+    (user?.roles?.includes("ADMIN") ||
+      user?.permissions?.includes("products.write"))
+
   const {
     draftFilters,
     appliedFilters,
@@ -39,11 +46,19 @@ export default function ProductManagement() {
   const [isDeletingProduct, setIsDeletingProduct] = useState(false)
 
   function openProductEdit(product) {
+    if (!canManageProducts) {
+      return
+    }
+
     closeProductDetail()
     router.push(`/products/${product.id}/edit`)
   }
 
   async function handleDeleteProduct(product) {
+    if (!canManageProducts) {
+      return
+    }
+
     if (!product?.id) {
       window.alert("삭제할 품목 정보를 찾을 수 없습니다.")
       return
@@ -142,10 +157,12 @@ export default function ProductManagement() {
               엑셀 다운로드
             </button>
 
+            {canManageProducts && (
             <Link href="/products/new" className="bf-btn bf-btn-primary">
               <Plus size={14} />
               신규 품목 등록
             </Link>
+            )}
           </div>
         </div>
 
@@ -156,6 +173,7 @@ export default function ProductManagement() {
             error={error}
             onDetail={openProductDetail}
             onEdit={openProductEdit}
+            canEdit={canManageProducts}
           />
 
           <ProductPagination
@@ -174,6 +192,7 @@ export default function ProductManagement() {
         onEdit={openProductEdit}
         onDelete={handleDeleteProduct}
         isDeleting={isDeletingProduct}
+        canManage={canManageProducts}
       />
     </div>
   )

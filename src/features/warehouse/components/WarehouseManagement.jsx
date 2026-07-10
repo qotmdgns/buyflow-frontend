@@ -8,8 +8,15 @@ import WarehouseSearchForm from "@/features/warehouse/components/WarehouseSearch
 import WarehouseTable from "@/features/warehouse/components/WarehouseTable"
 import useWarehouseManagement from "@/features/warehouse/hooks/useWarehouseManagement"
 import { downloadWarehouseCsv } from "@/features/warehouse/utils/warehouseManagementUtils"
+import { useAuth } from "@/features/auth/context/AuthContext"
 
 export default function WarehouseManagement() {
+  const { user, isAuthReady } = useAuth()
+  const canManageWarehouses =
+    isAuthReady &&
+    (user?.roles?.includes("ADMIN") ||
+      user?.permissions?.includes("warehouses.write"))
+
   const {
     draftFilters,
     filterOptions,
@@ -77,6 +84,7 @@ export default function WarehouseManagement() {
               엑셀 내보내기
             </button>
 
+            {canManageWarehouses && (
             <button
               type="button"
               onClick={openWarehouseCreate}
@@ -85,6 +93,7 @@ export default function WarehouseManagement() {
               <Plus size={14} />
               신규 창고 등록
             </button>
+            )}
           </div>
         </div>
 
@@ -119,6 +128,7 @@ export default function WarehouseManagement() {
         onClose={closeWarehouseDetail}
         onEdit={openWarehouseEdit}
         onDelete={removeWarehouse}
+        canManage={canManageWarehouses}
       />
     </div>
   )

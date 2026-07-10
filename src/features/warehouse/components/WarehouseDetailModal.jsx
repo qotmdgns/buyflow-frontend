@@ -45,6 +45,7 @@ export default function WarehouseDetailModal({
   onClose,
   onEdit,
   onDelete,
+  canManage = false,
 }) {
   useEffect(() => {
     if (!open) {
@@ -166,7 +167,7 @@ export default function WarehouseDetailModal({
         </div>
 
         <footer className="flex flex-wrap justify-between gap-2 border-t border-slate-200 bg-slate-50 px-5 py-3">
-          {isActive ? (
+          {canManage && isActive ? (
             <button
               type="button"
               onClick={() => onDelete(warehouse)}
@@ -187,7 +188,7 @@ export default function WarehouseDetailModal({
             >
               닫기
             </button>
-            {isActive && (
+            {canManage && isActive && (
               <button
                 type="button"
                 onClick={() => onEdit(warehouse)}

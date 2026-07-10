@@ -86,8 +86,7 @@ export default function useReceiptManagement() {
       try {
   console.log("loadReceipts 실행됨")
   console.log("activeTab =", activeTab)
-  console.log("draftFilters =", draftFilters)
-  console.log("appliedFilters =", appliedFilters)
+      console.log("appliedFilters =", appliedFilters)
 
   const data = await fetchReceipts({
     ...appliedFilters,

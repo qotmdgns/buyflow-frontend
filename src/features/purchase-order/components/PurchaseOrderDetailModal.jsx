@@ -9,6 +9,7 @@ import {
   formatWon,
   getPurchaseOrderStatusMeta,
 } from "@/features/purchase-order/utils/purchaseOrderUtils"
+import { downloadFileWithAuth } from "@/lib/api/downloadClient"
 
 export default function PurchaseOrderDetailModal({
   order,
@@ -18,6 +19,20 @@ export default function PurchaseOrderDetailModal({
   onEdit,
   onCancel,
 }) {
+  const handleAttachmentDownload = async () => {
+    if (!order?.attachmentId) return
+
+    try {
+      await downloadFileWithAuth(
+        "/api/orders/attachments/download/" + order.attachmentId,
+        order.attachmentName || "purchase-order-attachment",
+      )
+    } catch (error) {
+      console.error("첨부파일 다운로드 중 오류가 발생했습니다.", error)
+      window.alert("첨부파일을 다운로드하지 못했습니다.")
+    }
+  }
+
   if (loading) {
     return (
       <div className="fixed inset-0 z-[70] flex items-center justify-center bg-slate-900/45">
@@ -162,17 +177,15 @@ export default function PurchaseOrderDetailModal({
             </h3>
             <div>
               {order.attachmentId ? (
-                <a
-                  // TODO: 환경에 맞게 다운로드 API 엔드포인트 URL을 맞춰주세요!
-                  href={`http://localhost:8080/api/orders/attachments/download/${order.attachmentId}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
+                <button
+                  type="button"
+                  onClick={handleAttachmentDownload}
                   className="inline-flex items-center gap-2 rounded-md border border-slate-200 bg-white px-3 py-2 text-[13px] font-medium text-blue-600 shadow-sm transition hover:bg-blue-50 hover:border-blue-300"
                 >
                   <span className="underline decoration-dotted underline-offset-2">
                     {order.attachmentName || "첨부파일 다운로드"}
                   </span>
-                </a>
+                </button>
               ) : (
                 <p className="text-[13px] text-slate-400 italic leading-relaxed">
                   등록된 첨부파일이 없습니다.

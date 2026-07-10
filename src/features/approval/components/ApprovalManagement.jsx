@@ -14,6 +14,7 @@ import {
 } from "lucide-react"
 
 import useApprovalManagement from "@/features/approval/hooks/useApprovalManagement"
+import { downloadFileWithAuth } from "@/lib/api/downloadClient"
 
 import {
   calculateTotalAmount,
@@ -212,14 +213,19 @@ function ItemTableCard({ items }) {
 }
 
 function AttachmentCard({ attachments }) {
-  function downloadAttachment(attachment) {
+  async function downloadAttachment(attachment) {
     if (!attachment.downloadUrl) {
       window.alert("백엔드 연동 후 첨부파일 다운로드 URL을 연결합니다.")
 
       return
     }
 
-    window.open(attachment.downloadUrl, "_blank", "noopener,noreferrer")
+    try {
+      await downloadFileWithAuth(attachment.downloadUrl, attachment.fileName)
+    } catch (error) {
+      console.error("첨부파일 다운로드 중 오류가 발생했습니다.", error)
+      window.alert("첨부파일을 다운로드하지 못했습니다.")
+    }
   }
 
   return (

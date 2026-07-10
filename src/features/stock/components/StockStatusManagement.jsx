@@ -13,11 +13,11 @@ import StockPagination from "@/features/stock/components/StockPagination"
 import StockSummaryCards from "@/features/stock/components/StockSummaryCards"
 import useStockStatusManagement from "@/features/stock/hooks/useStockStatusManagement"
 import {
-  downloadStockCsv,
   formatNumber,
   getStockStatus,
   STOCK_TABLE_HEADERS,
 } from "@/features/stock/utils/stockManagementUtils"
+import { downloadFileWithAuth } from "@/lib/api/downloadClient"
 import useClientReady from "@/utils/useClientReady"
 import { hasPermission } from "@/utils/permissions"
 
@@ -202,12 +202,9 @@ export default function StockStatusManagement({ initialFilters = {} }) {
 
           <button
             type="button"
-            onClick={() => {
-              window.open(
-                `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/inventories/excel`,
-                "_blank",
-              )
-            }}
+            onClick={() =>
+              downloadFileWithAuth("/api/inventories/excel", "inventories.xlsx")
+            }
             className="flex h-9 items-center gap-1.5 rounded-md border border-slate-200 bg-white px-3 text-[13px] font-semibold text-slate-600 transition hover:bg-slate-50"
           >
             <Download size={14} />

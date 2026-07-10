@@ -4,7 +4,7 @@ import { useEffect, useState } from "react"
 
 import {
   cancelPurchaseOrder,
-  fetchPurchaseOrderFormOptions,
+  fetchPurchaseOrderFilterOptions,
   fetchPurchaseOrders,
 } from "@/features/purchase-order/api/purchaseOrderApi"
 
@@ -51,7 +51,7 @@ export default function usePurchaseOrderManagement() {
     async function loadFormOptions() {
       try {
         // 성공하는 URL로 바꿔보세요
-        const response = await fetchPurchaseOrderFormOptions()
+        const response = await fetchPurchaseOrderFilterOptions()
 
         if (ignore) {
           return

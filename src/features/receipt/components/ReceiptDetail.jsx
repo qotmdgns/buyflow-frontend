@@ -4,6 +4,8 @@ import Link from "next/link"
 import { ArrowLeft, Download, FileText, Plus } from "lucide-react"
 
 import useReceiptDetail from "@/features/receipt/hooks/useReceiptDetail"
+import { downloadFileWithAuth } from "@/lib/api/downloadClient"
+import { useAuth } from "@/features/auth/context/AuthContext"
 
 import {
   formatNumber,
@@ -38,23 +40,6 @@ function StatusBadge({ status }) {
   )
 }
 
-function resolveDownloadUrl(downloadUrl) {
-  if (!downloadUrl) {
-    return ""
-  }
-
-  if (/^https?:\/\//i.test(downloadUrl)) {
-    return downloadUrl
-  }
-
-  const baseUrl = (process.env.NEXT_PUBLIC_API_BASE_URL ?? "").replace(
-    /\/$/,
-    "",
-  )
-
-  return `${baseUrl}${downloadUrl.startsWith("/") ? "" : "/"}${downloadUrl}`
-}
-
 function LoadingState() {
   return (
     <div className="rounded-lg border border-slate-200 bg-white px-4 py-16 text-center text-[14px] text-slate-400 shadow-sm">
@@ -80,8 +65,22 @@ function ErrorState({ error, onReload }) {
 }
 
 export default function ReceiptDetail({ receiptId, mode = "receipt" }) {
+  const { user, isAuthReady } = useAuth()
+  const canWriteReceipts =
+    isAuthReady &&
+    (user?.roles?.includes("ADMIN") ||
+      user?.permissions?.includes("receipts.write"))
   const { receipt, loading, error, reload } =
     useReceiptDetail(receiptId, mode)
+
+  async function handleAttachmentDownload(attachment) {
+    try {
+      await downloadFileWithAuth(attachment.downloadUrl, attachment.fileName)
+    } catch (error) {
+      console.error("receipt attachment download failed", error)
+      window.alert("첨부파일을 다운로드하지 못했습니다.")
+    }
+  }
     
   if (loading) {
     return <LoadingState />
@@ -114,7 +113,7 @@ export default function ReceiptDetail({ receiptId, mode = "receipt" }) {
             목록
           </Link>
 
-          {receipt.remainingQuantity > 0 && (
+          {canWriteReceipts && receipt.remainingQuantity > 0 && (
             <Link
               href={`/receipts/new?receiptId=${receipt.id}`}
               className="flex h-10 items-center gap-1.5 rounded-md bg-blue-600 px-4 text-[13px] font-semibold text-white hover:bg-blue-700"
@@ -292,15 +291,16 @@ export default function ReceiptDetail({ receiptId, mode = "receipt" }) {
                     ) : (
                       history.attachments.map((attachment) =>
                         attachment.downloadUrl ? (
-                          <a
+                          <button
                             key={attachment.id}
-                            href={resolveDownloadUrl(attachment.downloadUrl)}
+                            type="button"
+                            onClick={() => handleAttachmentDownload(attachment)}
                             className="flex items-center gap-1 text-blue-600 hover:underline"
                           >
                             <FileText size={13} />
                             {attachment.fileName}
                             <Download size={12} />
-                          </a>
+                          </button>
                         ) : (
                           <span
                             key={attachment.id}

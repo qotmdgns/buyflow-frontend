@@ -32,7 +32,7 @@ function TableMessage({ children, isError = false }) {
   )
 }
 
-function ProductRow({ product, onDetail, onEdit }) {
+function ProductRow({ product, onDetail, onEdit, canEdit = false }) {
   function openDetail() {
     onDetail(product)
   }
@@ -121,6 +121,7 @@ function ProductRow({ product, onDetail, onEdit }) {
             상세
           </button>
 
+          {canEdit && (
           <button
             type="button"
             onClick={handleEditClick}
@@ -128,6 +129,7 @@ function ProductRow({ product, onDetail, onEdit }) {
           >
             수정
           </button>
+          )}
         </div>
       </td>
     </tr>
@@ -140,6 +142,7 @@ export default function ProductTable({
   error,
   onDetail,
   onEdit,
+  canEdit = false,
 }) {
   function renderTableBody() {
     if (loading) {
@@ -160,6 +163,7 @@ export default function ProductTable({
         product={product}
         onDetail={onDetail}
         onEdit={onEdit}
+        canEdit={canEdit}
       />
     ))
   }
