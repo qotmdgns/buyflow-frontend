@@ -6,6 +6,7 @@ import PurchaseItemSelectModal from "@/features/purchase-request/components/Purc
 import PurchaseRequestBasicForm from "@/features/purchase-request/components/PurchaseRequestBasicForm"
 import PurchaseRequestItemSection from "@/features/purchase-request/components/PurchaseRequestItemSection"
 import usePurchaseRequestCreate from "@/features/purchase-request/hooks/usePurchaseRequestCreate"
+import LoadingOverlay from "@/components/common/LoadingOverlay"
 
 export default function PurchaseRequestCreate() {
   const router = useRouter()
@@ -16,6 +17,7 @@ export default function PurchaseRequestCreate() {
     requestItems,
     totalAmount,
     isSubmitting,
+    isProductLoading,
     isItemModalOpen,
     draftSelectedIds,
     keyword,
@@ -50,6 +52,10 @@ export default function PurchaseRequestCreate() {
 
   return (
     <div className="w-full">
+      <LoadingOverlay
+        show={loading || isDownloading || Boolean(deletingRequestId)}
+        minDuration={1000}
+      />
       <header className="mb-3 flex flex-wrap items-start justify-between gap-3">
         <div>
           <h1 className="text-[22px] font-bold tracking-tight text-slate-900">

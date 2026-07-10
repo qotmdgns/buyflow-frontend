@@ -58,7 +58,10 @@ export default function usePurchaseOrderEdit(orderId) {
   const [submitError, setSubmitError] = useState("")
   const [submitting, setSubmitting] = useState(false)
 
-useEffect(() => {
+  const [isSuccess, setIsSuccess] = useState(false)
+  const [successMessage, setSuccessMessage] = useState("")
+
+  useEffect(() => {
     let ignore = false
 
     async function loadPurchaseOrderEditData() {
@@ -138,7 +141,7 @@ useEffect(() => {
           supplierManager: sManager,              
           supplierManagerName: sManager,
           supplierContactName: sManager,          
-          orderManager: detail.orderManager || "관리자", 
+          orderManager: detail.orderManager || "", 
           
           supplierContact: sContact,
           supplierContactNo: sContact,
@@ -198,9 +201,9 @@ useEffect(() => {
     };
   }, [items])
 
-  const editable = canEditPurchaseOrder(form.status)
+  const editable = canEditPurchaseOrderCoreFields(form.status)
 
-  const editableCoreFields = form.status === "CONFIRMED";
+  const editableCoreFields = canEditPurchaseOrderCoreFields(form.status)
 
   function updateForm(name, value) {
     setForm((currentForm) => ({
@@ -250,25 +253,34 @@ useEffect(() => {
     )
   }
 
-function removeItem(requestItemId) {
+  function removeItem(requestItemId) {
 
-  if (!editableCoreFields) {
-    return;
+    if (!editableCoreFields) {
+      return;
+    }
+
+    setItems((currentItems) => {
+      const filtered = currentItems.filter(
+        (item) => Number(item.requestItemId) !== Number(requestItemId)
+      );
+      return filtered;
+    });
   }
-
-  setItems((currentItems) => {
-    const filtered = currentItems.filter(
-      (item) => Number(item.requestItemId) !== Number(requestItemId)
-    );
-    return filtered;
-  });
-}
 
   function changeAttachment(event) {
     setAttachment(event.target.files?.[0] ?? null)
   }
 
   async function saveOrder(status) {
+    const currentStatus = form.status || 
+                          detailState.detail?.status || 
+                          detailState.detail?.orderStatus;
+
+    if (!canEditPurchaseOrderCoreFields(currentStatus)) {
+      setSubmitError("현재 상태에서는 발주 정보를 수정할 수 없습니다.");
+
+      return ["PENDING", "CONFIRMED"].includes(status);
+    }
 
     const nextForm = {
       ...form,
@@ -285,6 +297,7 @@ function removeItem(requestItemId) {
     setErrors({})
     setSubmitError("")
     setSubmitting(true)
+    setIsSuccess(false)
 
     try {
       const bffRequestPayload = {
@@ -296,8 +309,8 @@ function removeItem(requestItemId) {
         requestId: form.requestId ? Number(form.requestId) : null,
         requestNumber: form.requestNumber || "",
         requestTitle: form.requestTitle || "",
-        expectedReceiptFrom: form.expectedReceiptFrom || "",
-        expectedReceiptTo: form.expectedReceiptTo || "",
+        expectedReceiptFrom: form.expectedReceiptFrom || null,
+        expectedReceiptTo: form.expectedReceiptTo || null,
         warehouseCode: form.warehouseCode || "",
         memo: form.memo || "",
         items: items.map((item) => ({
@@ -308,7 +321,12 @@ function removeItem(requestItemId) {
         }))
       };
 
-      return await updatePurchaseOrder(orderId, bffRequestPayload, attachment)
+      const result = await updatePurchaseOrder(orderId, bffRequestPayload, attachment)
+      
+      setIsSuccess(true);
+      setSuccessMessage("발주 정보가 성공적으로 수정되었습니다.");
+      return result;
+    
     } catch (requestError) {
       setSubmitError(requestError.message || "발주 정보를 수정하지 못했습니다.")
       return null
@@ -326,6 +344,8 @@ function removeItem(requestItemId) {
     errors,
     submitError,
     submitting,
+    isSuccess,
+    successMessage,
     summary,
     editable,
     editableCoreFields,

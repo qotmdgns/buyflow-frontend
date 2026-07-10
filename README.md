@@ -2,7 +2,7 @@
 
 구매 요청부터 승인, 발주, 입고, 검수, 재고 관리까지 물류 업무의 흐름을 통합적으로 관리하기 위한 **웹 기반 ERP 시스템**입니다.
 
-BuyFlow ERP는 **Next.js 프론트엔드**, **Spring Boot 백엔드**, **Oracle Autonomous Database**를 기반으로 구현했으며, 최종적으로 **Docker, OCIR, Oracle Kubernetes Engine(OKE), NGINX Ingress, GitHub Actions**를 이용한 CI/CD 자동화 배포까지 완료했습니다.
+BuyFlow ERP는 **Next.js 프론트엔드**, **Spring Boot 백엔드**, **Oracle Autonomous Database**를 기반으로 구현했으며, 최종적으로 **Docker, GHCR, Oracle Kubernetes Engine(OKE), NGINX Ingress, GitHub Actions**를 이용한 CI/CD 자동화 배포까지 완료했습니다.
 
 ---
 
@@ -196,15 +196,15 @@ BuyFlow-ERP
 
 ### DevOps / Infra
 
-| 구분               | 기술                                       |
-| ------------------ | ------------------------------------------ |
-| Container          | Docker                                     |
-| Container Registry | Oracle Cloud Infrastructure Registry, OCIR |
-| Orchestration      | Oracle Kubernetes Engine, OKE              |
-| Ingress            | NGINX Ingress Controller                   |
-| TLS                | cert-manager, Let's Encrypt                |
-| CI/CD              | GitHub Actions                             |
-| Domain             | nip.io                                     |
+| 구분               | 기술                            |
+| ------------------ | ------------------------------- |
+| Container          | Docker                          |
+| Container Registry | GitHub Container Registry, GHCR |
+| Orchestration      | Oracle Kubernetes Engine, OKE   |
+| Ingress            | NGINX Ingress Controller        |
+| TLS                | cert-manager, Let's Encrypt     |
+| CI/CD              | GitHub Actions                  |
+| Domain             | nip.io                          |
 
 ---
 
@@ -231,7 +231,7 @@ namespace: buyflow
   ├── ConfigMap
   ├── Secret
   ├── Oracle Wallet Secret
-  └── OCIR Pull Secret
+  └── GHCR Pull Secret
   ↓
 Oracle Autonomous Database
 ```
@@ -257,7 +257,7 @@ backend-buyflow/main checkout
 Frontend Docker image build
 Backend Docker image build
         ↓
-OCIR에 Docker image push
+GHCR에 Docker image push
         ↓
 Kubernetes manifest image tag 갱신
         ↓
@@ -273,8 +273,8 @@ Ingress / LoadBalancer / Domain 연결
 ### 배포 이미지 예시
 
 ```text
-yny.ocir.io/ax0caghpplpc/buyflow-frontend:<timestamp>
-yny.ocir.io/ax0caghpplpc/buyflow-backend:<timestamp>
+ghcr.io/ax0caghpplpc/buyflow-frontend:<timestamp>
+ghcr.io/ax0caghpplpc/buyflow-backend:<timestamp>
 ```
 
 ### GitHub Actions workflow 구성
@@ -283,7 +283,7 @@ yny.ocir.io/ax0caghpplpc/buyflow-backend:<timestamp>
 | ---------------- | ------------------------------------ | ------------------------------------------------ |
 | frontend-buyflow | .github/workflows/trigger-deploy.yml | master push 시 buyflow-deploy 배포 workflow 호출 |
 | backend-buyflow  | .github/workflows/trigger-deploy.yml | main push 시 buyflow-deploy 배포 workflow 호출   |
-| buyflow-deploy   | .github/workflows/deploy.yml         | Docker build, OCIR push, OKE 배포 수행           |
+| buyflow-deploy   | .github/workflows/deploy.yml         | Docker build, GHCR push, OKE 배포 수행           |
 
 ### buyflow-deploy workflow 주요 작업
 
@@ -292,14 +292,14 @@ yny.ocir.io/ax0caghpplpc/buyflow-backend:<timestamp>
 2. frontend-buyflow/master checkout
 3. backend-buyflow/main checkout
 4. OCI CLI 설치 및 인증
-5. OCIR 로그인
+5. GHCR 로그인
 6. Frontend Docker image build
 7. Backend Docker image build
-8. OCIR push
+8. GHCR push
 9. OKE kubeconfig 생성
 10. Kubernetes Secret 생성 또는 갱신
 11. Oracle Wallet Secret 생성 또는 갱신
-12. OCIR imagePullSecret 생성 또는 갱신
+12. GHCR imagePullSecret 생성 또는 갱신
 13. ConfigMap 및 Service 적용
 14. Deployment manifest image tag 갱신
 15. Deployment apply
@@ -328,7 +328,7 @@ common
   ├── ConfigMap
   ├── Secret
   ├── Oracle Wallet Secret
-  └── OCIR imagePullSecret
+  └── GHCR imagePullSecret
 
 external access
   └── NGINX Ingress
@@ -619,8 +619,8 @@ JWT_EXPIRATION_MINUTES=120
 
 ```text
 CHECKOUT_TOKEN
-OCIR_USERNAME
-OCIR_AUTH_TOKEN
+GHCR_USERNAME
+GHCR_PAT
 OCI_USER_OCID
 OCI_TENANCY_OCID
 OCI_FINGERPRINT
@@ -673,13 +673,13 @@ kubectl rollout status deployment/buyflow-backend -n buyflow
 ### 김호현
 
 - 역할: 팀장
-- 담당 영역: DevOps, 대시보드, 품목관리, 구매 요청, 승인 관리
+- 담당 영역: 대시보드, 품목관리, 구매 요청, 승인 관리, DevOps
 - 구현 내용:
-  - Docker, Kubernetes, OKE, OCIR, GitHub Actions CI/CD 구성
   - 대시보드 화면 및 데이터 연동
   - 품목관리 기능 구현
   - 구매 요청 등록, 구매 요청 목록, 구매 요청 상세, 구매 요청 수정/삭제 구현
   - 승인/반려 처리 및 요청 상태 관리 구현
+  - Docker, Kubernetes, OKE, GHCR, GitHub Actions CI/CD 구성
 
 ### 하지수
 
@@ -724,7 +724,7 @@ Backend API 구현: 완료
 Oracle DB 연동: 완료
 Oracle Wallet 연동: 완료
 Docker 이미지 빌드: 완료
-OCIR 이미지 push: 완료
+GHCR 이미지 push: 완료
 Kubernetes manifest 구성: 완료
 OKE 배포: 완료
 NGINX Ingress 연결: 완료

@@ -1,6 +1,6 @@
 "use client"
 
-import { useRouter } from "next/navigation"
+import { useRouter, useSearchParams } from "next/navigation"
 
 import PurchaseOrderForm from "@/features/purchase-order/components/PurchaseOrderForm"
 
@@ -10,6 +10,10 @@ export default function PurchaseOrderEdit({ orderId }) {
   const router = useRouter()
 
   const purchaseOrder = usePurchaseOrderEdit(orderId)
+
+  const searchParams= useSearchParams()
+  
+  const mode = searchParams.get("mode") || "edit"
 
   if (purchaseOrder.detailState.loading) {
     return (
@@ -49,7 +53,7 @@ export default function PurchaseOrderEdit({ orderId }) {
 
   return (
     <PurchaseOrderForm
-      mode="edit"
+      mode={mode}
       {...purchaseOrder}
       onChange={purchaseOrder.updateForm}
       onChangeSupplier={purchaseOrder.changeSupplier}

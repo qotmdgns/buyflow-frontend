@@ -1,5 +1,6 @@
 "use client"
 
+import { useState } from "react"
 import Link from "next/link"
 import { Download, Plus } from "lucide-react"
 import PurchaseRequestPagination from "@/features/purchase-request/components/PurchaseRequestPagination"
@@ -9,6 +10,7 @@ import PurchaseRequestTable from "@/features/purchase-request/components/Purchas
 import usePurchaseRequestManagement from "@/features/purchase-request/hooks/usePurchaseRequestManagement"
 import { downloadPurchaseRequestExcel } from "@/features/purchase-request/api/purchaseRequestApi"
 import { hasPermission } from "@/utils/permissions"
+import LoadingOverlay from "@/components/common/LoadingOverlay"
 
 export default function PurchaseRequestManagement() {
   const {
@@ -29,7 +31,12 @@ export default function PurchaseRequestManagement() {
     deleteRequest,
   } = usePurchaseRequestManagement()
 
+  const [isDownloading, setIsDownloading] = useState(false)
+  const [deletingRequestId, setDeletingRequestId] = useState(null)
+
   async function handleDownload() {
+    setIsDownloading(true)
+
     try {
       const { blob, fileName } = await downloadPurchaseRequestExcel()
 
@@ -47,6 +54,8 @@ export default function PurchaseRequestManagement() {
     } catch (error) {
       console.error("엑셀 다운로드 중 오류가 발생했습니다.", error)
       window.alert(error.message || "엑셀 파일을 다운로드하지 못했습니다.")
+    } finally {
+      setIsDownloading(false)
     }
   }
 
@@ -60,17 +69,25 @@ export default function PurchaseRequestManagement() {
       return
     }
 
+    setDeletingRequestId(request.id)
+
     try {
       await deleteRequest(request.id)
       window.alert("구매 요청을 삭제했습니다.")
     } catch (error) {
       console.error("구매 요청 삭제 중 오류가 발생했습니다.", error)
       window.alert(error.message || "구매 요청 삭제에 실패했습니다.")
+    } finally {
+      setDeletingRequestId(null)
     }
   }
 
   return (
     <div className="w-full">
+      <LoadingOverlay
+        show={loading || isDownloading || Boolean(deletingRequestId)}
+        minDuration={1000}
+      />
       <header className="bf-page-header">
         <div>
           <p className="bf-page-eyebrow">PURCHASE REQUEST</p>

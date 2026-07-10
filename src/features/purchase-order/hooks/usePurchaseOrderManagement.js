@@ -19,38 +19,32 @@ export default function usePurchaseOrderManagement() {
   const [draftFilters, setDraftFilters] = useState(
     DEFAULT_PURCHASE_ORDER_FILTERS,
   )
-
   const [appliedFilters, setAppliedFilters] = useState(
     DEFAULT_PURCHASE_ORDER_FILTERS,
   )
-
   const [filterOptions, setFilterOptions] = useState({
     suppliers: [],
     statuses: [],
   })
-
   const [orders, setOrders] = useState([])
   const [pagination, setPagination] = useState(
     DEFAULT_PURCHASE_ORDER_PAGINATION,
   )
-
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState("")
-  const [refreshKey, setRefreshKey] = useState(0)
-
   const [selectedOrderId, setSelectedOrderId] = useState(null)
   const [cancelTarget, setCancelTarget] = useState(null)
   const [canceling, setCanceling] = useState(false)
   const [cancelError, setCancelError] = useState("")
+  const [refreshKey, setRefreshKey] = useState(0)
 
   const detailState = usePurchaseOrderDetail(selectedOrderId)
 
   useEffect(() => {
     let ignore = false
 
-    async function loadFormOptions() {
+    async function loadFilterOptions() {
       try {
-        // 성공하는 URL로 바꿔보세요
         const response = await fetchPurchaseOrderFilterOptions()
 
         if (ignore) {
@@ -58,17 +52,23 @@ export default function usePurchaseOrderManagement() {
         }
 
         setFilterOptions({
-          suppliers: response.suppliers || [],
-          statuses: response.statuses || ["전체", "PENDING", "APPROVED", "CANCELLED"],
-        });
-      } catch (err) {
-        console.error("폼 옵션 로딩 실패:", err);
+          suppliers: response?.suppliers || [],
+          statuses:
+            response?.statuses ||
+            ["전체", "PENDING", "APPROVED", "CANCELLED"],
+        })
+      } catch (e) {
+        if (!ignore) {
+          console.error("발주 검색 옵션 로딩 실패:", e)
+        }
       }
     }
 
-    void loadFormOptions()
+    void loadFilterOptions()
 
-    return () => { ignore = true; }
+    return () => {
+      ignore = true
+    }
   }, [])
 
   useEffect(() => {
@@ -83,37 +83,46 @@ export default function usePurchaseOrderManagement() {
           ...appliedFilters,
           page: pagination.page - 1,
           size: pagination.size,
-        };
-
-        const data = await fetchPurchaseOrders(params);
-
-        if (!ignore) {
-          const realContentList = data.content || data.items || data || [];
-          setOrders(realContentList);
-
-          const newPagination = {
-            page: data.number !== undefined ? data.number + 1 : pagination.page,
-            size: data.size ?? data.pagination?.size ?? pagination.size,
-            totalElements: data.totalElements ?? data.pagination?.totalElements ?? realContentList.length,
-            totalPages: data.totalPages ?? data.pagination?.totalPages ?? 1,
-          };
-
-          setPagination(newPagination);
         }
-      } catch (requestError) {
-        console.error("목록 로드 실패:", requestError);
+
+        const data = await fetchPurchaseOrders(params)
+
+        if (ignore) {
+          return
+        }
+
+        const list = data.content || data.items || data || []
+
+        setOrders(list)
+        setPagination((previousPagination) => ({
+          ...previousPagination,
+          size: data.size ?? previousPagination.size,
+          totalElements:
+            data.totalElements ??
+            data.pagination?.totalElements ??
+            list.length,
+          totalPages:
+            data.totalPages ??
+            data.pagination?.totalPages ??
+            1,
+        }))
+      } catch (e) {
         if (!ignore) {
-          setError(requestError.message || "발주 목록을 불러오지 못했습니다.");
+          setError(e.message || "발주 목록을 불러오지 못했습니다.")
         }
       } finally {
-        if (!ignore) setLoading(false);
+        if (!ignore) {
+          setLoading(false)
+        }
       }
     }
 
-    loadOrders();
+    void loadOrders()
 
-    return () => { ignore = true; };
-  }, [appliedFilters, refreshKey, pagination.page, pagination.size]);
+    return () => {
+      ignore = true
+    }
+  }, [appliedFilters, pagination.page, pagination.size, refreshKey])
 
   function updateFilter(name, value) {
     setDraftFilters((currentFilters) => ({
@@ -124,34 +133,36 @@ export default function usePurchaseOrderManagement() {
 
   function searchOrders(event) {
     event.preventDefault()
-
-    setPagination((currentPagination) => ({
-      ...currentPagination,
+    setPagination((previousPagination) => ({
+      ...previousPagination,
       page: 1,
     }))
-
     setAppliedFilters({ ...draftFilters })
   }
 
   function resetFilters() {
     setDraftFilters({ ...DEFAULT_PURCHASE_ORDER_FILTERS })
     setAppliedFilters({ ...DEFAULT_PURCHASE_ORDER_FILTERS })
+    setPagination((previousPagination) => ({
+      ...previousPagination,
+      page: 1,
+    }))
   }
 
   function movePage(page) {
-    const newPage = Math.max(1, Math.min(page, pagination.totalPages || 1));
-
-    setPagination(prev => ({ ...prev, page: newPage }));
-    setRefreshKey(k => k + 1);   // 강제 트리거
+    const newPage = Math.max(1, Math.min(page, pagination.totalPages || 1))
+    setPagination((previousPagination) => ({
+      ...previousPagination,
+      page: newPage,
+    }))
   }
 
   function changePageSize(size) {
-    setPagination(prev => ({
-      ...prev,
+    setPagination((previousPagination) => ({
+      ...previousPagination,
       page: 1,
       size: Number(size),
-    }));
-    setRefreshKey(k => k + 1);
+    }))
   }
 
   function openDetail(order) {
@@ -178,15 +189,19 @@ export default function usePurchaseOrderManagement() {
     }
 
     setCanceling(true)
+    setCancelError("")
 
     try {
-      await cancelPurchaseOrder(cancelTarget.id || cancelTarget.orderId, cancelReason)
+      await cancelPurchaseOrder(
+        cancelTarget.id || cancelTarget.orderId,
+        cancelReason,
+      )
 
       setCancelTarget(null)
       setSelectedOrderId(null)
       setRefreshKey((currentKey) => currentKey + 1)
-    } catch (requestError) {
-      setCancelError(requestError.message || "발주 취소 처리에 실패했습니다.")
+    } catch (e) {
+      setCancelError(e.message || "발주 취소 처리에 실패했습니다.")
     } finally {
       setCanceling(false)
     }

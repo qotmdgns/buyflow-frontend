@@ -12,19 +12,25 @@ import {
   getTodayString,
 } from "@/features/purchase-request/utils/purchaseRequestUtils"
 
-const INITIAL_FORM = {
-  requestNumber: "",
-  requester: "",
-  department: "",
-  requestDate: getTodayString(),
-  expectedDate: "",
-  title: "",
-  urgency: "일반",
-  reason: "",
+function createInitialForm() {
+  return {
+    requestNumber: "",
+    requester: "",
+    department: "",
+    requestDate: getTodayString(),
+    expectedDate: "",
+    title: "",
+    urgency: "일반",
+    reason: "",
+  }
 }
 
-const LOCKED_FORM_FIELDS = new Set(["requestNumber", "requester", "department"])
-
+const LOCKED_FORM_FIELDS = new Set([
+  "requestNumber",
+  "requester",
+  "department",
+  "requestDate",
+])
 const FIXED_ITEM_REMARK = "해당 사항 없음"
 
 function getCurrentRequestorId(user) {
@@ -43,11 +49,12 @@ export default function usePurchaseRequestCreate() {
   const { user, isAuthReady } = useAuth()
 
   const [products, setProducts] = useState([])
-  const [form, setForm] = useState(INITIAL_FORM)
+  const [form, setForm] = useState(() => createInitialForm())
   const [requestItems, setRequestItems] = useState([])
   const [attachment, setAttachment] = useState(null)
 
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [isProductLoading, setIsProductLoading] = useState(true)
   const submittingRef = useRef(false)
 
   const [isItemModalOpen, setIsItemModalOpen] = useState(false)
@@ -86,14 +93,35 @@ export default function usePurchaseRequestCreate() {
   )
 
   useEffect(() => {
-    fetchPurchaseRequestProducts()
-      .then((data) => {
-        setProducts(Array.isArray(data) ? data : (data.items ?? []))
-      })
-      .catch((error) => {
+    let ignore = false
+
+    async function loadProducts() {
+      setIsProductLoading(true)
+
+      try {
+        const data = await fetchPurchaseRequestProducts()
+
+        if (!ignore) {
+          setProducts(Array.isArray(data) ? data : (data.items ?? []))
+        }
+      } catch (error) {
         console.error("품목 목록 조회 실패:", error)
-        window.alert("품목 목록을 불러오지 못했습니다.")
-      })
+
+        if (!ignore) {
+          window.alert("품목 목록을 불러오지 못했습니다.")
+        }
+      } finally {
+        if (!ignore) {
+          setIsProductLoading(false)
+        }
+      }
+    }
+
+    loadProducts()
+
+    return () => {
+      ignore = true
+    }
   }, [])
 
   const totalAmount = useMemo(
@@ -270,7 +298,10 @@ export default function usePurchaseRequestCreate() {
       return
     }
 
-    const currentForm = formWithLoginUser
+    const currentForm = {
+      ...formWithLoginUser,
+      requestDate: getTodayString(),
+    }
 
     const requiredFields = [
       { label: "요청자", value: currentForm.requester },
@@ -287,6 +318,16 @@ export default function usePurchaseRequestCreate() {
 
     if (emptyField) {
       window.alert(`${emptyField.label} 항목을 입력해 주세요.`)
+      return
+    }
+
+    if (currentForm.expectedDate < currentForm.requestDate) {
+      window.alert("희망 입고일은 요청일보다 이전일 수 없습니다.")
+      return
+    }
+
+    if (requestItems.length === 0) {
+      window.alert("구매 요청 품목을 1개 이상 추가해 주세요.")
       return
     }
 
@@ -339,6 +380,7 @@ export default function usePurchaseRequestCreate() {
     requestItems,
     totalAmount,
     isSubmitting,
+    isProductLoading,
     isItemModalOpen,
     draftSelectedIds,
     keyword,

@@ -6,6 +6,7 @@ import { useEffect } from "react"
 import { useAuth } from "@/features/auth/context/AuthContext"
 import ProductBasicForm from "@/features/product/components/ProductBasicForm"
 import useProductCreate from "@/features/product/hooks/useProductCreate"
+import LoadingOverlay from "@/components/common/LoadingOverlay"
 
 export default function ProductCreate({ mode = "create", productId = null }) {
   const router = useRouter()
@@ -31,7 +32,7 @@ export default function ProductCreate({ mode = "create", productId = null }) {
 function ProductCreateForm({ mode = "create", productId = null }) {
   const router = useRouter()
 
-  const { form, isSaving, filterOptions, updateForm, saveProduct } =
+  const { form, isSaving, isLoading, filterOptions, updateForm, saveProduct } =
     useProductCreate({
       mode,
       productId,
@@ -49,6 +50,7 @@ function ProductCreateForm({ mode = "create", productId = null }) {
 
   return (
     <div className="w-full">
+      <LoadingOverlay show={isLoading || isSaving} minDuration={1000} />
       <header className="mb-3">
         <h1 className="text-[22px] font-bold text-slate-900">
           {isEditMode ? "품목 수정" : "품목 등록"}

@@ -24,7 +24,12 @@ const INITIAL_FORM = {
   reason: "",
 }
 
-const LOCKED_FORM_FIELDS = new Set(["requestNumber", "requester", "department"])
+const LOCKED_FORM_FIELDS = new Set([
+  "requestNumber",
+  "requester",
+  "department",
+  "requestDate",
+])
 
 function normalizeEditItem(item, productMap) {
   const productId = Number(item.productId ?? item.id)
@@ -310,6 +315,16 @@ export default function usePurchaseRequestEdit(requestId) {
       return
     }
 
+    if (form.expectedDate < form.requestDate) {
+      window.alert("희망 입고일은 요청일보다 이전일 수 없습니다.")
+      return
+    }
+
+    if (requestItems.length === 0) {
+      window.alert("구매 요청 품목을 1개 이상 추가해 주세요.")
+      return
+    }
+
     if (requestItems.length === 0) {
       window.alert("구매 요청 품목을 1개 이상 추가해 주세요.")
       return
@@ -318,10 +333,12 @@ export default function usePurchaseRequestEdit(requestId) {
     submittingRef.current = true
     setIsSubmitting(true)
 
+    const fixedRequestDate = originalRequest?.requestedAt ?? form.requestDate
+
     try {
       const payload = {
         requestNumber: form.requestNumber,
-        requestDate: form.requestDate,
+        requestDate: fixedRequestDate,
         expectedDate: form.expectedDate,
         title: form.title,
         urgency: form.urgency,

@@ -6,6 +6,7 @@ import {
   calculatePurchaseOrderLine,
   formatWon,
   getPurchaseOrderStatusMeta,
+  getTodayString,
 } from "@/features/purchase-order/utils/purchaseOrderUtils"
 
 const INPUT_CLASS_NAME =
@@ -91,6 +92,8 @@ export default function PurchaseOrderForm({
   errors,
   submitError,
   submitting,
+  isSuccess,
+  successMessage,
   summary,
   editable = true,
   editableCoreFields = true,
@@ -113,6 +116,8 @@ export default function PurchaseOrderForm({
 }) {
 
   const isEditMode = mode === "edit"
+  const isRegisterMode = mode === "register"
+  const isCreateMode = mode === "create"
 
   const approvedPurchaseRequests = options?.approvedPurchaseRequests ?? []
   const suppliers = options?.suppliers ?? []
@@ -142,6 +147,7 @@ export default function PurchaseOrderForm({
     }
   }
 
+  const nextStatus = mode === "create" ? "CONFIRMED" : "ORDERED"
   return (
     <div className="w-full">
       <header className="mb-3 flex flex-wrap items-center justify-between gap-3">
@@ -160,12 +166,18 @@ export default function PurchaseOrderForm({
           {editableCoreFields && (
             <button
               type="button"
-              onClick={() => onSave(isEditMode ? "ORDERED" : "CONFIRMED")}
-              disabled={submitting}
+              onClick={() => onSave(nextStatus)}
+              disabled={submitting || isSuccess}
               className="flex h-10 items-center gap-1.5 rounded-md bg-blue-600 px-4 text-[13px] font-semibold text-white hover:bg-blue-700 disabled:opacity-50"
             >
-              <Send size={14} />
-              {isEditMode? "발주 완료" : "발주 등록"}
+              {submitting ? (
+                <>처리중...</>
+              ) : (
+                <>
+                <Send size={14} />
+                {mode === "create" ? "발주 등록" : mode === "register" ? "발주 등록" : "발주 완료"}
+                </>
+              )}
             </button>
           )}
         </div>
@@ -271,7 +283,7 @@ export default function PurchaseOrderForm({
                     value={selectedSupplierValue} 
                     onChange={(event) => {
                       const val = event.target.value;
-                      handleChangeSupplier(val);   // 기존에 정의된 함수 사용
+                      handleChangeSupplier(val);  
                     }} 
                     disabled={!editableCoreFields} 
                     className={INPUT_CLASS_NAME}
@@ -330,7 +342,7 @@ export default function PurchaseOrderForm({
               <FieldLabel required={!isEditMode}>발주 담당자</FieldLabel>
               {isEditMode ? (
                 <input
-                  value={form.orderManager || "-"}
+                  value={form.orderManager || form.userName || "-"}
                   disabled
                   className={INPUT_CLASS_NAME}
                 />
@@ -341,7 +353,7 @@ export default function PurchaseOrderForm({
                     onChange={(event) =>
                       onChange("orderManager", event.target.value)
                     }
-                    disabled={!editableCoreFields}
+                    disabled={true}
                     className={INPUT_CLASS_NAME}
                   />
                   <FieldError message={errors.orderManager} />
@@ -368,6 +380,7 @@ export default function PurchaseOrderForm({
                   onChange={(event) =>
                     onChange("expectedReceiptFrom", event.target.value)
                   }
+                  min={getTodayString()}
                   disabled={!editable}
                   className={INPUT_CLASS_NAME}
                 />
@@ -378,6 +391,7 @@ export default function PurchaseOrderForm({
                   onChange={(event) =>
                     onChange("expectedReceiptTo", event.target.value)
                   }
+                  min={form.expectedReceiptFrom || getTodayString()}
                   disabled={!editable}
                   className={INPUT_CLASS_NAME}
                 />
@@ -563,6 +577,12 @@ export default function PurchaseOrderForm({
       {submitError && (
         <p className="mt-3 rounded-md bg-rose-50 px-4 py-3 text-[13px] font-medium text-rose-600">
           {submitError}
+        </p>
+      )}
+
+      {isSuccess && (
+        <p className="mt-3 rounded-md bg-emerald-50 px-4 py-3 text-[13px] font-medium text-emrald-600 flex items-center gap-2">
+          <span>✅</span> {successMessage}
         </p>
       )}
 

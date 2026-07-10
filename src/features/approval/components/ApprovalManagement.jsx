@@ -1,5 +1,6 @@
 "use client"
 
+import { useEffect, useRef, useState } from "react"
 import Link from "next/link"
 import {
   ArrowLeft,
@@ -15,6 +16,7 @@ import {
 
 import useApprovalManagement from "@/features/approval/hooks/useApprovalManagement"
 import { downloadFileWithAuth } from "@/lib/api/downloadClient"
+import LoadingOverlay from "@/components/common/LoadingOverlay"
 
 import {
   calculateTotalAmount,
@@ -439,8 +441,32 @@ export default function ApprovalManagement({ approvalId }) {
     cancelRequest,
   } = useApprovalManagement(approvalId)
 
-  if (loading) {
-    return <LoadingState />
+  const [approvalLoadingVisible, setApprovalLoadingVisible] = useState(loading)
+  const approvalLoadingTimerRef = useRef(null)
+
+  useEffect(() => {
+    function clearApprovalLoadingTimer() {
+      if (approvalLoadingTimerRef.current) {
+        clearTimeout(approvalLoadingTimerRef.current)
+        approvalLoadingTimerRef.current = null
+      }
+    }
+
+    clearApprovalLoadingTimer()
+
+    approvalLoadingTimerRef.current = setTimeout(
+      () => {
+        setApprovalLoadingVisible(Boolean(loading))
+        approvalLoadingTimerRef.current = null
+      },
+      loading ? 0 : 1000,
+    )
+
+    return clearApprovalLoadingTimer
+  }, [loading])
+
+  if (loading || approvalLoadingVisible) {
+    return <LoadingOverlay show minDuration={1000} />
   }
 
   if (error || !approval) {
@@ -460,6 +486,7 @@ export default function ApprovalManagement({ approvalId }) {
 
   return (
     <div className="w-full">
+      <LoadingOverlay show={Boolean(submittingAction)} minDuration={1000} />
       <header className="mb-3 flex flex-wrap items-start justify-between gap-3">
         <div>
           <div className="flex items-center gap-2">

@@ -7,6 +7,7 @@ import PurchaseItemSelectModal from "@/features/purchase-request/components/Purc
 import PurchaseRequestBasicForm from "@/features/purchase-request/components/PurchaseRequestBasicForm"
 import PurchaseRequestItemSection from "@/features/purchase-request/components/PurchaseRequestItemSection"
 import usePurchaseRequestEdit from "@/features/purchase-request/hooks/usePurchaseRequestEdit"
+import LoadingOverlay from "@/components/common/LoadingOverlay"
 
 export default function PurchaseRequestEdit({ requestId }) {
   const router = useRouter()
@@ -53,11 +54,7 @@ export default function PurchaseRequestEdit({ requestId }) {
   }
 
   if (loading) {
-    return (
-      <div className="rounded-lg border border-slate-200 bg-white px-4 py-16 text-center text-[14px] text-slate-400 shadow-sm">
-        구매 요청 수정 정보를 불러오는 중입니다.
-      </div>
-    )
+    return <LoadingOverlay minDuration={1000} />
   }
 
   if (error) {
@@ -78,6 +75,7 @@ export default function PurchaseRequestEdit({ requestId }) {
 
   return (
     <div className="w-full">
+      <LoadingOverlay show={isSubmitting} minDuration={1000} />
       <header className="mb-3 flex flex-wrap items-start justify-between gap-3">
         <div>
           <h1 className="text-[22px] font-bold tracking-tight text-slate-900">
