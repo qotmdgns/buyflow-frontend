@@ -14,18 +14,41 @@ export default function System() {
   const ready = useClientReady()
   const admin = ready && hasRole("ADMIN")
   const teamManager = ready && hasRole("TEAM_MANAGER")
-  const canManageRoles =
+  const canReadUsers =
     ready &&
-    (admin || hasPermission("roles.write") || hasPermission("ROLE_MANAGE"))
+    (admin ||
+      hasPermission("users.read") ||
+      hasPermission("users.write") ||
+      hasPermission("USER_MANAGE"))
+  const canWriteUsers =
+    ready && (admin || hasPermission("users.write") || hasPermission("USER_MANAGE"))
+  const canReadRoles =
+    ready &&
+    (admin ||
+      hasPermission("roles.read") ||
+      hasPermission("roles.write") ||
+      hasPermission("ROLE_MANAGE"))
+  const canWriteRoles =
+    ready && (admin || hasPermission("roles.write") || hasPermission("ROLE_MANAGE"))
   const access = {
     admin,
     teamManager,
-    users: admin || teamManager,
-    roles: canManageRoles,
+    users: canReadUsers,
+    userWrite: canWriteUsers,
+    roles: canReadRoles,
+    roleWrite: canWriteRoles,
     ready,
   }
   const delegateOnly = access.teamManager && !access.admin
-  const management = useSystem({ delegateOnly })
+  const management = useSystem({
+    delegateOnly,
+    canManageUsers: access.users,
+    canWriteUsers: access.userWrite,
+    canManageRoles: access.roles,
+    canWriteRoles: access.roleWrite,
+    canWriteGlobalRoles: access.admin,
+    ready: access.ready,
+  })
 
   // 마운트 전에는 깜빡임 방지로 렌더하지 않는다
   if (!access.ready) {
@@ -122,8 +145,8 @@ export default function System() {
               users={management.users}
               loading={management.userLoading}
               error={management.userError}
-              onEdit={management.openUserEdit}
-              onApprove={access.admin ? management.approveUser : null}
+              onEdit={access.userWrite ? management.openUserEdit : null}
+              onApprove={access.userWrite && !delegateOnly ? management.approveUser : null}
             />
 
             <SystemPagination
@@ -143,13 +166,15 @@ export default function System() {
           error={management.permissionError}
           dirty={management.permissionDirty}
           saving={management.permissionSaving}
+          canWrite={management.canWriteSelectedPermissions}
+          canWriteSystemPermissions={access.admin}
           onSelectRole={management.selectRole}
           onTogglePermission={management.togglePermission}
           onSave={management.savePermissions}
         />
       )}
 
-      {management.formMode && access.users && (
+      {management.formMode && access.userWrite && (
         <UserFormModal
           key={`${management.formMode}-${management.editingUser?.id ?? "new"}`}
           mode={management.formMode}

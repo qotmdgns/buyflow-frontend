@@ -1,3 +1,4 @@
+import PermissionRouteGuard from "@/components/auth/PermissionRouteGuard"
 import InspectionRegister from "@/features/inspection/components/InspectionRegister"
 
 export const metadata = {
@@ -7,5 +8,12 @@ export const metadata = {
 export default async function InspectionRegisterPage({ params }) {
   const { inspectionId } = await params
 
-  return <InspectionRegister inspectionId={inspectionId} />
+  return (
+    <PermissionRouteGuard
+      permissions={["inspections.process"]}
+      fallbackPath={`/inspections/${inspectionId}`}
+    >
+      <InspectionRegister inspectionId={inspectionId} />
+    </PermissionRouteGuard>
+  )
 }

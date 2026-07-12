@@ -124,9 +124,14 @@ const menuGroups = [
         label: "사용자 및 권한 관리",
         href: "/system",
         icon: Settings,
-        // ADMIN은 전체 시스템 관리, TEAM_MANAGER는 자기 부서 역할 위임만 접근.
-        requireAnyRole: ["ADMIN", "TEAM_MANAGER"],
-        requireAnyPermission: ["users.read", "roles.write"],
+        requireAnyRole: ["ADMIN"],
+        requireAnyPermission: [
+          "users.read",
+          "users.write",
+          "USER_MANAGE",
+          "roles.write",
+          "ROLE_MANAGE",
+        ],
       },
     ],
   },

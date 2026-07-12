@@ -1,3 +1,4 @@
+import PermissionRouteGuard from "@/components/auth/PermissionRouteGuard"
 import ApprovalListManagement from "@/features/approval/components/ApprovalListManagement"
 
 export const metadata = {
@@ -5,5 +6,12 @@ export const metadata = {
 }
 
 export default function ApprovalsPage() {
-  return <ApprovalListManagement />
+  return (
+    <PermissionRouteGuard
+      permissions={["approvals.read", "approvals.process"]}
+      fallbackPath="/dashboard"
+    >
+      <ApprovalListManagement />
+    </PermissionRouteGuard>
+  )
 }

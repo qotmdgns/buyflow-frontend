@@ -1,3 +1,4 @@
+import PermissionRouteGuard from "@/components/auth/PermissionRouteGuard"
 import PurchaseRequestCreate from "@/features/purchase-request/components/PurchaseRequestCreate"
 
 export const metadata = {
@@ -5,5 +6,12 @@ export const metadata = {
 }
 
 export default function NewPurchaseRequestPage() {
-  return <PurchaseRequestCreate />
+  return (
+    <PermissionRouteGuard
+      permissions={["purchase-requests.write"]}
+      fallbackPath="/purchase-requests"
+    >
+      <PurchaseRequestCreate />
+    </PermissionRouteGuard>
+  )
 }

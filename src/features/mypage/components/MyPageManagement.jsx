@@ -44,6 +44,7 @@ const PERMISSION_LABELS = {
   "stock-history.read": "재고 이력 조회",
   "users.read": "사용자 조회",
   "users.write": "사용자 등록·수정",
+  "roles.read": "권한 설정 조회",
   "roles.write": "권한 설정 변경",
 }
 

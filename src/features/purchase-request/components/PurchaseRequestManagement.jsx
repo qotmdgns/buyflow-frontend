@@ -50,7 +50,7 @@ export default function PurchaseRequestManagement() {
       link.click()
       link.remove()
 
-      window.URL.revokeObjectURL(url)
+      window.setTimeout(() => window.URL.revokeObjectURL(url), 1000)
     } catch (error) {
       console.error("엑셀 다운로드 중 오류가 발생했습니다.", error)
       window.alert(error.message || "엑셀 파일을 다운로드하지 못했습니다.")

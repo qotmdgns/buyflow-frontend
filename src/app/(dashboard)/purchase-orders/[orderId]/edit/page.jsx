@@ -1,3 +1,4 @@
+import PermissionRouteGuard from "@/components/auth/PermissionRouteGuard"
 import PurchaseOrderEdit from "@/features/purchase-order/components/PurchaseOrderEdit"
 
 export const metadata = {
@@ -7,5 +8,12 @@ export const metadata = {
 export default async function PurchaseOrderEditPage({ params }) {
   const { orderId } = await params
 
-  return <PurchaseOrderEdit orderId={orderId} />
+  return (
+    <PermissionRouteGuard
+      permissions={["purchase-orders.write"]}
+      fallbackPath="/purchase-orders"
+    >
+      <PurchaseOrderEdit orderId={orderId} />
+    </PermissionRouteGuard>
+  )
 }

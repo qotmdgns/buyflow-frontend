@@ -98,23 +98,14 @@ export function createPageNumbers(currentPage, totalPages) {
   return [1, "ellipsis-left", currentPage, "ellipsis-right", totalPages]
 }
 
-function escapeCsvCell(value) {
-  const text = String(value ?? "")
-
-  if (!/[",\n]/.test(text)) {
-    return text
-  }
-
-  return `"${text.replaceAll('"', '""')}"`
-}
-
-export function downloadWarehouseCsv(warehouses) {
+export async function downloadWarehouseExcel(warehouses) {
   if (!warehouses.length) {
     window.alert("내보낼 창고 데이터가 없습니다.")
     return
   }
 
-  const header = [
+  const { default: writeXlsxFile } = await import("write-excel-file/browser")
+  const headers = [
     "창고 유형",
     "창고명",
     "위치(주소)",
@@ -122,35 +113,45 @@ export function downloadWarehouseCsv(warehouses) {
     "담당자",
     "연락처",
     "등록일",
+    "수정일",
+  ]
+  const data = [
+    headers.map((value) => ({
+      value,
+      type: String,
+      fontWeight: "bold",
+      backgroundColor: "#E2E8F0",
+      align: "center",
+    })),
+    ...warehouses.map((warehouse) =>
+      [
+        warehouse.type,
+        warehouse.name,
+        warehouse.address,
+        warehouse.useYn,
+        warehouse.managerName,
+        warehouse.phone,
+        warehouse.registeredAt,
+        warehouse.updatedAt,
+      ].map((value) => ({ value: String(value ?? ""), type: String })),
+    ),
   ]
 
-  const rows = warehouses.map((warehouse) => [
-    warehouse.type,
-    warehouse.name,
-    warehouse.address,
-    warehouse.useYn,
-    warehouse.managerName,
-    warehouse.phone,
-    warehouse.registeredAt,
-    warehouse.updatedAt,
-  ])
-  const csv = [header, ...rows]
-    .map((row) => row.map(escapeCsvCell).join(","))
-    .join("\n")
-
-  const blob = new Blob(["\uFEFF", csv], {
-    type: "text/csv;charset=utf-8;",
+  const workbook = writeXlsxFile(data, {
+    columns: [
+      { width: 14 },
+      { width: 22 },
+      { width: 40 },
+      { width: 12 },
+      { width: 14 },
+      { width: 18 },
+      { width: 16 },
+      { width: 16 },
+    ],
+    sheet: "창고 목록",
   })
 
-  const url = URL.createObjectURL(blob)
-  const anchor = document.createElement("a")
-
-  anchor.href = url
-  anchor.download = `warehouse-list-${new Date().toISOString().slice(0, 10)}.csv`
-
-  document.body.appendChild(anchor)
-  anchor.click()
-  anchor.remove()
-
-  URL.revokeObjectURL(url)
+  await workbook.toFile(
+    `warehouse-list-${new Date().toISOString().slice(0, 10)}.xlsx`,
+  )
 }

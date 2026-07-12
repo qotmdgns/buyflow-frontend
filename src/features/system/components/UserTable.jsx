@@ -69,14 +69,16 @@ export default function UserTable({ users, loading, error, onEdit, onApprove }) 
                     </button>
                   )}
 
-                  <button
-                    type="button"
-                    onClick={() => onEdit(user)}
-                    className="flex h-8 items-center gap-1 rounded-md border border-slate-200 px-2.5 font-semibold"
-                  >
-                    <Pencil size={13} />
-                    수정
-                  </button>
+                  {onEdit && (
+                    <button
+                      type="button"
+                      onClick={() => onEdit(user)}
+                      className="flex h-8 items-center gap-1 rounded-md border border-slate-200 px-2.5 font-semibold"
+                    >
+                      <Pencil size={13} />
+                      수정
+                    </button>
+                  )}
                 </div>
               </td>
             </tr>

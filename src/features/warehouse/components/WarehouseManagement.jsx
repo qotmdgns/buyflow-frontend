@@ -7,7 +7,7 @@ import WarehousePagination from "@/features/warehouse/components/WarehousePagina
 import WarehouseSearchForm from "@/features/warehouse/components/WarehouseSearchForm"
 import WarehouseTable from "@/features/warehouse/components/WarehouseTable"
 import useWarehouseManagement from "@/features/warehouse/hooks/useWarehouseManagement"
-import { downloadWarehouseCsv } from "@/features/warehouse/utils/warehouseManagementUtils"
+import { downloadWarehouseExcel } from "@/features/warehouse/utils/warehouseManagementUtils"
 import { useAuth } from "@/features/auth/context/AuthContext"
 
 export default function WarehouseManagement() {
@@ -41,6 +41,15 @@ export default function WarehouseManagement() {
     closeWarehouseDetail,
     removeWarehouse,
   } = useWarehouseManagement()
+
+  async function handleExcelExport() {
+    try {
+      await downloadWarehouseExcel(warehouses)
+    } catch (exportError) {
+      console.error("Failed to export warehouses to Excel", exportError)
+      window.alert("엑셀 파일을 생성하지 못했습니다.")
+    }
+  }
 
   return (
     <div className="w-full">
@@ -77,7 +86,7 @@ export default function WarehouseManagement() {
           <div className="flex flex-wrap items-center gap-2">
             <button
               type="button"
-              onClick={() => downloadWarehouseCsv(warehouses)}
+              onClick={handleExcelExport}
               className="flex h-9 items-center gap-1.5 rounded-md border border-slate-200 bg-white px-3 text-[13px] font-semibold text-slate-600 transition hover:bg-slate-50"
             >
               <Download size={14} />

@@ -1,3 +1,4 @@
+import PermissionRouteGuard from "@/components/auth/PermissionRouteGuard"
 import ApprovalManagement from "@/features/approval/components/ApprovalManagement"
 
 export const metadata = {
@@ -7,5 +8,12 @@ export const metadata = {
 export default async function ApprovalDetailPage({ params }) {
   const { approvalId } = await params
 
-  return <ApprovalManagement approvalId={approvalId} />
+  return (
+    <PermissionRouteGuard
+      permissions={["approvals.read", "approvals.process"]}
+      fallbackPath="/dashboard"
+    >
+      <ApprovalManagement approvalId={approvalId} />
+    </PermissionRouteGuard>
+  )
 }

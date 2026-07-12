@@ -53,7 +53,7 @@ export default function PurchaseRequestCreate() {
   return (
     <div className="w-full">
       <LoadingOverlay
-        show={loading || isDownloading || Boolean(deletingRequestId)}
+        show={isSubmitting || isProductLoading}
         minDuration={1000}
       />
       <header className="mb-3 flex flex-wrap items-start justify-between gap-3">

@@ -150,6 +150,7 @@ const permissionTemplate = [
     permissions: [
       { key: "users.read", label: "사용자 조회" },
       { key: "users.write", label: "사용자 등록·수정" },
+      { key: "roles.read", label: "권한 설정 조회" },
       { key: "roles.write", label: "권한 설정 변경" },
     ],
   },

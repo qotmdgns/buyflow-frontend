@@ -1,4 +1,5 @@
 import { Save } from "lucide-react"
+import { SYSTEM_PERMISSION_GROUP } from "@/features/system/api/systemApi"
 
 export default function RolePermissionPanel({
   roles,
@@ -8,6 +9,8 @@ export default function RolePermissionPanel({
   error,
   dirty,
   saving,
+  canWrite = true,
+  canWriteSystemPermissions = false,
   onSelectRole,
   onTogglePermission,
   onSave,
@@ -44,7 +47,7 @@ export default function RolePermissionPanel({
 
           <button
             type="button"
-            disabled={!dirty || saving}
+            disabled={!canWrite || !dirty || saving}
             onClick={onSave}
             className="flex h-9 items-center gap-1 rounded-md bg-blue-600 px-3 text-[13px] font-semibold text-white disabled:opacity-40"
           >
@@ -71,6 +74,11 @@ export default function RolePermissionPanel({
                     <input
                       type="checkbox"
                       checked={permission.checked}
+                      disabled={
+                        !canWrite ||
+                        (!canWriteSystemPermissions &&
+                          group.key === SYSTEM_PERMISSION_GROUP)
+                      }
                       onChange={() =>
                         onTogglePermission(group.key, permission.key)
                       }

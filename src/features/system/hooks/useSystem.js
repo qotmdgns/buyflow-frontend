@@ -7,6 +7,7 @@ import {
   createUser,
   fetchDepartmentPermissionProfiles,
   fetchDepartmentPermissions,
+  fetchPermissionRoles,
   fetchRolePermissions,
   fetchRoles,
   fetchUserFilterOptions,
@@ -48,8 +49,16 @@ function isSameRoleSet(left, right) {
   )
 }
 
-export default function useSystem({ delegateOnly = false } = {}) {
-  const [activeTab, setActiveTab] = useState("users")
+export default function useSystem({
+  delegateOnly = false,
+  canManageUsers = true,
+  canWriteUsers = canManageUsers,
+  canManageRoles = true,
+  canWriteRoles = canManageRoles,
+  canWriteGlobalRoles = false,
+  ready = true,
+} = {}) {
+  const [selectedTab, setSelectedTab] = useState("users")
 
   const [draftFilters, setDraftFilters] = useState(DEFAULT_USER_FILTERS)
   const [appliedFilters, setAppliedFilters] = useState(DEFAULT_USER_FILTERS)
@@ -75,36 +84,68 @@ export default function useSystem({ delegateOnly = false } = {}) {
   const [permissionError, setPermissionError] = useState("")
   const [permissionDirty, setPermissionDirty] = useState(false)
   const [permissionSaving, setPermissionSaving] = useState(false)
+  const canWriteSelectedPermissions =
+    canWriteRoles &&
+    (canWriteGlobalRoles || !isRolePermissionProfile(selectedRoleId))
+
+  const activeTab =
+    selectedTab === "permissions" && !canManageRoles
+      ? "users"
+      : selectedTab === "users" && !canManageUsers && canManageRoles
+        ? "permissions"
+        : selectedTab
 
   useEffect(() => {
+    if (!ready || (!canManageUsers && !canManageRoles)) {
+      return
+    }
+
     let ignore = false
 
     async function loadInitialOptions() {
       try {
-        const rolesPromise = fetchRoles()
-        const [nextFilterOptions, nextRoles, nextDepartmentProfiles] = await Promise.all([
-          fetchUserFilterOptions(rolesPromise),
-          rolesPromise,
-          fetchDepartmentPermissionProfiles(),
+        const [
+          nextFilterOptions,
+          nextUserRoles,
+          nextPermissionRoles,
+          nextDepartmentProfiles,
+        ] = await Promise.all([
+          canManageUsers
+            ? fetchUserFilterOptions()
+            : Promise.resolve(DEFAULT_USER_FILTER_OPTIONS),
+          canWriteUsers ? fetchRoles() : Promise.resolve([]),
+          canManageRoles
+            ? fetchPermissionRoles({ includeUserCounts: canManageUsers })
+            : Promise.resolve([]),
+          canManageRoles
+            ? fetchDepartmentPermissionProfiles()
+            : Promise.resolve([]),
         ])
 
         if (ignore) return
 
         const nextPermissionProfiles = buildPermissionProfiles(
-          nextRoles,
+          nextPermissionRoles,
           nextDepartmentProfiles,
+          { includeRoleProfiles: canWriteGlobalRoles },
         )
 
         setFilterOptions(nextFilterOptions)
-        setRoles(nextRoles)
+        setRoles(nextUserRoles)
         setDepartmentProfiles(nextPermissionProfiles)
 
-        if (nextPermissionProfiles.length > 0) {
-          setSelectedRoleId(nextPermissionProfiles[0].id)
-        }
+        setSelectedRoleId((currentRoleId) => {
+          if (!nextPermissionProfiles.length) return ""
+          return nextPermissionProfiles.some((role) => role.id === currentRoleId)
+            ? currentRoleId
+            : nextPermissionProfiles[0].id
+        })
       } catch {
         if (!ignore) {
           setFilterOptions(DEFAULT_USER_FILTER_OPTIONS)
+          setRoles([])
+          setDepartmentProfiles([])
+          setSelectedRoleId("")
         }
       }
     }
@@ -114,9 +155,19 @@ export default function useSystem({ delegateOnly = false } = {}) {
     return () => {
       ignore = true
     }
-  }, [])
+  }, [
+    ready,
+    canManageUsers,
+    canWriteUsers,
+    canManageRoles,
+    canWriteGlobalRoles,
+  ])
 
   useEffect(() => {
+    if (!ready || !canManageUsers) {
+      return
+    }
+
     let ignore = false
 
     async function loadUsers() {
@@ -152,10 +203,17 @@ export default function useSystem({ delegateOnly = false } = {}) {
     return () => {
       ignore = true
     }
-  }, [appliedFilters, pagination.page, pageSize, userRefreshKey])
+  }, [
+    ready,
+    canManageUsers,
+    appliedFilters,
+    pagination.page,
+    pageSize,
+    userRefreshKey,
+  ])
 
   useEffect(() => {
-    if (activeTab !== "permissions" || !selectedRoleId) {
+    if (!ready || !canManageRoles || activeTab !== "permissions" || !selectedRoleId) {
       return
     }
 
@@ -192,7 +250,7 @@ export default function useSystem({ delegateOnly = false } = {}) {
     return () => {
       ignore = true
     }
-  }, [activeTab, selectedRoleId])
+  }, [ready, canManageRoles, activeTab, selectedRoleId])
 
   function updateFilter(name, value) {
     setDraftFilters((current) => ({
@@ -239,11 +297,19 @@ export default function useSystem({ delegateOnly = false } = {}) {
   }
 
   async function reloadRoles() {
+    if (!canManageUsers) {
+      return
+    }
+
     const nextRoles = await fetchRoles()
     setRoles(nextRoles)
   }
 
   async function saveUser(form) {
+    if (!canWriteUsers) {
+      throw new Error("사용자를 관리할 권한이 없습니다.")
+    }
+
     if (formMode === "edit" && editingUser) {
       const nextRoleIds = form.roleIds?.length ? form.roleIds : [form.roleId]
       const currentRoleIds = editingUser.roleIds?.length
@@ -273,6 +339,11 @@ export default function useSystem({ delegateOnly = false } = {}) {
 
   // 가입 승인 (PENDING → ACTIVE)
   async function approveUser(user) {
+    if (!canWriteUsers) {
+      window.alert("사용자를 승인할 권한이 없습니다.")
+      return
+    }
+
     try {
       await requestApproveUser(user.id)
       setUserRefreshKey((current) => current + 1)
@@ -314,6 +385,11 @@ export default function useSystem({ delegateOnly = false } = {}) {
   }
 
   async function savePermissions() {
+    if (!canWriteSelectedPermissions) {
+      setPermissionError("권한을 관리할 권한이 없습니다.")
+      return
+    }
+
     setPermissionSaving(true)
     setPermissionError("")
 
@@ -323,12 +399,16 @@ export default function useSystem({ delegateOnly = false } = {}) {
             roleCodeFromPermissionProfileId(selectedRoleId),
             permissionGroups,
           )
-        : await updateDepartmentPermissions(selectedRoleId, permissionGroups)
+        : await updateDepartmentPermissions(selectedRoleId, permissionGroups, {
+            includeSystemPermissions: canWriteGlobalRoles,
+          })
 
       setPermissionGroups(savedGroups)
       setPermissionDirty(false)
 
-      window.alert("권한 설정이 저장되었습니다.")
+      window.alert(
+        "권한 설정이 저장되었습니다. 변경된 권한은 대상 사용자가 다시 로그인한 뒤 적용됩니다.",
+      )
     } catch (requestError) {
       setPermissionError(
         requestError.message || "권한 설정을 저장하지 못했습니다.",
@@ -340,7 +420,7 @@ export default function useSystem({ delegateOnly = false } = {}) {
 
   return {
     activeTab,
-    setActiveTab,
+    setActiveTab: setSelectedTab,
     draftFilters,
     filterOptions,
     users,
@@ -358,6 +438,9 @@ export default function useSystem({ delegateOnly = false } = {}) {
     permissionError,
     permissionDirty,
     permissionSaving,
+    canWriteUsers,
+    canWriteRoles,
+    canWriteSelectedPermissions,
     updateFilter,
     searchUsers,
     resetFilters,

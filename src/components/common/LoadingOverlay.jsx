@@ -1,5 +1,6 @@
 "use client"
 
+import Image from "next/image"
 import { useEffect, useRef, useState } from "react"
 
 export default function LoadingOverlay({
@@ -68,8 +69,12 @@ export default function LoadingOverlay({
       <div className="bf-loading-scene">
         <div className="bf-loading-shadow" />
 
-        <img
+        <Image
           src={imageSrc}
+          width={220}
+          height={220}
+          priority
+          unoptimized
           alt="BuyFlow ERP 로딩"
           className="bf-loading-image"
         />

@@ -1,3 +1,4 @@
+import PermissionRouteGuard from "@/components/auth/PermissionRouteGuard"
 import CompletedInspectionManagement from "@/features/inspection/components/CompletedInspectionManagement"
 
 export const metadata = {
@@ -5,5 +6,12 @@ export const metadata = {
 }
 
 export default function CompletedInspectionsPage() {
-  return <CompletedInspectionManagement />
+  return (
+    <PermissionRouteGuard
+      permissions={["inspections.read", "inspections.process"]}
+      fallbackPath="/dashboard"
+    >
+      <CompletedInspectionManagement />
+    </PermissionRouteGuard>
+  )
 }

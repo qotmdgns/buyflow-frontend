@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import { ArrowLeft, Save } from "lucide-react"
+import { useAuth } from "@/features/auth/context/AuthContext"
 import {
   createSupplier,
   fetchSupplierById,
@@ -56,14 +57,25 @@ function toForm(supplier) {
 
 export default function SupplierForm({ mode = "create", supplierId = null }) {
   const router = useRouter()
+  const { user, isAuthReady } = useAuth()
   const isEditMode = mode === "edit"
+  const canManageSuppliers =
+    isAuthReady &&
+    (user?.roles?.includes("ADMIN") ||
+      user?.permissions?.includes("suppliers.write"))
 
   const [form, setForm] = useState(INITIAL_FORM)
   const [isLoading, setIsLoading] = useState(isEditMode)
   const [isSaving, setIsSaving] = useState(false)
 
   useEffect(() => {
-    if (!isEditMode || !supplierId) {
+    if (isAuthReady && !canManageSuppliers) {
+      router.replace("/suppliers")
+    }
+  }, [canManageSuppliers, isAuthReady, router])
+
+  useEffect(() => {
+    if (!isAuthReady || !canManageSuppliers || !isEditMode || !supplierId) {
       return
     }
 
@@ -97,7 +109,7 @@ export default function SupplierForm({ mode = "create", supplierId = null }) {
     return () => {
       ignore = true
     }
-  }, [isEditMode, router, supplierId])
+  }, [canManageSuppliers, isAuthReady, isEditMode, router, supplierId])
 
   function updateForm(name, value) {
     setForm((currentForm) => ({
@@ -153,6 +165,10 @@ export default function SupplierForm({ mode = "create", supplierId = null }) {
     } finally {
       setIsSaving(false)
     }
+  }
+
+  if (!isAuthReady || !canManageSuppliers) {
+    return null
   }
 
   return (

@@ -47,6 +47,7 @@ const USER_ROLE_FILTER_OPTIONS = [
 ]
 
 export const SYSTEM_ADMIN_PERMISSION_PROFILE_ID = "role:ADMIN"
+export const SYSTEM_PERMISSION_GROUP = "SYSTEM"
 
 export function isSystemAdminPermissionProfile(profileId) {
   return profileId === SYSTEM_ADMIN_PERMISSION_PROFILE_ID
@@ -93,9 +94,16 @@ function buildGroupsFromPermissionCatalog(permissions, permissionCodes) {
   return Array.from(groups.values())
 }
 
-function extractCheckedCodes(groups) {
+function extractCheckedCodes(
+  groups,
+  { includeSystemPermissions = true } = {},
+) {
   const codes = []
   groups.forEach((group) => {
+    if (!includeSystemPermissions && group.key === SYSTEM_PERMISSION_GROUP) {
+      return
+    }
+
     group.permissions.forEach((permission) => {
       if (permission.checked) codes.push(permission.key)
     })
@@ -282,7 +290,25 @@ export async function fetchRoles() {
     }))
 }
 
-export function buildPermissionProfiles(roles, departmentProfiles) {
+export async function fetchPermissionRoles({ includeUserCounts = false } = {}) {
+  const [data, counts] = await Promise.all([
+    apiFetch(`/api/admin/roles`, { method: "GET" }),
+    includeUserCounts ? fetchRoleUserCounts() : Promise.resolve({}),
+  ])
+
+  return (data ?? [])
+    .filter((role) => role.useYn !== "N")
+    .map((role) => ({
+      ...adaptRole(role),
+      userCount: counts[role.roleCode] ?? 0,
+    }))
+}
+
+export function buildPermissionProfiles(
+  roles,
+  departmentProfiles,
+  { includeRoleProfiles = true } = {},
+) {
   const adminRole = (roles ?? []).find(
     (role) => normalizeRoleCode(role.id) === "ADMIN",
   )
@@ -291,7 +317,7 @@ export function buildPermissionProfiles(roles, departmentProfiles) {
   )
   const profiles = []
 
-  if (adminRole) {
+  if (includeRoleProfiles && adminRole) {
     profiles.push({
       id: SYSTEM_ADMIN_PERMISSION_PROFILE_ID,
       name: adminRole.name || "시스템 관리자",
@@ -302,7 +328,7 @@ export function buildPermissionProfiles(roles, departmentProfiles) {
     })
   }
 
-  if (viewerRole) {
+  if (includeRoleProfiles && viewerRole) {
     profiles.push({
       id: "role:VIEWER",
       name: viewerRole.name || "조회 전용",
@@ -359,9 +385,13 @@ export async function fetchDepartmentPermissions(departmentName) {
   return buildGroupsFromPermissionCatalog(permissions, permissionCodes)
 }
 
-export async function updateDepartmentPermissions(departmentName, groups) {
+export async function updateDepartmentPermissions(
+  departmentName,
+  groups,
+  options = {},
+) {
   const permissions = await fetchPermissionCatalog()
-  const permissionCodes = extractCheckedCodes(groups)
+  const permissionCodes = extractCheckedCodes(groups, options)
   const savedCodes = await apiFetch(
     `/api/admin/departments/${encodeURIComponent(departmentName)}/permissions`,
     {
